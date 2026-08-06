@@ -13,6 +13,10 @@ const PUBLIC_BASE_URL = (process.env.STORAGE_PUBLIC_BASE_URL ?? "").replace(/\/+
 const SFTP_PORT = Number(process.env.STORAGE_SFTP_PORT ?? 22);
 const FTP_PORT = Number(process.env.STORAGE_FTP_PORT ?? 21);
 const FORCED_PROTOCOL = process.env.STORAGE_PROTOCOL as "sftp" | "ftp" | undefined;
+const FORCED_FTP_SECURE =
+  process.env.STORAGE_FTP_SECURE === undefined
+    ? undefined
+    : process.env.STORAGE_FTP_SECURE === "true";
 
 type Protocol = "sftp" | "ftp";
 
@@ -20,6 +24,27 @@ type Protocol = "sftp" | "ftp";
 // cada chamada só para descobrir que precisa cair para FTP. Preferência
 // SFTP > FTP decidida pelo usuário (2026-08-06, ver STORAGE.md).
 let cachedProtocol: Protocol | null = null;
+
+// Mesma lógica de detecção, um nível abaixo: dentro do fallback FTP, prefere
+// FTPS (FTP explícito com TLS) e só cai para FTP puro se o servidor recusar.
+let cachedFtpSecure: boolean | null = null;
+
+async function resolveFtpSecure(): Promise<boolean> {
+  if (FORCED_FTP_SECURE !== undefined) return FORCED_FTP_SECURE;
+  if (cachedFtpSecure !== null) return cachedFtpSecure;
+
+  const probe = new FtpClient();
+
+  try {
+    await probe.access({ host: HOST, port: FTP_PORT, user: USER, password: PASSWORD, secure: true });
+    probe.close();
+    cachedFtpSecure = true;
+  } catch {
+    cachedFtpSecure = false;
+  }
+
+  return cachedFtpSecure;
+}
 
 function remotePath(path: string) {
   const clean = path.replace(/^\/+/, "");
@@ -72,7 +97,7 @@ async function uploadViaFtp(input: UploadInput) {
   const full = remotePath(input.path);
   const { dir, file } = splitDirAndFile(full);
 
-  await client.access({ host: HOST, port: FTP_PORT, user: USER, password: PASSWORD, secure: true });
+  await client.access({ host: HOST, port: FTP_PORT, user: USER, password: PASSWORD, secure: await resolveFtpSecure() });
 
   try {
     if (dir) {
@@ -99,7 +124,7 @@ async function deleteViaSftp(path: string) {
 async function deleteViaFtp(path: string) {
   const client = new FtpClient();
 
-  await client.access({ host: HOST, port: FTP_PORT, user: USER, password: PASSWORD, secure: true });
+  await client.access({ host: HOST, port: FTP_PORT, user: USER, password: PASSWORD, secure: await resolveFtpSecure() });
 
   try {
     await client.remove(remotePath(path));
@@ -124,7 +149,7 @@ async function existsViaSftp(path: string) {
 async function existsViaFtp(path: string) {
   const client = new FtpClient();
 
-  await client.access({ host: HOST, port: FTP_PORT, user: USER, password: PASSWORD, secure: true });
+  await client.access({ host: HOST, port: FTP_PORT, user: USER, password: PASSWORD, secure: await resolveFtpSecure() });
 
   try {
     await client.size(remotePath(path));

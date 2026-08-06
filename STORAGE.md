@@ -115,6 +115,7 @@ Nenhum componente ou Server Action deve importar `ssh2-sftp-client`,
 | `STORAGE_PUBLIC_BASE_URL` | domínio/URL que serve esse mesmo diretório publicamente |
 | `STORAGE_SFTP_PORT` / `STORAGE_FTP_PORT` | opcionais, só se as portas padrão (22/21) não forem as certas — **atenção:** hospedagem compartilhada da Hostinger às vezes usa uma porta SSH não-padrão (verificar no hPanel) |
 | `STORAGE_PROTOCOL` | opcional, força `sftp` ou `ftp` em vez da detecção automática |
+| `STORAGE_FTP_SECURE` | opcional, força `true`/`false` (FTPS vs FTP puro). Sem definir, detecta automaticamente: tenta FTPS, cai para FTP puro se o servidor recusar |
 
 ## Status desta implementação
 

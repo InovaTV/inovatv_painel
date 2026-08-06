@@ -7,6 +7,18 @@
 
 ---
 
+## 2026-08-06 (14) — Detecção automática de FTPS vs FTP puro
+
+Completa a detecção automática já existente (SFTP vs FTP) um nível
+abaixo: dentro do fallback FTP, `remote-storage.ts` agora tenta FTPS
+primeiro e só cai para FTP sem TLS se o servidor recusar — usuário
+não precisa descobrir isso no hPanel. Override manual opcional via
+`STORAGE_FTP_SECURE`. `tsc`/`lint`/`build` limpos. Não é uma nova
+decisão arquitetural, só completa o padrão já decidido em
+ADR-011/012 ("detecte automaticamente, priorize o mais seguro").
+
+---
+
 ## 2026-08-06 (13) — Arquitetura declarada congelada
 
 Nota curta em `PROJECT_MASTER.md` §8.1: a partir do commit `17bdff3`,
