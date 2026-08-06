@@ -6,56 +6,42 @@
 
 ## Último commit
 
-Ver `git log` — commit desta sessão adiciona log de instrumentação
-em `uploadAppAsset` (tamanho do arquivo, tempo do `storage.replace()`,
-tempo total). Decisão do usuário: **não avançar para Ícone/Banner
-antes de validar Upload de APK pelo navegador de verdade.**
+Ver `git log` — commit desta sessão corrige o `next.config.ts`
+(`experimental.proxyClientMaxBodySize: "300mb"`), causa raiz do
+"Unexpected end of form" no teste manual do usuário. **Ainda não
+reconfirmado no navegador.**
 
 ## Objetivo da próxima sessão
 
-**Bloqueado até o usuário fazer o teste manual no navegador.** Não
-sou eu quem faz esse teste — não tenho login/senha do painel.
+**Bloqueado até o usuário repetir o teste manual.** Não avançar para
+Ícone/Banner nem para UX/texto até o Upload de APK funcionar de
+verdade pelo navegador (decisão explícita do usuário).
 
-Teste que o usuário vai rodar: `npm run dev`, logar, editar um app,
-selecionar um APK real (20-45MB, conforme os apps reais do projeto),
-enviar, e confirmar: arquivo chegou na Hostinger, banco atualizou
-(`storage_path`), o log `[upload] apk "...": XXmb — storage.replace()
-XXms, total XXms` aparece no terminal do `npm run dev` com números
-plausíveis (não travando/timeout).
+Teste: `npm run dev` (reiniciar se já estava rodando, pra pegar o
+`next.config.ts` novo), logar, editar um app com um APK real
+(20-45MB), enviar. Esperado: sem erro, log
+`[upload] apk "...": XXmb — storage.replace() XXms, total XXms`
+aparece no terminal, arquivo chega na Hostinger, `storage_path`
+atualiza no banco.
 
-**Se passar:** Upload de APK fechado de verdade → seguir pra
-Ícone/Banner (`uploadAppAsset` já suporta os dois, só falta habilitar
-os inputs no `AppForm.tsx` + uma chamada igual à do `apk` em
-`createAppAction`/`updateAppAction` — zero mudança em
-`app.service.ts`).
+**Se passar:** Upload de APK fechado de verdade. Só então:
+1. UX do Ícone/Banner (desabilitar com "Disponível em breve" em vez
+   de campo morto, texto mais curto na seção "Arquivos" do
+   `AppForm.tsx`) — pendências que o usuário já sinalizou.
+2. Ícone/Banner de verdade (`uploadAppAsset` já suporta os dois).
 
-**Se não passar (timeout, erro, ou muito lento):** investigar com os
-números do log em mãos — não é a Vercel ainda (isso só importa em
-produção), é validar o caminho local/self-hosted primeiro.
+**Se não passar:** pedir o stack trace completo do terminal do
+`npm run dev` (não só a mensagem que aparece no navegador) — com
+isso dá pra diagnosticar com precisão em vez de tentar outra
+hipótese às cegas.
 
-## Risco importante, não resolvido
+## Risco que continua em aberto
 
-`PROJECT_MASTER.md` lista **Vercel** como deploy alvo. Configurei
-`next.config.ts` (`serverActions.bodySizeLimit: "300mb"`), mas
-plataformas serverless costumam ter teto de payload por requisição
-**independente** disso — historicamente bem abaixo de 300MB nos
-planos comuns da Vercel. Isso não foi testado em produção nesta
-sessão (só localmente via script). **Antes de confiar em upload de
-APK grande de verdade:** confirmar com o usuário qual plano/produto
-Vercel será usado e se suporta payloads desse tamanho, ou considerar
-alternativa (upload direto do browser pro Storage, streaming, ou
-outro host que não seja serverless para essa rota específica) — não
-presumir, perguntar.
-
-## Arquivos já alterados nesta sessão (contexto, não repetir)
-
-- `src/services/app.service.ts`, `src/app/(dashboard)/apps/actions.ts`,
-  `src/app/(dashboard)/apps/novo/actions.ts`,
-  `src/components/apps/AppForm.tsx`, `next.config.ts`.
+Vercel (deploy alvo, `PROJECT_MASTER.md`) provavelmente tem teto de
+payload próprio, independente de `serverActions.bodySizeLimit` E de
+`proxyClientMaxBodySize` — isso resolve o ambiente local, não
+resolve produção. Não investigado ainda.
 
 ## Primeiro passo
 
-Perguntar ao usuário se quer testar manualmente no navegador antes
-de avançar (opção A) ou seguir direto pra Ícone/Banner (opção B) —
-e, separadamente, esclarecer o plano Vercel antes de considerar
-Upload de APK "pronto para produção".
+Perguntar ao usuário se já repetiu o teste manual e o que aconteceu.

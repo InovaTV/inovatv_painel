@@ -7,6 +7,40 @@
 
 ---
 
+## 2026-08-06 (20) — Corrigido "Unexpected end of form" no Upload de APK
+
+**Contexto:** teste manual do usuário no navegador falhou com
+`Unexpected end of form` ao enviar um APK real (20-45MB) via
+`AppForm`. Confirma que o script da entrada 18 validou a
+infraestrutura, mas não o caminho real do usuário — exatamente a
+lacuna que o teste manual existia pra encontrar.
+
+**Causa raiz encontrada:** Next.js 16 tem um limite de tamanho de
+body **separado** para requisições que passam pelo `proxy.ts`
+(`experimental.proxyClientMaxBodySize`, default 10MB — documentado
+em `node_modules/next/dist/server/config-shared.d.ts`), independente
+do `experimental.serverActions.bodySizeLimit` já configurado. Como
+`src/proxy.ts` roda em praticamente todas as rotas (ADR-002), ele
+cortava o multipart em 10MB antes da requisição chegar na Server
+Action — o parser interno (`busboy`) reporta esse corte como
+"Unexpected end of form" em vez de um erro claro de limite excedido.
+
+**Alterado:** `next.config.ts` — adicionado
+`experimental.proxyClientMaxBodySize: "300mb"`, ao lado do
+`serverActions.bodySizeLimit` já existente.
+
+**Verificação:** `tsc`/`lint`/`build` limpos. **Ainda não
+reconfirmado pelo usuário no navegador** — próximo passo é repetir
+exatamente o mesmo teste manual que revelou o bug.
+
+**Escopo mantido estrito, por decisão explícita do usuário:** não
+mexi em Ícone/Banner nem no texto da seção "Arquivos" do `AppForm`
+nesta entrada, mesmo sendo mencionados na mesma mensagem — a
+recomendação final do usuário foi focar só na correção do bug antes
+de qualquer UX.
+
+---
+
 ## 2026-08-06 (19) — Log de instrumentação para o teste manual de Upload de APK
 
 Usuário decidiu **não avançar para Ícone/Banner** antes de validar
