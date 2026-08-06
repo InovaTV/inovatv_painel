@@ -1,8 +1,24 @@
 # InovaTV Painel — Documento Mestre
 
-> Este arquivo é a fonte da verdade sobre o estado do projeto. Deve ser
-> lido no início de qualquer sessão nova (humana ou IA) antes de
-> qualquer alteração. Mantido atualizado a cada etapa concluída.
+> Este arquivo é a fonte da verdade sobre o estado do projeto.
+> **Permanente — nunca é apagado ou reescrito do zero, só cresce.**
+> Deve ser lido no início de qualquer sessão nova (humana ou IA) antes
+> de qualquer alteração.
+>
+> Documentos de continuidade deste projeto e seus papéis:
+> - **`PROJECT_MASTER.md`** (este arquivo) — permanente, sempre
+>   crescendo: arquitetura, módulos, estrutura, convenções, estado
+>   atual.
+> - **`ROADMAP.md`** — checklist de progresso por fase, atualizado
+>   (não reescrito do zero).
+> - **`NEXT_SESSION.md`** — **descartável**, reescrito por completo a
+>   cada sessão: último commit, objetivo da próxima sessão, arquivos
+>   que serão alterados, riscos, primeiro passo.
+> - **`CHANGELOG_AI.md`** — permanente, histórico cronológico do que
+>   já foi feito. Nunca apagado.
+> - **`ARCHITECTURE_DECISIONS.md`** — permanente, decisões que exigem
+>   aprovação explícita do usuário para serem revertidas. Nunca
+>   apagado.
 
 Última atualização: 2026-08-06
 
@@ -148,7 +164,17 @@ src/
   gerados automaticamente pelo `next dev`/`next build` (feature nativa
   do Next 16, `agentRules`). Não são os arquivos de governança deste
   fluxo de memória — não confundir com `PROJECT_MASTER.md` /
-  `NEXT_SESSION.md` / `CHANGELOG_AI.md`.
+  `NEXT_SESSION.md` / `CHANGELOG_AI.md` / `ROADMAP.md` /
+  `ARCHITECTURE_DECISIONS.md`.
+- **Reutilização antes de criação** (ADR-006): antes de implementar
+  algo novo, checar se já existe um componente ou padrão reaproveitável
+  no projeto. Evitar duplicação, manter consistência visual e
+  arquitetural entre módulos.
+- **Foco em um módulo por vez**: não abrir um módulo novo (Banners,
+  FAQ, Tutoriais, Clientes, Configurações) enquanto o módulo atual
+  (hoje: Aplicativos) não estiver 100% fechado — CRUD completo, upload
+  quando aplicável, teste manual e documentação em dia. Ver
+  `ROADMAP.md` para o estado exato de cada fase.
 
 ## 7. Pendências conhecidas / dívidas técnicas
 
@@ -162,17 +188,25 @@ src/
 
 ## 8. Como retomar
 
-Ver **`NEXT_SESSION.md`** para o próximo passo imediato,
-**`CHANGELOG_AI.md`** para o histórico de alterações feitas por IA, e
-**`ARCHITECTURE_DECISIONS.md`** para as decisões permanentes que não
-podem ser desfeitas sem aprovação explícita.
+Ordem de leitura no início de qualquer sessão nova: **`PROJECT_MASTER.md`**
+(este arquivo, contexto completo) → **`ROADMAP.md`** (o que já foi
+feito, o que falta) → **`NEXT_SESSION.md`** (o próximo passo exato).
+**`CHANGELOG_AI.md`** e **`ARCHITECTURE_DECISIONS.md`** são consulta
+sob demanda (histórico e decisões que não podem ser revertidas sem
+aprovação explícita, respectivamente).
 
 ## 9. Fluxo de trabalho fixado ao final de cada sessão
 
 1. Corrigir todos os erros.
 2. Rodar `npm run build`.
 3. Rodar `npm run lint`.
-4. Atualizar `PROJECT_MASTER.md`, `NEXT_SESSION.md`,
-   `CHANGELOG_AI.md` e, se houver decisão arquitetônica nova,
-   `ARCHITECTURE_DECISIONS.md`.
+4. Atualizar os documentos de continuidade:
+   - `PROJECT_MASTER.md` — só o que mudou estruturalmente (nunca
+     reescrever do zero).
+   - `ROADMAP.md` — marcar itens concluídos/iniciados.
+   - `NEXT_SESSION.md` — **reescrever por completo**.
+   - `CHANGELOG_AI.md` — adicionar entrada nova (nunca editar
+     entradas antigas).
+   - `ARCHITECTURE_DECISIONS.md` — só se houver decisão arquitetônica
+     nova (nunca editar ADRs existentes).
 5. Commitar.

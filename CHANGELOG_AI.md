@@ -7,6 +7,42 @@
 
 ---
 
+## 2026-08-06 (3) — Reorganização dos documentos de continuidade
+
+**Contexto:** usuário definiu papéis mais claros para os documentos
+de continuidade: `PROJECT_MASTER.md` permanente (só cresce, nunca é
+reescrito do zero), `NEXT_SESSION.md` descartável (reescrito por
+completo a cada sessão, formato mínimo fixo), e pediu um quinto
+documento (`ROADMAP.md`) para visão de progresso por fase, separado
+do `PROJECT_MASTER.md`. Também pediu uma regra permanente de
+reutilização de componentes antes de criar algo novo.
+
+**Adicionado**
+- `ROADMAP.md` — checklist por fase (Fase 1 a 7 + módulo "Banners" em
+  aberto, sem fase definida — sinalizado para perguntar ao usuário
+  quando chegar a hora, já que não estava na ordem original passada
+  por ele e não deve ser presumido).
+- ADR-006 em `ARCHITECTURE_DECISIONS.md` — "Reutilização antes de
+  criação": checar componente/padrão existente antes de implementar
+  algo novo; não abstrair antes da segunda necessidade real.
+
+**Alterado**
+- `NEXT_SESSION.md` — reescrito no formato mínimo fixo: Último
+  commit / Objetivo da próxima sessão / Arquivos que serão alterados
+  / Riscos / Primeiro passo. Deixa de carregar histórico acumulado.
+- `PROJECT_MASTER.md` — topo do arquivo agora explica o papel de cada
+  um dos 5 documentos de continuidade; §6 ganhou as regras "reutilização
+  antes de criação" (ADR-006) e "foco em um módulo por vez" (não abrir
+  módulo novo antes de Aplicativos estar 100% fechado); §8/§9
+  atualizados para incluir `ROADMAP.md` no fluxo de leitura e de
+  atualização de fim de sessão.
+
+**Verificação:** nenhuma mudança de código nesta entrada — só
+documentação. `tsc`/`lint`/`build` seguem no estado da entrada
+anterior (todos ✅).
+
+---
+
 ## 2026-08-06 (2) — Lint limpo, Delete de Aplicativos, ADRs e commit
 
 **Contexto:** ao preparar o commit da fase de Autenticação, `npm run

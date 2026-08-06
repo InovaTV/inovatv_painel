@@ -90,3 +90,33 @@ navegar por múltiplas pastas paralelas.
 
 **Status:** aplicado ao módulo Aplicativos; será o padrão para os
 próximos módulos.
+
+---
+
+## ADR-006 — Reutilização antes de criação
+
+**Decisão:** antes de implementar uma funcionalidade nova, verificar
+se já existe um componente reutilizável ou um padrão já estabelecido
+no projeto (tabela, formulário, confirmação de exclusão, menu de
+ações, upload). Evitar duplicação de código e manter consistência
+visual e arquitetural entre módulos.
+
+**Motivo:** os próximos módulos (Banners, FAQ, Tutoriais, Clientes)
+vão precisar essencialmente dos mesmos elementos já construídos para
+Aplicativos — tabela com ações, formulário com Server Action, exclusão
+com confirmação, upload de arquivo. Construir cada módulo do zero, sem
+checar o que já existe, gera inconsistência visual e múltiplas
+implementações do mesmo padrão para manter.
+
+**Como aplicar:** ao começar um módulo novo, primeiro revisar
+`components/apps/`, `components/common/` e `components/ui/` (e os
+demais módulos já implementados) para identificar o que pode ser
+generalizado/reaproveitado (ex.: `ActionsMenu` já é genérico o
+suficiente para qualquer entidade com `id`; um componente de tabela
+genérico pode nascer a partir de `AppsTable` quando o segundo módulo
+precisar de algo parecido — não abstrair antes da segunda necessidade
+real). Só criar um componente novo quando não houver nada reutilizável
+e o padrão realmente for específico do módulo.
+
+**Status:** regra permanente a partir de 2026-08-06, vale para todos
+os módulos daqui pra frente.
