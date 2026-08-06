@@ -120,7 +120,8 @@ src/
 │  ├─ actions/auth.ts          # signInAction, signOutAction
 │  ├─ supabase/
 │  │  ├─ client.ts              # browser client (@supabase/ssr)
-│  │  ├─ server.ts               # server client (@supabase/ssr, cookies)
+│  │  ├─ server.ts               # server client (@supabase/ssr, cookies) — padrão para todo CRUD
+│  │  ├─ admin.ts                 # service_role client — só infraestrutura (ADR-009)
 │  │  └─ middleware.ts            # updateSession() usado por src/proxy.ts
 │  └─ utils.ts
 ├─ services/

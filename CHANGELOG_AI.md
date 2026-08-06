@@ -7,6 +7,43 @@
 
 ---
 
+## 2026-08-06 (8) — ADR-009 (escopo da service_role) + admin.ts
+
+**Contexto:** usuário concordou em configurar `SUPABASE_SERVICE_ROLE_KEY`
+localmente e autenticar o Supabase CLI (`login`/`link`/`db push`), com
+uma condição: a service_role nunca pode virar o mecanismo padrão de
+acesso ao banco — só serve para tarefas de infraestrutura (Storage,
+buckets, limpeza, migrações, scripts de manutenção). CRUD normal
+continua via Supabase Auth + Server Actions + RLS.
+
+**Adicionado**
+- ADR-009 em `ARCHITECTURE_DECISIONS.md` — escopo da service_role.
+- `src/lib/supabase/admin.ts` — `createAdminClient()`, único ponto do
+  código autorizado a usar `SUPABASE_SERVICE_ROLE_KEY`. Ainda não
+  usado em lugar nenhum (a chave não existe no `.env.local` até o
+  usuário adicionar) — só operacionaliza a ADR-009 em código, pronto
+  para quando o bucket for criado.
+
+**Alterado**
+- `PROJECT_MASTER.md` §4 — estrutura de pastas atualizada com
+  `admin.ts` e a nota de que `server.ts` é o padrão para todo CRUD.
+- `STORAGE.md` — nota de bloqueio atualizada: migração será aplicada
+  via Supabase CLI (não mais SQL Editor manual), e a `service_role`
+  key, quando adicionada, só é usada via `admin.ts` para a criação do
+  bucket.
+
+**Verificação**
+- `npx tsc --noEmit` — sem erros.
+- `npm run lint` — sem erros/warnings.
+- `npm run build` — sucesso (nenhuma rota nova, `admin.ts` não é
+  importado por nada ainda).
+
+**Ainda bloqueado:** aguardando o usuário concluir `supabase login` →
+`link` → `db push` e adicionar `SUPABASE_SERVICE_ROLE_KEY` ao
+`.env.local`.
+
+---
+
 ## 2026-08-06 (7) — download_url depreciado; ainda bloqueado para o upload
 
 **Contexto:** usuário confirmou que a migração SQL ainda não foi

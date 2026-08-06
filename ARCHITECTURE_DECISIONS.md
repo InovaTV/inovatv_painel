@@ -173,3 +173,31 @@ mais estar.
 **Status:** regra permanente a partir de 2026-08-06. Aplica-se
 imediatamente a `download_url` e a qualquer sistema legado que o
 usuário marque como descontinuado no futuro.
+
+---
+
+## ADR-009 — Escopo da Service Role
+
+**Decisão:** `SUPABASE_SERVICE_ROLE_KEY` é exclusiva para operações
+administrativas de infraestrutura — Storage (criação/gestão de
+buckets, upload/limpeza de arquivos), migrações de dados, scripts de
+manutenção. **Nunca** é usada como mecanismo padrão de acesso ao
+banco para funcionalidades do painel. O CRUD normal (Aplicativos e
+todos os módulos futuros) continua exclusivamente via Supabase Auth
+(usuário autenticado) + Server Actions + RLS, usando o client em
+`src/lib/supabase/server.ts`.
+
+**Motivo:** evitar que, por conveniência, o código passe a usar
+service_role "porque funciona", erodindo a separação entre sessão de
+usuário autenticado (RLS aplicado, auditável) e acesso administrativo
+irrestrito (RLS ignorado). Mantém o modelo de autorização previsível
+conforme o painel cresce.
+
+**Como aplicar:** todo Server Action novo usa por padrão
+`createClient()` de `src/lib/supabase/server.ts`. Só usar
+`createAdminClient()` de `src/lib/supabase/admin.ts` quando a
+operação for genuinamente de infraestrutura (ex.:
+`supabase.storage.createBucket`, remoção de arquivo órfão, script de
+manutenção) — nunca para servir uma tela ou CRUD do painel.
+
+**Status:** regra permanente a partir de 2026-08-06.

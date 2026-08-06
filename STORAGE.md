@@ -8,11 +8,15 @@
 >
 > **Estrutura aprovada em 2026-08-06.** Ainda bloqueado por dois
 > itens fora do controle do assistente, nessa ordem: (1) a migração
-> SQL precisa ser aplicada e confirmada pelo usuário — **ainda não
-> foi**; (2) a chave disponível neste ambiente é só a anônima
-> (`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`), que **não tem permissão
-> para criar bucket** — isso exige `service_role` key ou criação
-> manual pelo usuário no painel do Supabase.
+> SQL precisa ser aplicada — usuário vai rodar via Supabase CLI
+> (`supabase login` → `link` → `db push`); (2) `SUPABASE_SERVICE_ROLE_KEY`
+> precisa ser adicionada ao `.env.local` para criar o bucket. Ambos em
+> andamento, ver `NEXT_SESSION.md`.
+>
+> A `service_role` key, quando adicionada, é usada **só** via
+> `src/lib/supabase/admin.ts` para esta tarefa de infraestrutura
+> (criar/gerenciar o bucket) — nunca para o CRUD normal do painel.
+> Ver ADR-009 em `ARCHITECTURE_DECISIONS.md`.
 
 Última atualização: 2026-08-06
 
