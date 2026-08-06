@@ -201,3 +201,24 @@ operação for genuinamente de infraestrutura (ex.:
 manutenção) — nunca para servir uma tela ou CRUD do painel.
 
 **Status:** regra permanente a partir de 2026-08-06.
+
+---
+
+## ADR-010 — Escopo e rotação do Supabase Access Token
+
+**Decisão:** `SUPABASE_ACCESS_TOKEN` (Personal Access Token da conta
+Supabase, usado pela CLI) é exclusivo para operações administrativas
+do Supabase CLI — `login`, `link`, `db push` e comandos equivalentes.
+Nunca é lido pela aplicação em runtime, nunca vira parte de um Server
+Action ou rota. Uma vez a CLI autenticada localmente, o token não
+precisa ser reutilizado a cada comando. Recomendação explícita do
+usuário: revogar o token (Supabase → Account → Access Tokens) quando
+o projeto estabilizar ou quando não houver mais necessidade de rodar
+comandos administrativos da CLI.
+
+**Motivo:** é um token de conta, não de projeto — dá acesso a todos
+os projetos Supabase da conta, não só ao `inovatv_painel`. Restringir
+o uso e revogar quando não for mais necessário reduz a superfície de
+risco caso o token vaze.
+
+**Status:** regra permanente a partir de 2026-08-06.

@@ -60,6 +60,27 @@ InovaTV, autenticados via Supabase Auth.
 Módulos previstos: Dashboard, Aplicativos, Banners, Tutoriais, FAQ,
 Clientes, Configurações.
 
+## 1.1 Ambiente Local
+
+Variáveis obrigatórias (`.env.local` — nunca commitado; ver
+`.env.example` para a lista sem valores):
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (chave `anon`, usada por
+  toda a aplicação em runtime)
+- `SUPABASE_SERVICE_ROLE_KEY` (só para `src/lib/supabase/admin.ts`,
+  escopo restrito a infraestrutura — ADR-009)
+- `SUPABASE_ACCESS_TOKEN` (Personal Access Token da conta Supabase,
+  só para operações administrativas do Supabase CLI — `login`,
+  `link`, `db push`. **Não** é usado em runtime da aplicação nem em
+  operações do dia a dia. Recomendação: revogar em
+  Account → Access Tokens no Supabase quando o projeto estabilizar
+  ou quando não houver mais necessidade de rodar CLI administrativo)
+
+Essas variáveis existem só em `.env.local` (e nas envs da Vercel em
+produção/preview). Nunca em `README.md`, nunca em qualquer documento
+de continuidade, nunca coladas em chat.
+
 ## 2. Stack
 
 - Next.js 16 (App Router, Turbopack)

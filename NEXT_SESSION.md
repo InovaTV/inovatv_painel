@@ -1,64 +1,61 @@
 # Próxima Sessão
 
 > Documento descartável — reescrito por completo a cada sessão.
-> Para contexto permanente, ver `PROJECT_MASTER.md`, `ROADMAP.md`,
-> `DEFINITION_OF_DONE.md`, `STORAGE.md` e ADR-007/ADR-008/ADR-009.
+> Para contexto permanente, ver `PROJECT_MASTER.md` §1.1 (Ambiente
+> Local), `ROADMAP.md`, `DEFINITION_OF_DONE.md`, `STORAGE.md` e
+> ADR-007/ADR-008/ADR-009/ADR-010.
 
 ## Último commit
 
-Ver `git log` — commit desta sessão adiciona ADR-009 (escopo da
-service_role) e `src/lib/supabase/admin.ts`. O anterior, `8269105`,
-depreciou `download_url` (ADR-008).
+Ver `git log` — commit desta sessão adiciona `.env.example`, ADR-010
+e a seção "Ambiente Local" no `PROJECT_MASTER.md`. O anterior,
+`fbcda81`, adicionou ADR-009 e `src/lib/supabase/admin.ts`.
 
 ## Objetivo da próxima sessão
 
-**Ainda bloqueado**, mas o desbloqueio agora depende de ações que o
-usuário já concordou em fazer, não mais de decisão:
+Ainda bloqueado no mesmo ponto: `.env.local` só tem
+`NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+(confirmado via `grep`). Faltam `SUPABASE_SERVICE_ROLE_KEY` e
+`SUPABASE_ACCESS_TOKEN`.
 
-1. Usuário roda `npx supabase login` (via `!` no prompt, autentica
-   pelo navegador), depois eu rodo
-   `npx supabase link --project-ref deovfultywlftlvdzukc` e
-   `npx supabase db push` para aplicar
+Assim que o usuário adicionar os dois:
+1. Rodar `npx supabase login --token "$SUPABASE_ACCESS_TOKEN"` (token
+   lido do `.env.local`, exportado só dentro do comando — nunca
+   digitado no chat).
+2. `npx supabase link --project-ref deovfultywlftlvdzukc`.
+3. `npx supabase db push` — aplica
    `supabase/migrations/20260806140000_add_banner_path_fix_storage_folder.sql`.
-2. Usuário adiciona `SUPABASE_SERVICE_ROLE_KEY` ao `.env.local`
-   (pega em Project Settings → API → service_role no Supabase) —
-   **não deve ser colada no chat**, só adicionada diretamente no
-   arquivo.
-
-Confirmar os dois antes de prosseguir. Depois: usar
-`createAdminClient()` (`src/lib/supabase/admin.ts`) **só** para criar
-o bucket `apps` — não para nenhuma outra coisa (ADR-009). O upload em
-si (Server Actions de escrita normal) continua usando
-`src/lib/supabase/server.ts`, sessão do usuário autenticado.
+4. Criar o bucket `apps` via `createAdminClient()`
+   (`src/lib/supabase/admin.ts`) — script one-off, não uma rota
+   permanente.
+5. Só então implementar upload de APK/Ícone/Banner (Server Actions
+   normais, via `src/lib/supabase/server.ts`, não `admin.ts` — ADR-009).
 
 ## Arquivos que serão alterados
 
-- Criação do bucket: provavelmente um script one-off ou uma pequena
-  rota/Server Action temporária usando `createAdminClient()` — decidir
-  se vira um script descartável (`scripts/create-bucket.ts` rodado uma
-  vez) ou uma Server Action permanente de setup. Tendência: script
-  one-off, já que criar bucket não é uma operação recorrente do
-  painel.
+- Script/comando one-off para criar o bucket (ainda não decidido se
+  vira um arquivo versionado em `scripts/` ou um comando único
+  rodado e descartado).
 - `src/lib/supabase/storage.ts` (novo) — helpers de upload/URL
-  assinada, usando `server.ts` (sessão do usuário), não `admin.ts`.
+  assinada, usando `server.ts`.
 - `src/app/(dashboard)/apps/actions.ts` — Server Actions de upload.
 - `src/components/apps/AppForm.tsx` — inputs de arquivo reais.
-- `src/services/app.service.ts` — `AppData`/`App` precisam incorporar
+- `src/services/app.service.ts` — `AppData`/`App` incorporando
   `storage_path`/`icon_path`/`banner_path`/`asset_folder`/`storage_folder`.
 
 ## Riscos
 
-- Não usar `admin.ts`/service_role para nenhuma operação de CRUD
-  normal — só infraestrutura (ADR-009). Se em algum momento parecer
-  "mais fácil" usar service_role pra resolver um problema de RLS no
-  CRUD, isso é sinal de que a policy de RLS está errada, não de que
-  service_role deveria ser usada ali.
-- `SUPABASE_SERVICE_ROLE_KEY` nunca deve ir para uma variável
-  `NEXT_PUBLIC_*` nem ser referenciada fora de `admin.ts`.
+- `SUPABASE_ACCESS_TOKEN` é de conta (todos os projetos Supabase do
+  usuário), não só deste projeto — usar só para
+  login/link/db push, nunca em runtime da aplicação (ADR-010).
+  Lembrar o usuário de revogá-lo quando não precisar mais da CLI.
+- `SUPABASE_SERVICE_ROLE_KEY` só entra em `src/lib/supabase/admin.ts`,
+  nunca em Server Action de CRUD normal (ADR-009).
+- Nenhum dos dois pode ir para `NEXT_PUBLIC_*`, `README.md`,
+  documentação ou chat — só `.env.local` (já no `.gitignore`).
 
 ## Primeiro passo
 
-Confirmar com o usuário: `supabase login`/`link`/`db push` já
-rodaram? `SUPABASE_SERVICE_ROLE_KEY` já está no `.env.local`? Se sim
-aos dois, criar o bucket `apps` via `admin.ts` e então implementar o
-upload.
+Confirmar com o usuário se `SUPABASE_SERVICE_ROLE_KEY` e
+`SUPABASE_ACCESS_TOKEN` já estão no `.env.local`. Se sim, rodar a
+sequência login → link → db push → criar bucket, nessa ordem.

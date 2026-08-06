@@ -7,6 +7,39 @@
 
 ---
 
+## 2026-08-06 (9) — .env.example, ADR-010 (escopo do access token), seção "Ambiente Local"
+
+**Contexto:** `npx supabase login` falhou neste ambiente (não-TTY,
+sem fluxo automático de navegador). Usuário concordou em usar um
+Personal Access Token via `SUPABASE_ACCESS_TOKEN`, com duas condições:
+nunca commitar/documentar o valor, e usar o token só para operações
+administrativas da CLI (login/link/db push), revogando-o quando o
+projeto estabilizar.
+
+**Adicionado**
+- `.env.example` — lista das 4 variáveis sem valores
+  (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`,
+  `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_ACCESS_TOKEN`).
+- `.gitignore` — exceção `!.env.example` (a regra `.env*` existente
+  ignoraria esse arquivo também; precisa ser versionado, é o único
+  `.env*` que deve ir pro Git, sem valores).
+- ADR-010 em `ARCHITECTURE_DECISIONS.md` — escopo e rotação do
+  `SUPABASE_ACCESS_TOKEN`.
+- `PROJECT_MASTER.md` §1.1 "Ambiente Local" — lista as 4 variáveis
+  obrigatórias e seus papéis, reforça que nunca vão para
+  `README.md`/documentação/chat.
+
+**Ainda bloqueado:** `SUPABASE_ACCESS_TOKEN` e
+`SUPABASE_SERVICE_ROLE_KEY` ainda não estão no `.env.local`
+(confirmado — só as duas variáveis `NEXT_PUBLIC_*` originais existem
+até agora). Aguardando o usuário adicionar as duas antes de rodar
+`login`/`link`/`db push` e criar o bucket.
+
+**Verificação:** nenhuma mudança de código — `.env.example` e
+documentação apenas.
+
+---
+
 ## 2026-08-06 (8) — ADR-009 (escopo da service_role) + admin.ts
 
 **Contexto:** usuário concordou em configurar `SUPABASE_SERVICE_ROLE_KEY`
