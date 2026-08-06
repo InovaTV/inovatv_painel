@@ -7,6 +7,44 @@
 
 ---
 
+## 2026-08-06 (10) — Migração aplicada, bucket criado, bloqueio de plano descoberto
+
+**Contexto:** usuário confirmou `SUPABASE_SERVICE_ROLE_KEY` e
+`SUPABASE_ACCESS_TOKEN` adicionadas ao `.env.local` e autorizou
+prosseguir com login/link/db push/criação do bucket.
+
+**Feito**
+- `npx supabase login --token "$SUPABASE_ACCESS_TOKEN"` — sucesso
+  (token lido do `.env.local`, nunca digitado no chat).
+- `npx supabase link --project-ref deovfultywlftlvdzukc` — sucesso.
+- `npx supabase db push` — aplicou
+  `20260806140000_add_banner_path_fix_storage_folder.sql`. Confirmado
+  via REST: `banner_path` existe (null nos 3 apps), `storage_folder`
+  corrigido (`"public/apps/unitv/mobile"` e `"public/apps/unitv/tv"`,
+  sem o prefixo `"storage_folder = "` do bug original).
+- `scripts/create-storage-bucket.mjs` (novo) — script idempotente
+  usando `createAdminClient()`. Criou o bucket `apps` (privado).
+  Primeira tentativa com `fileSizeLimit: 300MB` no bucket falhou
+  (`EntityTooLarge`/413); segunda tentativa sem `fileSizeLimit`
+  (herda o teto do projeto) funcionou.
+
+**Bloqueio novo, não previsto:** ao investigar o erro 413, descobri
+via Management API (`GET /v1/projects/{ref}/config/storage`) que o
+projeto tem `fileSizeLimit: 52428800` (50MB) — e via
+`GET /v1/organizations/{org}` que a organização está no **plano
+Free**. Esse teto é global do projeto; nenhum valor configurado no
+bucket consegue superá-lo. Os 300MB decididos para APK (e mesmo APKs
+"pequenos" de 70-120MB, citados como referência) não cabem no plano
+atual. **Não tentei alterar esse limite** — é uma decisão de
+plano/billing, não uma configuração de código; fica para o usuário.
+
+**Verificação:** nenhuma mudança de código de aplicação — só o
+script de infraestrutura (`.mjs`, roda fora do Next.js) e docs.
+`tsc`/`lint`/`build` não são afetados por scripts fora de `src/`, mas
+serão checados de qualquer forma antes do próximo commit.
+
+---
+
 ## 2026-08-06 (9) — .env.example, ADR-010 (escopo do access token), seção "Ambiente Local"
 
 **Contexto:** `npx supabase login` falhou neste ambiente (não-TTY,

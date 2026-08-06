@@ -1,61 +1,61 @@
 # Próxima Sessão
 
 > Documento descartável — reescrito por completo a cada sessão.
-> Para contexto permanente, ver `PROJECT_MASTER.md` §1.1 (Ambiente
-> Local), `ROADMAP.md`, `DEFINITION_OF_DONE.md`, `STORAGE.md` e
-> ADR-007/ADR-008/ADR-009/ADR-010.
+> Para contexto permanente, ver `PROJECT_MASTER.md` §1.1, `ROADMAP.md`,
+> `DEFINITION_OF_DONE.md`, `STORAGE.md` e ADR-007/ADR-008/ADR-009/ADR-010.
 
 ## Último commit
 
-Ver `git log` — commit desta sessão adiciona `.env.example`, ADR-010
-e a seção "Ambiente Local" no `PROJECT_MASTER.md`. O anterior,
-`fbcda81`, adicionou ADR-009 e `src/lib/supabase/admin.ts`.
+Ver `git log` — commit desta sessão aplica a migração SQL, cria o
+bucket `apps`, e documenta o bloqueio de plano Free (50MB). O
+anterior, `cd9e610`, adicionou `.env.example` e ADR-010.
 
 ## Objetivo da próxima sessão
 
-Ainda bloqueado no mesmo ponto: `.env.local` só tem
-`NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-(confirmado via `grep`). Faltam `SUPABASE_SERVICE_ROLE_KEY` e
-`SUPABASE_ACCESS_TOKEN`.
+**Bloqueado por uma decisão de negócio, não técnica.** Migração
+aplicada ✅, bucket `apps` criado ✅ (privado). Mas o projeto Supabase
+está no **plano Free**, com teto global de upload de **50MB**
+(`Project Settings → Storage`) — não dá pra configurar por bucket,
+é um limite de projeto/plano inteiro. Os 300MB decididos para APK
+(e mesmo APKs "pequenos" de referência, 70-120MB) não cabem nisso.
 
-Assim que o usuário adicionar os dois:
-1. Rodar `npx supabase login --token "$SUPABASE_ACCESS_TOKEN"` (token
-   lido do `.env.local`, exportado só dentro do comando — nunca
-   digitado no chat).
-2. `npx supabase link --project-ref deovfultywlftlvdzukc`.
-3. `npx supabase db push` — aplica
-   `supabase/migrations/20260806140000_add_banner_path_fix_storage_folder.sql`.
-4. Criar o bucket `apps` via `createAdminClient()`
-   (`src/lib/supabase/admin.ts`) — script one-off, não uma rota
-   permanente.
-5. Só então implementar upload de APK/Ícone/Banner (Server Actions
-   normais, via `src/lib/supabase/server.ts`, não `admin.ts` — ADR-009).
+**Pergunta para o usuário, sem a qual não dá pra prosseguir com
+Upload de APK:**
+- Fazer upgrade do projeto Supabase para o plano Pro (ou outro pago)
+  para elevar esse teto? (Decisão de billing — o assistente não deve
+  nem pode fazer isso sozinho.)
+- Ou aceitar um limite de APK bem menor que 300MB por enquanto
+  (inviável pra a maioria dos APKs reais, segundo a própria
+  estimativa do usuário)?
+- Ou repensar onde o APK fica hospedado (ex.: continuar em algo
+  parecido com o Projeto Downloads pra esse arquivo especificamente
+  — mas isso conflita com a ADR-008 de não manter compatibilidade com
+  sistemas legados, e não está claro se é um "sistema legado" ou uma
+  necessidade real de infraestrutura diferente)?
 
-## Arquivos que serão alterados
+**Enquanto isso não for decidido:** Upload de Ícone (5MB) e Banner
+(10MB) **não são afetados** pelo teto de 50MB — dá pra implementar
+esses dois normalmente. Só o Upload de APK está bloqueado.
 
-- Script/comando one-off para criar o bucket (ainda não decidido se
-  vira um arquivo versionado em `scripts/` ou um comando único
-  rodado e descartado).
-- `src/lib/supabase/storage.ts` (novo) — helpers de upload/URL
-  assinada, usando `server.ts`.
-- `src/app/(dashboard)/apps/actions.ts` — Server Actions de upload.
-- `src/components/apps/AppForm.tsx` — inputs de arquivo reais.
-- `src/services/app.service.ts` — `AppData`/`App` incorporando
-  `storage_path`/`icon_path`/`banner_path`/`asset_folder`/`storage_folder`.
+## Arquivos que serão alterados (quando cada parte for desbloqueada)
+
+- Ícone/Banner (desbloqueado): `src/lib/supabase/storage.ts` (novo),
+  `src/app/(dashboard)/apps/actions.ts`, `src/components/apps/AppForm.tsx`,
+  `src/services/app.service.ts` (tipos com `icon_path`/`banner_path`).
+- APK (bloqueado): mesmos arquivos, mais `storage_path`, mas só depois
+  da decisão de plano.
 
 ## Riscos
 
-- `SUPABASE_ACCESS_TOKEN` é de conta (todos os projetos Supabase do
-  usuário), não só deste projeto — usar só para
-  login/link/db push, nunca em runtime da aplicação (ADR-010).
-  Lembrar o usuário de revogá-lo quando não precisar mais da CLI.
-- `SUPABASE_SERVICE_ROLE_KEY` só entra em `src/lib/supabase/admin.ts`,
-  nunca em Server Action de CRUD normal (ADR-009).
-- Nenhum dos dois pode ir para `NEXT_PUBLIC_*`, `README.md`,
-  documentação ou chat — só `.env.local` (já no `.gitignore`).
+- Não presumir qual caminho o usuário vai escolher para o limite de
+  APK — os três exigem decisão explícita, nenhum é obviamente certo.
+- Se implementar Upload de Ícone/Banner antes de resolver o APK,
+  cuidado para não deixar o formulário/UI inconsistente (ex.: 2 de 3
+  uploads funcionando, 1 bloqueado) — comunicar isso claramente na UI
+  também, não só no código.
 
 ## Primeiro passo
 
-Confirmar com o usuário se `SUPABASE_SERVICE_ROLE_KEY` e
-`SUPABASE_ACCESS_TOKEN` já estão no `.env.local`. Se sim, rodar a
-sequência login → link → db push → criar bucket, nessa ordem.
+Perguntar ao usuário como resolver o teto de 50MB antes de qualquer
+código de upload de APK. Enquanto isso, posso adiantar Upload de
+Ícone/Banner se o usuário topar seguir nessa ordem.

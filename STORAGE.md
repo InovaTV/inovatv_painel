@@ -6,17 +6,21 @@
 > bucket e implementar upload depois que a estrutura aqui estiver
 > aprovada.
 >
-> **Estrutura aprovada em 2026-08-06.** Ainda bloqueado por dois
-> itens fora do controle do assistente, nessa ordem: (1) a migração
-> SQL precisa ser aplicada — usuário vai rodar via Supabase CLI
-> (`supabase login` → `link` → `db push`); (2) `SUPABASE_SERVICE_ROLE_KEY`
-> precisa ser adicionada ao `.env.local` para criar o bucket. Ambos em
-> andamento, ver `NEXT_SESSION.md`.
+> **Migração aplicada e bucket criado em 2026-08-06** (via
+> `supabase db push` + `scripts/create-storage-bucket.mjs`, usando
+> `createAdminClient()` — ADR-009). Confirmado via API:
+> `banner_path` existe, `storage_folder` corrigido, bucket `apps`
+> existe (privado).
 >
-> A `service_role` key, quando adicionada, é usada **só** via
-> `src/lib/supabase/admin.ts` para esta tarefa de infraestrutura
-> (criar/gerenciar o bucket) — nunca para o CRUD normal do painel.
-> Ver ADR-009 em `ARCHITECTURE_DECISIONS.md`.
+> **Novo bloqueio, encontrado ao criar o bucket:** o projeto Supabase
+> está no **plano Free**, que tem um teto global de upload de
+> **50MB** (`Project Settings → Storage`, confirmado via Management
+> API: `fileSizeLimit: 52428800`). Isso é bem abaixo dos 300MB
+> decididos para APK — **nenhum bucket-level limit consegue superar
+> esse teto**; tentar configurar 300MB no bucket falhou justamente
+> por isso. Upload de APK real (a maioria fica entre 70MB e 300MB,
+> por decisão do usuário) não é viável no plano atual. Ver
+> `NEXT_SESSION.md` para a decisão pendente.
 
 Última atualização: 2026-08-06
 
