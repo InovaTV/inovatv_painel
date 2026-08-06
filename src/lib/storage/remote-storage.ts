@@ -3,7 +3,7 @@ import { Readable } from "node:stream";
 import SftpClient from "ssh2-sftp-client";
 import { Client as FtpClient } from "basic-ftp";
 
-import type { StorageProvider, UploadInput } from "./types.ts";
+import type { AssetStat, StorageProvider, UploadInput } from "./types.ts";
 
 const HOST = process.env.STORAGE_HOST!;
 const USER = process.env.STORAGE_USER!;
@@ -204,6 +204,36 @@ async function sizeViaFtp(path: string) {
   }
 }
 
+async function statViaSftp(path: string): Promise<AssetStat | null> {
+  const sftp = new SftpClient();
+
+  try {
+    await sftp.connect({ host: HOST, port: SFTP_PORT, username: USER, password: PASSWORD });
+    const info = await sftp.stat(remotePath(path));
+    return { size: info.size, modifiedAt: new Date(info.modifyTime) };
+  } catch {
+    return null;
+  } finally {
+    await sftp.end();
+  }
+}
+
+async function statViaFtp(path: string): Promise<AssetStat | null> {
+  const client = createFtpClient();
+
+  try {
+    await client.access({ host: HOST, port: FTP_PORT, user: USER, password: PASSWORD, secure: await resolveFtpSecure() });
+    const full = remotePath(path);
+    const size = await client.size(full);
+    const modifiedAt = await client.lastMod(full);
+    return { size, modifiedAt };
+  } catch {
+    return null;
+  } finally {
+    client.close();
+  }
+}
+
 async function renameViaSftp(from: string, to: string) {
   const sftp = new SftpClient();
 
@@ -303,6 +333,12 @@ export function createRemoteStorageProvider(): StorageProvider {
       const protocol = await resolveProtocol();
 
       return protocol === "sftp" ? existsViaSftp(path) : existsViaFtp(path);
+    },
+
+    async stat(path) {
+      const protocol = await resolveProtocol();
+
+      return protocol === "sftp" ? statViaSftp(path) : statViaFtp(path);
     },
 
     getPublicUrl(path) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useFormStatus } from "react-dom";
 
@@ -8,8 +9,15 @@ import { Input } from "@/components/ui/input";
 
 import { createAppAction } from "@/app/(dashboard)/apps/novo/actions";
 import { updateAppAction } from "@/app/(dashboard)/apps/actions";
+import AssetUploadField from "./AssetUploadField";
+
+import { slugify } from "@/lib/utils";
 
 import type { App } from "@/services/app.service";
+import type { Product } from "@/services/product.service";
+import type { AssetStat } from "@/lib/storage/types";
+
+const NEW_PRODUCT_VALUE = "__new__";
 
 function SubmitButton({ editing }: { editing: boolean }) {
   const { pending } = useFormStatus();
@@ -25,202 +33,232 @@ function SubmitButton({ editing }: { editing: boolean }) {
   );
 }
 
-interface Props {
-  app?: App;
+function LockedAssetPlaceholder({ label }: { label: string }) {
+  return (
+    <div className="flex items-center justify-between rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+      <span className="font-medium">
+        {label}
+      </span>
+
+      <span>
+        🔒 Disponível em breve
+      </span>
+    </div>
+  );
 }
 
-export default function AppForm({ app }: Props) {
+interface Props {
+  app?: App;
+  products: Product[];
+  apkStat?: AssetStat | null;
+}
+
+export default function AppForm({ app, products, apkStat }: Props) {
   const router = useRouter();
 
   const editing = Boolean(app);
   const action = app ? updateAppAction.bind(null, app.id) : createAppAction;
 
+  const [name, setName] = useState(app?.name ?? "");
+  const [slug, setSlug] = useState(app?.slug ?? "");
+  const [slugTouched, setSlugTouched] = useState(editing);
+
+  function handleNameChange(value: string) {
+    setName(value);
+
+    if (!slugTouched) {
+      setSlug(slugify(value));
+    }
+  }
+
+  const initialProductId =
+    products.find((product) => product.asset_folder === app?.asset_folder)?.id ??
+    products[0]?.id ??
+    NEW_PRODUCT_VALUE;
+
+  const [productId, setProductId] = useState(initialProductId);
+  const [newProductName, setNewProductName] = useState("");
+
   return (
     <form
       action={action}
-      className="max-w-4xl rounded-xl border bg-white p-8"
+      className="grid grid-cols-1 gap-8 lg:grid-cols-2"
     >
-      <div className="grid grid-cols-2 gap-6">
-        <div>
+      <div className="rounded-xl border bg-white p-8">
+        <div className="grid grid-cols-2 gap-6">
+          <div>
+            <label className="mb-2 block text-sm font-medium">
+              Nome
+            </label>
+
+            <Input
+              name="name"
+              required
+              value={name}
+              onChange={(e) => handleNameChange(e.target.value)}
+              placeholder="UniTV Mobile"
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium">
+              Slug
+            </label>
+
+            <Input
+              name="slug"
+              required
+              value={slug}
+              onChange={(e) => {
+                setSlug(e.target.value);
+                setSlugTouched(true);
+              }}
+              placeholder="unitv-mobile"
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium">
+              Produto
+            </label>
+
+            <select
+              name="product_id"
+              value={productId}
+              onChange={(e) => setProductId(e.target.value)}
+              className="w-full rounded-md border px-3 py-2"
+            >
+              {products.map((product) => (
+                <option key={product.id} value={product.id}>
+                  {product.name}
+                </option>
+              ))}
+
+              <option value={NEW_PRODUCT_VALUE}>
+                + Novo Produto
+              </option>
+            </select>
+
+            {productId === NEW_PRODUCT_VALUE && (
+              <Input
+                name="new_product_name"
+                required
+                value={newProductName}
+                onChange={(e) => setNewProductName(e.target.value)}
+                placeholder="Nome do novo produto"
+                className="mt-2"
+              />
+            )}
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium">
+              Versão
+            </label>
+
+            <Input
+              name="version"
+              required
+              defaultValue={app?.version}
+              placeholder="3.24.2"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-6 mt-6">
+          <div>
+            <label className="mb-2 block text-sm font-medium">
+              Plataforma
+            </label>
+
+            <select
+              name="platform"
+              defaultValue={app?.platform ?? "mobile"}
+              className="w-full rounded-md border px-3 py-2"
+            >
+              <option value="mobile">
+                📱 Mobile
+              </option>
+
+              <option value="tv">
+                📺 TV Box
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium">
+              Status
+            </label>
+
+            <select
+              name="is_active"
+              defaultValue={app ? String(app.is_active) : "true"}
+              className="w-full rounded-md border px-3 py-2"
+            >
+              <option value="true">
+                🟢 Ativo
+              </option>
+
+              <option value="false">
+                ⚪ Inativo
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div className="mt-6">
           <label className="mb-2 block text-sm font-medium">
-            Nome
+            Descrição
           </label>
 
-          <Input
-            name="name"
-            required
-            defaultValue={app?.name}
-            placeholder="UniTV Mobile"
+          <textarea
+            name="description"
+            rows={5}
+            defaultValue={app?.description}
+            className="w-full rounded-md border p-3"
+            placeholder="Descrição..."
           />
         </div>
 
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Slug
-          </label>
-
-          <Input
-            name="slug"
-            required
-            defaultValue={app?.slug}
-            placeholder="unitv-mobile"
-          />
-        </div>
-
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Pasta do produto
-          </label>
-
-          <Input
-            name="asset_folder"
-            required
-            defaultValue={app?.asset_folder}
-            placeholder="unitv"
-          />
-        </div>
-
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Versão
-          </label>
-
-          <Input
-            name="version"
-            required
-            defaultValue={app?.version}
-            placeholder="3.24.2"
-          />
-        </div>
-
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Ordem
-          </label>
-
-          <Input
-            name="display_order"
-            type="number"
-            min={1}
-            defaultValue={app?.display_order ?? 1}
-            required
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-6 mt-6">
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Plataforma
-          </label>
-
-          <select
-            name="platform"
-            defaultValue={app?.platform ?? "mobile"}
-            className="w-full rounded-md border px-3 py-2"
+        <div className="flex justify-end gap-3 mt-10">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.push("/apps")}
           >
-            <option value="mobile">
-              📱 Mobile
-            </option>
+            Cancelar
+          </Button>
 
-            <option value="tv">
-              📺 TV Box
-            </option>
-          </select>
-        </div>
-
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Status
-          </label>
-
-          <select
-            name="is_active"
-            defaultValue={app ? String(app.is_active) : "true"}
-            className="w-full rounded-md border px-3 py-2"
-          >
-            <option value="true">
-              🟢 Ativo
-            </option>
-
-            <option value="false">
-              ⚪ Inativo
-            </option>
-          </select>
+          <SubmitButton editing={editing} />
         </div>
       </div>
 
-      <div className="mt-6">
-        <label className="mb-2 block text-sm font-medium">
-          Descrição
-        </label>
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">
+          Arquivos
+        </h2>
 
-        <textarea
-          name="description"
-          rows={5}
-          defaultValue={app?.description}
-          className="w-full rounded-md border p-3"
-          placeholder="Descrição..."
-        />
-      </div>
-
-      <hr className="my-8" />
-
-      <h2 className="text-lg font-semibold mb-5">
-        Arquivos
-      </h2>
-
-      <p className="text-sm text-muted-foreground mb-5">
-        Upload de ícone e banner ainda serão habilitados. Enviar um
-        APK novo substitui o arquivo atual.
-      </p>
-
-      <div className="grid grid-cols-3 gap-6">
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            APK
-          </label>
-
-          <Input
-            type="file"
-            name="apk"
-            accept=".apk"
+        {app ? (
+          <AssetUploadField
+            appId={app.id}
+            type="apk"
+            label="APK"
+            accept=".apk,application/vnd.android.package-archive"
+            current={
+              apkStat
+                ? { size: apkStat.size, modifiedAt: apkStat.modifiedAt.toISOString() }
+                : null
+            }
           />
+        ) : (
+          <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+            Salve o aplicativo para habilitar o envio de arquivos.
+          </div>
+        )}
 
-          {app?.storage_path && (
-            <p className="mt-1 text-xs text-muted-foreground break-all">
-              Atual: {app.storage_path}
-            </p>
-          )}
-        </div>
-
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Ícone
-          </label>
-
-          <Input type="file" disabled />
-        </div>
-
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Banner
-          </label>
-
-          <Input type="file" disabled />
-        </div>
-      </div>
-
-      <div className="flex justify-end gap-3 mt-10">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.push("/apps")}
-        >
-          Cancelar
-        </Button>
-
-        <SubmitButton editing={editing} />
+        <LockedAssetPlaceholder label="Ícone" />
+        <LockedAssetPlaceholder label="Banner" />
       </div>
     </form>
   );

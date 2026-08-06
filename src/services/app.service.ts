@@ -7,13 +7,13 @@ export interface AppData {
   version: string;
   platform: string;
   description: string;
-  display_order: number;
   is_active: boolean;
   asset_folder: string;
 }
 
 export interface App extends AppData {
   id: string;
+  display_order: number;
   storage_path: string | null;
   icon_path: string | null;
   banner_path: string | null;
@@ -109,10 +109,29 @@ export async function getApp(id: string): Promise<App> {
   return data as App;
 }
 
+async function getNextDisplayOrder(): Promise<number> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("apps")
+    .select("display_order")
+    .order("display_order", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+
+  return (data?.display_order ?? 0) + 1;
+}
+
 export async function createApp(
   app: AppData
 ): Promise<App> {
   const supabase = await createClient();
+  const display_order = await getNextDisplayOrder();
 
   const { data, error } = await supabase
     .from("apps")
@@ -122,7 +141,7 @@ export async function createApp(
       version: app.version,
       platform: app.platform,
       description: app.description,
-      display_order: app.display_order,
+      display_order,
       is_active: app.is_active,
       asset_folder: app.asset_folder,
     })
@@ -151,7 +170,6 @@ export async function updateApp(
       version: app.version,
       platform: app.platform,
       description: app.description,
-      display_order: app.display_order,
       is_active: app.is_active,
       asset_folder: app.asset_folder,
     })

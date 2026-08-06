@@ -319,5 +319,43 @@ monta URL pública, remove e confirma remoção contra a Hostinger real.
 Ganhou `replace()` no mesmo dia: upload seguro para paths que já
 podem ter um arquivo (envia pra `{path}.uploading`, confirma tamanho,
 renomeia por cima do destino final — nunca sobrescreve diretamente),
-também testado contra o servidor real. Ainda não usada por nenhuma
-Server Action de verdade.
+também testado contra o servidor real. Ganhou `stat(path)` (tamanho +
+data de modificação, `null` se o arquivo não existe) para exibir
+informação do arquivo na UI sem precisar de coluna nova no banco.
+
+---
+
+## ADR-013 — Route Handler para upload de arquivo (exceção pontual à ADR-003)
+
+**Decisão:** upload de arquivo (APK/Ícone/Banner) usa uma **Route
+Handler** (`src/app/api/apps/[id]/upload/route.ts`), não uma Server
+Action, e é chamado do client via `XMLHttpRequest` em vez de
+`<form action={...}>`. Único caso sancionado de fugir do padrão
+Server Action da ADR-003 — motivo técnico específico: Server Actions
+não expõem evento de progresso de upload no browser; `XMLHttpRequest`
+sim (`xhr.upload.onprogress`). A Route Handler continua 100%
+servidor — o client nunca fala com Storage/FTP diretamente, mesma
+garantia de segurança da ADR-003/012, só muda o transporte.
+
+Coberta automaticamente pela mesma proteção de autenticação de
+qualquer outra rota (`src/proxy.ts` cobre `/api/*`) e pelo mesmo
+`experimental.proxyClientMaxBodySize` já configurado — não precisou
+de configuração nova.
+
+**Motivo:** requisito explícito do usuário — barra de progresso real
+(percentual, MB enviado/total) na experiência de upload.
+
+**Como aplicar:** upload de arquivo passa por Route Handler + XHR no
+client, chamando a mesma `uploadAppAsset()` do service layer que uma
+Server Action chamaria. Tudo o mais (CRUD de texto/metadados)
+continua exclusivamente Server Action — esta ADR não abre precedente
+geral para Route Handlers, só cobre upload de arquivo com progresso.
+
+**Status:** implementado e validado (tsc/lint/build limpos,
+`getNextDisplayOrder`/produtos/`stat()` testados via script) em
+2026-08-06. Componente reutilizável (`AssetUploadField.tsx`)
+funcional para APK; Ícone/Banner reaproveitam sem mudança de código
+quando forem habilitados. Progresso é real só na etapa
+navegador→servidor (não inclui a etapa servidor→Hostinger) — decisão
+consciente do usuário para manter a implementação simples agora;
+evoluir para SSE só se a UX atual não for suficiente na prática.

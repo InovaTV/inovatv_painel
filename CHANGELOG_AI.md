@@ -7,6 +7,90 @@
 
 ---
 
+## 2026-08-06 (22) — Revisão funcional da tela de Aplicativos: proposta aprovada e implementada
+
+**Contexto:** com Upload de APK validado pelo navegador de verdade, o
+usuário aprovou uma proposta de revisão funcional antes de abrir
+Ícone/Banner: layout em duas colunas, automação de campos (Ordem,
+Slug, Produto), informações do arquivo na UI, Ícone/Banner
+claramente indisponíveis (não "parecendo funcionar"), e upload
+reutilizável com progresso real.
+
+**Adicionado**
+- `supabase/migrations/20260806150000_create_products_table.sql` —
+  tabela `products` (id, name, asset_folder, created_at), seedada com
+  `UniTV`/`unitv` (alinhado ao asset_folder já usado pelos 2 apps
+  reais). Sem FK em `apps.asset_folder` — products é só a lista
+  controlada de onde o valor vem, não uma relação formal (decisão
+  consciente de manter simples).
+- `supabase/migrations/20260806150100_grant_products_access.sql` +
+  `20260806150200_grant_products_service_role.sql` — tabelas criadas
+  via migração raw não herdam os grants que `apps` tem (criada via
+  dashboard); precisou de `GRANT` explícito pra `anon`/`authenticated`/
+  `service_role`. Descoberto e corrigido via teste real, não suposto.
+- `src/services/product.service.ts` — `getProducts`, `getProduct`,
+  `createProduct` (deriva `asset_folder` via `slugify`),
+  `resolveProductAssetFolder` (usado pelas duas Server Actions de
+  app, evita duplicar a lógica de "produto existente vs. + Novo
+  Produto").
+- `StorageProvider.stat(path)` (`types.ts`/`remote-storage.ts`) —
+  tamanho + data de modificação, `null` se não existe. SFTP via
+  `stat()`, FTP via `size()`+`lastMod()`. Zero coluna nova no banco —
+  reaproveitável por Ícone/Banner/Tutoriais/FAQ depois.
+- `slugify`/`formatBytes`/`formatDate` em `src/lib/utils.ts` —
+  compartilhados entre client (auto-slug ao digitar o Nome) e server
+  (`asset_folder` de produto novo).
+- `src/app/api/apps/[id]/upload/route.ts` — Route Handler (ADR-013,
+  exceção pontual e documentada à ADR-003) usado só para upload de
+  arquivo, chamando a mesma `uploadAppAsset()`. Protegido
+  automaticamente pelo `proxy.ts` (cobre `/api/*`) e pelo
+  `proxyClientMaxBodySize` já configurado.
+- `src/components/apps/AssetUploadField.tsx` — widget reutilizável de
+  upload via `XMLHttpRequest`: progresso real (`xhr.upload.onprogress`),
+  etapas rotuladas ("Enviando arquivo..." → "Processando no
+  servidor..." → "Concluído"), bloqueio de envio duplo (input
+  desabilitado durante upload), mensagens de sucesso/erro. Type-
+  agnóstico (`apk`/`icon`/`banner`) — Ícone/Banner reaproveitam sem
+  mudar código quando forem habilitados.
+
+**Alterado**
+- `AppData` (`app.service.ts`) — `display_order` removido (agora
+  automático: `createApp` calcula `MAX(display_order) + 1`; `updateApp`
+  não toca mais nesse campo). `App` (tipo de leitura) continua com
+  `display_order: number`.
+- `AppForm.tsx` — reescrito: layout de duas colunas (dados à
+  esquerda, Arquivos à direita), Slug auto-gerado do Nome via
+  `slugify` (para de sincronizar assim que o campo é editado
+  manualmente), `<select>` de Produto (nomes reais, nunca
+  `asset_folder`) com "+ Novo Produto" revelando um campo de texto,
+  campo Ordem removido do form. Área de Arquivos: `AssetUploadField`
+  real para APK (só em modo edição — criar precisa salvar primeiro,
+  já que o path depende do `id`), Ícone/Banner como placeholder com
+  cadeado "Disponível em breve" (sem `<input>` nenhum, nada que
+  pareça clicável).
+- `novo/actions.ts`/`apps/actions.ts` — não fazem mais upload de
+  arquivo (isso migrou pra Route Handler); resolvem `asset_folder`
+  via `resolveProductAssetFolder`. `createAppAction` agora redireciona
+  para `/apps/{id}/editar` (não `/apps`) — permite enviar o APK
+  imediatamente após criar.
+- `novo/page.tsx`/`[id]/editar/page.tsx` — buscam `products`;
+  `editar` também busca `storage.stat()` do APK atual (se existir) e
+  passa pro form.
+
+**Testado:** `stat()` (tamanho, data, retorno `null` para arquivo
+inexistente), cálculo de próxima `display_order`, resolução de
+produto por id — todos via script descartável (criado e removido
+nesta entrada) contra o banco/Storage reais. `storage:test` padrão
+sem regressão.
+
+**Verificação:** `npx tsc --noEmit`, `npm run lint`, `npm run build`
+limpos.
+
+**Ainda pendente:** reconfirmação do usuário no navegador — mudança
+de UI grande, script não substitui teste manual real.
+
+---
+
 ## 2026-08-06 (21) — Corrigido "Timeout (control socket)" no Upload de APK
 
 **Contexto:** com o multipart resolvido (entrada 20), o teste manual

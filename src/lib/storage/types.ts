@@ -4,6 +4,11 @@ export interface UploadInput {
   contentType?: string;
 }
 
+export interface AssetStat {
+  size: number;
+  modifiedAt: Date;
+}
+
 export interface StorageProvider {
   upload(input: UploadInput): Promise<{ path: string; url: string }>;
   /**
@@ -17,5 +22,7 @@ export interface StorageProvider {
   replace(input: UploadInput): Promise<{ path: string; url: string }>;
   delete(path: string): Promise<void>;
   exists(path: string): Promise<boolean>;
+  /** null se o arquivo não existe — não lança erro para esse caso. */
+  stat(path: string): Promise<AssetStat | null>;
   getPublicUrl(path: string): string;
 }

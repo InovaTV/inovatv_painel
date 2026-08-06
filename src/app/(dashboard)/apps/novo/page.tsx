@@ -1,6 +1,10 @@
 import AppForm from "@/components/apps/AppForm";
 
-export default function NovoAppPage() {
+import { getProducts } from "@/services/product.service";
+
+export default async function NovoAppPage() {
+  const products = await getProducts();
+
   return (
     <>
       <div className="mb-8">
@@ -15,7 +19,7 @@ export default function NovoAppPage() {
 
       </div>
 
-      <AppForm />
+      <AppForm products={products} />
 
     </>
   );

@@ -130,14 +130,16 @@ src/
 │  │  ├─ page.tsx             # Dashboard (cards de resumo)
 │  │  └─ apps/
 │  │     ├─ page.tsx          # listagem de apps
-│  │     ├─ actions.ts        # Server Action deleteAppAction
+│  │     ├─ actions.ts        # Server Actions deleteAppAction/updateAppAction
+│  │     ├─ [id]/editar/page.tsx  # form de edição (busca app+products+stat do APK)
 │  │     └─ novo/
-│  │        ├─ page.tsx       # form de novo app
+│  │        ├─ page.tsx       # form de novo app (busca products)
 │  │        └─ actions.ts     # Server Action createAppAction
+│  ├─ api/apps/[id]/upload/route.ts  # Route Handler de upload (ADR-013) — não é Server Action
 │  ├─ layout.tsx              # layout raiz (html/body, fontes)
 │  └─ globals.css
 ├─ components/
-│  ├─ apps/                  # AppForm, AppsTable, AppsTableRow, StatusBadge
+│  ├─ apps/                  # AppForm, AppsTable, AppsTableRow, StatusBadge, AssetUploadField
 │  ├─ common/                 # ActionsMenu, PlatformBadge
 │  ├─ dashboard/               # DashboardCards, StatCard
 │  ├─ layout/                  # Header, Sidebar
@@ -150,12 +152,13 @@ src/
 │  │  ├─ admin.ts                 # service_role client — só infraestrutura (ADR-009)
 │  │  └─ middleware.ts            # updateSession() usado por src/proxy.ts
 │  ├─ storage/                  # armazenamento de arquivos (ADR-011/ADR-012)
-│  │  ├─ types.ts                # interface StorageProvider
+│  │  ├─ types.ts                # interface StorageProvider (upload/replace/delete/exists/stat/getPublicUrl)
 │  │  ├─ provider.ts              # export const storage — único ponto de import
 │  │  └─ remote-storage.ts               # implementação FTP/SFTP
-│  └─ utils.ts
+│  └─ utils.ts                   # cn, slugify, formatBytes, formatDate
 ├─ services/
-│  └─ app.service.ts            # getApps/getApp/createApp/updateApp/deleteApp
+│  ├─ app.service.ts            # getApps/getApp/createApp/updateApp/deleteApp/uploadAppAsset
+│  └─ product.service.ts          # getProducts/getProduct/createProduct/resolveProductAssetFolder
 ├─ types/database.ts            # (vazio — tipos gerados do Supabase pendentes)
 └─ proxy.ts                     # proteção de rotas (convenção Next 16)
 ```
