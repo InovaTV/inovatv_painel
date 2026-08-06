@@ -22,15 +22,16 @@ Preciso que o usuário:
 1. Configure o hosting na Hostinger e, se possível, crie um usuário
    FTP/SFTP **restrito ao diretório de arquivos** (não a conta
    principal).
-2. Adicione ao `.env.local`: `HOSTINGER_HOST`, `HOSTINGER_USER`,
-   `HOSTINGER_PASSWORD`, `HOSTINGER_ROOT_PATH`,
-   `HOSTINGER_PUBLIC_BASE_URL` (ver `.env.example` e `STORAGE.md`
+2. Adicione ao `.env.local`: `STORAGE_HOST`, `STORAGE_USER`,
+   `STORAGE_PASSWORD`, `STORAGE_ROOT_PATH`,
+   `STORAGE_PUBLIC_BASE_URL` (ver `.env.example` e `STORAGE.md`
    para o papel de cada uma).
 3. Confirme qual domínio/subdomínio vai servir publicamente esse
-   diretório (necessário para `HOSTINGER_PUBLIC_BASE_URL`).
+   diretório (necessário para `STORAGE_PUBLIC_BASE_URL`).
 
-Assim que as credenciais existirem, o primeiro passo é um **teste
-manual de conectividade e upload** (arquivo pequeno, de teste) antes
+Assim que as credenciais existirem, rodar `npm run storage:test`
+(script `scripts/storage-doctor.ts`, já pronto) como primeiro teste
+de conectividade e upload antes
 de escrever qualquer Server Action de verdade — `storage.upload()`
 precisa provar que funciona contra o servidor real antes de qualquer
 coisa ir para o `DEFINITION_OF_DONE.md` como concluída.
@@ -49,14 +50,14 @@ coisa ir para o `DEFINITION_OF_DONE.md` como concluída.
 
 ## Riscos
 
-- `src/lib/storage/hostinger.ts` foi escrito sem poder testar contra
+- `src/lib/storage/remote-storage.ts` foi escrito sem poder testar contra
   a Hostinger real — há risco real de pequenos erros de API
   (`ssh2-sftp-client`/`basic-ftp`) só aparecerem no primeiro teste
   real. Não presumir que está correto só porque compila.
 - Porta SSH da Hostinger em hospedagem compartilhada às vezes não é a
   22 padrão — verificar no hPanel antes de assumir.
-- `HOSTINGER_ROOT_PATH` (caminho no servidor) e
-  `HOSTINGER_PUBLIC_BASE_URL` (URL pública) precisam mapear pro
+- `STORAGE_ROOT_PATH` (caminho no servidor) e
+  `STORAGE_PUBLIC_BASE_URL` (URL pública) precisam mapear pro
   mesmo diretório físico — errar isso faz upload funcionar mas o
   link público quebrar (ou vice-versa). Conferir com um upload de
   teste antes de confiar.
@@ -66,6 +67,6 @@ coisa ir para o `DEFINITION_OF_DONE.md` como concluída.
 
 ## Primeiro passo
 
-Perguntar ao usuário se as credenciais `HOSTINGER_*` já estão no
+Perguntar ao usuário se as credenciais `STORAGE_*` já estão no
 `.env.local`. Se sim, rodar um teste de conectividade/upload real
 antes de qualquer coisa. Se não, esperar.

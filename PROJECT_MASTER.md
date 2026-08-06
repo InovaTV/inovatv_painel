@@ -76,8 +76,8 @@ Variáveis obrigatórias (`.env.local` — nunca commitado; ver
   operações do dia a dia. Recomendação: revogar em
   Account → Access Tokens no Supabase quando o projeto estabilizar
   ou quando não houver mais necessidade de rodar CLI administrativo)
-- `HOSTINGER_HOST` / `HOSTINGER_USER` / `HOSTINGER_PASSWORD` /
-  `HOSTINGER_ROOT_PATH` / `HOSTINGER_PUBLIC_BASE_URL` (armazenamento
+- `STORAGE_HOST` / `STORAGE_USER` / `STORAGE_PASSWORD` /
+  `STORAGE_ROOT_PATH` / `STORAGE_PUBLIC_BASE_URL` (armazenamento
   de arquivos — ADR-011/ADR-012, ver `STORAGE.md`. Usuário deve ser
   restrito ao diretório de arquivos, nunca a conta principal da
   hospedagem)
@@ -152,7 +152,7 @@ src/
 │  ├─ storage/                  # armazenamento de arquivos (ADR-011/ADR-012)
 │  │  ├─ types.ts                # interface StorageProvider
 │  │  ├─ provider.ts              # export const storage — único ponto de import
-│  │  └─ hostinger.ts               # implementação FTP/SFTP
+│  │  └─ remote-storage.ts               # implementação FTP/SFTP
 │  └─ utils.ts
 ├─ services/
 │  └─ app.service.ts            # getApps/getApp/createApp/updateApp/deleteApp

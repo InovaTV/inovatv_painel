@@ -7,6 +7,42 @@
 
 ---
 
+## 2026-08-06 (12) — Nomenclatura genérica de Storage Provider
+
+**Contexto:** revisão rápida (usuário com limite de uso quase
+esgotado — mudança pequena e contida, não nova feature). Ajuste:
+generalizar a nomenclatura do storage para não referenciar Hostinger
+por nome — hoje é Hostinger, no futuro pode ser outra coisa, e o
+código não deveria precisar mudar por causa disso.
+
+**Alterado**
+- `src/lib/storage/hostinger.ts` → `src/lib/storage/remote-storage.ts`.
+- Variáveis de ambiente: `HOSTINGER_HOST/USER/PASSWORD/ROOT_PATH/
+  PUBLIC_BASE_URL/SFTP_PORT/FTP_PORT/PROTOCOL` → `STORAGE_*`
+  equivalentes. Nova `STORAGE_PROVIDER=hostinger` seleciona a
+  implementação em `provider.ts` (hoje só existe o case
+  `"hostinger"`, mas o padrão de seleção já está pronto pra um
+  segundo provider no futuro).
+- `.env.example`, `STORAGE.md`, `ARCHITECTURE_DECISIONS.md`
+  (ADR-011/012), `PROJECT_MASTER.md` §1.1/§4 — nomenclatura
+  atualizada. Entradas antigas do `CHANGELOG_AI.md` mantidas como
+  estavam (histórico não é reescrito).
+
+**Adicionado**
+- `scripts/storage-doctor.ts` + `npm run storage:test` — diagnóstico
+  de conectividade (conecta → cria dir → envia arquivo de teste →
+  confirma existência → monta URL pública → remove → confirma
+  remoção). Não roda com sucesso ainda (sem credenciais), mas está
+  pronto pro primeiro teste real.
+- `tsconfig.json` — `allowImportingTsExtensions: true` (necessário
+  pro script rodar via suporte nativo a TypeScript do Node 26,
+  importando `provider.ts` com extensão explícita).
+
+**Verificação:** `npx tsc --noEmit`, `npm run lint`, `npm run build`
+— todos limpos.
+
+---
+
 ## 2026-08-06 (11) — Pivô de armazenamento: Supabase Storage → Hostinger
 
 **Contexto:** o teto de 50MB do plano Free do Supabase (achado na

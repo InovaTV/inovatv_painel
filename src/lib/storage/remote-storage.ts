@@ -5,14 +5,14 @@ import { Client as FtpClient } from "basic-ftp";
 
 import type { StorageProvider, UploadInput } from "./types";
 
-const HOST = process.env.HOSTINGER_HOST!;
-const USER = process.env.HOSTINGER_USER!;
-const PASSWORD = process.env.HOSTINGER_PASSWORD!;
-const ROOT_PATH = (process.env.HOSTINGER_ROOT_PATH ?? "").replace(/\/+$/, "");
-const PUBLIC_BASE_URL = (process.env.HOSTINGER_PUBLIC_BASE_URL ?? "").replace(/\/+$/, "");
-const SFTP_PORT = Number(process.env.HOSTINGER_SFTP_PORT ?? 22);
-const FTP_PORT = Number(process.env.HOSTINGER_FTP_PORT ?? 21);
-const FORCED_PROTOCOL = process.env.HOSTINGER_PROTOCOL as "sftp" | "ftp" | undefined;
+const HOST = process.env.STORAGE_HOST!;
+const USER = process.env.STORAGE_USER!;
+const PASSWORD = process.env.STORAGE_PASSWORD!;
+const ROOT_PATH = (process.env.STORAGE_ROOT_PATH ?? "").replace(/\/+$/, "");
+const PUBLIC_BASE_URL = (process.env.STORAGE_PUBLIC_BASE_URL ?? "").replace(/\/+$/, "");
+const SFTP_PORT = Number(process.env.STORAGE_SFTP_PORT ?? 22);
+const FTP_PORT = Number(process.env.STORAGE_FTP_PORT ?? 21);
+const FORCED_PROTOCOL = process.env.STORAGE_PROTOCOL as "sftp" | "ftp" | undefined;
 
 type Protocol = "sftp" | "ftp";
 
@@ -136,7 +136,7 @@ async function existsViaFtp(path: string) {
   }
 }
 
-export function createHostingerProvider(): StorageProvider {
+export function createRemoteStorageProvider(): StorageProvider {
   const provider: StorageProvider = {
     async upload(input) {
       const protocol = await resolveProtocol();

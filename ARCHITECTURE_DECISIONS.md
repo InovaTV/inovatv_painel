@@ -292,12 +292,12 @@ uma interface única em `src/lib/storage/`:
 src/lib/storage/
   types.ts       # interface StorageProvider + tipos
   provider.ts     # export const storage: StorageProvider — ponto único de import
-  hostinger.ts      # implementação concreta (FTP/SFTP)
+  remote-storage.ts      # implementação concreta (FTP/SFTP)
 ```
 
 O resto do código só chama `storage.upload(...)`, `storage.delete(...)`,
 `storage.exists(...)`, `storage.getPublicUrl(...)` — importado de
-`@/lib/storage/provider`, nunca de `hostinger.ts` diretamente.
+`@/lib/storage/provider`, nunca de `remote-storage.ts` diretamente.
 
 **Motivo:** trocar de provedor de armazenamento no futuro (outra
 hospedagem, S3, etc.) deve significar escrever um novo arquivo que
@@ -307,9 +307,14 @@ o projeto muda de armazenamento (Supabase → Hostinger) em uma única
 sessão; a camada existe para que uma terceira mudança, se acontecer,
 seja barata.
 
-**Status:** interface e implementação Hostinger escritas em
-2026-08-06 (`tsc`/`lint`/`build` limpos). **Não testada** contra a
-Hostinger real — sem credenciais configuradas ainda, ninguém chama
-`storage.*` em nenhuma rota. Primeiro uso real (Server Action de
-upload) deve incluir um teste manual de conectividade antes de
-qualquer coisa ir para o `DEFINITION_OF_DONE.md` como concluída.
+**Status:** interface e implementação escritas em 2026-08-06
+(`tsc`/`lint`/`build` limpos). Ajustada no mesmo dia para nomenclatura
+genérica: arquivo `remote-storage.ts` (não `hostinger.ts`), variáveis
+`STORAGE_*` (não `HOSTINGER_*`), seleção de provider via
+`STORAGE_PROVIDER` em `provider.ts` — a aplicação depende só do
+conceito de "storage provider", nunca do nome da hospedagem
+específica. **Não testada** contra a Hostinger real — sem credenciais
+configuradas ainda, ninguém chama `storage.*` em nenhuma rota.
+Primeiro uso real (Server Action de upload) deve incluir um teste de
+conectividade (`npm run storage:test`) antes de qualquer coisa ir
+para o `DEFINITION_OF_DONE.md` como concluída.

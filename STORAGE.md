@@ -25,7 +25,7 @@
 **Acesso:** FTP/SFTP, com um usuário restrito ao diretório de
 arquivos (nunca a conta principal da hospedagem). Preferência SFTP
 sobre FTP — a camada de código detecta automaticamente qual está
-disponível e usa o mais seguro (ver `src/lib/storage/hostinger.ts`).
+disponível e usa o mais seguro (ver `src/lib/storage/remote-storage.ts`).
 
 **Visibilidade:** arquivos são **públicos** — URL direta, sem URL
 assinada. O controle de acesso (quem pode ver o quê no painel) é
@@ -87,7 +87,7 @@ substituirá esse campo.
 src/lib/storage/
   types.ts       # interface StorageProvider
   provider.ts     # export const storage — único ponto de import
-  hostinger.ts      # implementação FTP/SFTP
+  remote-storage.ts      # implementação FTP/SFTP
 ```
 
 Uso em qualquer Server Action:
@@ -102,19 +102,19 @@ const { path, url } = await storage.upload({
 ```
 
 Nenhum componente ou Server Action deve importar `ssh2-sftp-client`,
-`basic-ftp` ou `hostinger.ts` diretamente.
+`basic-ftp` ou `remote-storage.ts` diretamente.
 
 ## Variáveis de ambiente (`.env.local` — ver `.env.example`)
 
 | Variável | Papel |
 |---|---|
-| `HOSTINGER_HOST` | endereço do servidor FTP/SFTP |
-| `HOSTINGER_USER` | usuário restrito ao diretório de arquivos (não a conta principal) |
-| `HOSTINGER_PASSWORD` | senha desse usuário |
-| `HOSTINGER_ROOT_PATH` | caminho no servidor até a raiz de `assets/` |
-| `HOSTINGER_PUBLIC_BASE_URL` | domínio/URL que serve esse mesmo diretório publicamente |
-| `HOSTINGER_SFTP_PORT` / `HOSTINGER_FTP_PORT` | opcionais, só se as portas padrão (22/21) não forem as certas — **atenção:** hospedagem compartilhada da Hostinger às vezes usa uma porta SSH não-padrão (verificar no hPanel) |
-| `HOSTINGER_PROTOCOL` | opcional, força `sftp` ou `ftp` em vez da detecção automática |
+| `STORAGE_HOST` | endereço do servidor FTP/SFTP |
+| `STORAGE_USER` | usuário restrito ao diretório de arquivos (não a conta principal) |
+| `STORAGE_PASSWORD` | senha desse usuário |
+| `STORAGE_ROOT_PATH` | caminho no servidor até a raiz de `assets/` |
+| `STORAGE_PUBLIC_BASE_URL` | domínio/URL que serve esse mesmo diretório publicamente |
+| `STORAGE_SFTP_PORT` / `STORAGE_FTP_PORT` | opcionais, só se as portas padrão (22/21) não forem as certas — **atenção:** hospedagem compartilhada da Hostinger às vezes usa uma porta SSH não-padrão (verificar no hPanel) |
+| `STORAGE_PROTOCOL` | opcional, força `sftp` ou `ftp` em vez da detecção automática |
 
 ## Status desta implementação
 
