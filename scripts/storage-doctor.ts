@@ -39,6 +39,17 @@ async function main() {
   step(Boolean(url), `monta URL pública — ${url}`);
 
   try {
+    await storage.replace({
+      path: TEST_PATH,
+      data: Buffer.from(`storage-doctor replace ${new Date().toISOString()}`),
+    });
+    const stillFound = await storage.exists(TEST_PATH);
+    step(stillFound, "replace() — envia temp, valida tamanho, renomeia por cima");
+  } catch (error) {
+    step(false, `replace() — ${error}`);
+  }
+
+  try {
     await storage.delete(TEST_PATH);
     step(true, "remove arquivo de teste");
   } catch (error) {

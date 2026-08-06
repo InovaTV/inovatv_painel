@@ -164,6 +164,68 @@ async function existsViaFtp(path: string) {
   }
 }
 
+async function sizeViaSftp(path: string) {
+  const sftp = new SftpClient();
+
+  await sftp.connect({ host: HOST, port: SFTP_PORT, username: USER, password: PASSWORD });
+
+  try {
+    const stat = await sftp.stat(remotePath(path));
+    return stat.size;
+  } finally {
+    await sftp.end();
+  }
+}
+
+async function sizeViaFtp(path: string) {
+  const client = new FtpClient();
+
+  await client.access({ host: HOST, port: FTP_PORT, user: USER, password: PASSWORD, secure: await resolveFtpSecure() });
+
+  try {
+    return await client.size(remotePath(path));
+  } finally {
+    client.close();
+  }
+}
+
+async function renameViaSftp(from: string, to: string) {
+  const sftp = new SftpClient();
+
+  await sftp.connect({ host: HOST, port: SFTP_PORT, username: USER, password: PASSWORD });
+
+  try {
+    await sftp.rename(remotePath(from), remotePath(to));
+  } finally {
+    await sftp.end();
+  }
+}
+
+async function renameViaFtp(from: string, to: string) {
+  const client = new FtpClient();
+
+  await client.access({ host: HOST, port: FTP_PORT, user: USER, password: PASSWORD, secure: await resolveFtpSecure() });
+
+  try {
+    await client.rename(remotePath(from), remotePath(to));
+  } finally {
+    client.close();
+  }
+}
+
+async function deleteQuiet(path: string, protocol: Protocol) {
+  try {
+    if (protocol === "sftp") {
+      await deleteViaSftp(path);
+    } else {
+      await deleteViaFtp(path);
+    }
+  } catch {
+    // limpeza de melhor esforço — não mascarar o erro original com uma
+    // falha secundária ao tentar apagar o temporário.
+  }
+}
+
 export function createRemoteStorageProvider(): StorageProvider {
   const provider: StorageProvider = {
     async upload(input) {
@@ -173,6 +235,40 @@ export function createRemoteStorageProvider(): StorageProvider {
         await uploadViaSftp(input);
       } else {
         await uploadViaFtp(input);
+      }
+
+      return { path: input.path, url: provider.getPublicUrl(input.path) };
+    },
+
+    async replace(input) {
+      const protocol = await resolveProtocol();
+      const tempPath = `${input.path}.uploading`;
+      const tempInput: UploadInput = { ...input, path: tempPath };
+
+      if (protocol === "sftp") {
+        await uploadViaSftp(tempInput);
+      } else {
+        await uploadViaFtp(tempInput);
+      }
+
+      const uploadedSize = await (protocol === "sftp" ? sizeViaSftp(tempPath) : sizeViaFtp(tempPath));
+
+      if (uploadedSize !== input.data.length) {
+        await deleteQuiet(tempPath, protocol);
+        throw new Error(
+          `Upload incompleto para "${input.path}": esperado ${input.data.length} bytes, servidor tem ${uploadedSize}.`
+        );
+      }
+
+      try {
+        if (protocol === "sftp") {
+          await renameViaSftp(tempPath, input.path);
+        } else {
+          await renameViaFtp(tempPath, input.path);
+        }
+      } catch (error) {
+        await deleteQuiet(tempPath, protocol);
+        throw error;
       }
 
       return { path: input.path, url: provider.getPublicUrl(input.path) };

@@ -6,6 +6,15 @@ export interface UploadInput {
 
 export interface StorageProvider {
   upload(input: UploadInput): Promise<{ path: string; url: string }>;
+  /**
+   * Como upload(), mas seguro para sobrescrever um arquivo existente no
+   * mesmo `path`: envia para um caminho temporário, confirma o tamanho e só
+   * então renomeia por cima do destino final. Se cair no meio do envio, o
+   * arquivo antigo em `path` continua intacto. Usar para qualquer upload
+   * que possa estar substituindo um arquivo já publicado (APK, ícone,
+   * banner) — `upload()` fica só para o primeiro envio de um path novo.
+   */
+  replace(input: UploadInput): Promise<{ path: string; url: string }>;
   delete(path: string): Promise<void>;
   exists(path: string): Promise<boolean>;
   getPublicUrl(path: string): string;

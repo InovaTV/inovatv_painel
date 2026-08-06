@@ -7,6 +7,40 @@
 
 ---
 
+## 2026-08-06 (16) — storage.replace(), nome de arquivo fixo, item de segurança no ROADMAP
+
+**Contexto:** usuário pediu 3 coisas antes de começar Upload de APK:
+(1) registrar a limitação de FTP sem TLS como item de melhoria futura
+no `ROADMAP.md`, não como bloqueio; (2) `storage.replace()` — upload
+seguro que nunca sobrescreve diretamente (temp → valida tamanho →
+renomeia), pra evitar perder um APK se a conexão cair no meio; (3)
+nome de arquivo fixo (`app.apk`, não `unitv-mobile-v3.24.2.apk`) já
+que a versão mora no banco — assim atualizar o arquivo não muda a
+URL pública.
+
+**Adicionado**
+- `StorageProvider.replace()` em `types.ts` + implementação completa
+  em `remote-storage.ts` (upload pra `{path}.uploading`, confirma
+  tamanho via `stat`/`size`, renomeia via `rename` — SFTP e FTP).
+  Limpeza best-effort do temporário em caso de falha (tamanho errado
+  ou rename falhar) sem mascarar o erro original.
+- `scripts/storage-doctor.ts` ganhou um 6º check testando `replace()`
+  de verdade.
+- `ROADMAP.md` — seção "Melhorias futuras" com os 2 itens de
+  segurança (FTPS via hostname `*.hstgr.io`, disponibilidade de SFTP).
+
+**Alterado**
+- `STORAGE.md` — convenção de nome fixo documentada, exemplo de uso
+  trocado de `upload()` para `replace()` (uso recomendado pra
+  APK/ícone/banner, já que o path pode já ter um arquivo).
+- ADR-012 — status atualizado com `replace()`.
+
+**Verificação:** `npx tsc --noEmit`, `npm run lint`, `npm run build`
+limpos. `npm run storage:test` — 6/6 checks ✔ contra a Hostinger
+real, incluindo `replace()`.
+
+---
+
 ## 2026-08-06 (15) — storage:test validado contra a Hostinger real
 
 **Usuário configurou as credenciais `STORAGE_*` no `.env.local`.**

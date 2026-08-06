@@ -64,6 +64,15 @@ na ADR-007) e já reserva espaço para os próximos módulos
 (Tutoriais, FAQ) reaproveitarem a mesma raiz `assets/` em vez de cada
 um inventar sua própria convenção — ADR-006 (reutilização).
 
+**Nome de arquivo fixo, não versionado.** Dentro de cada pasta de
+tipo (`apk/`, `icon/`, `banner/`), o arquivo tem sempre o mesmo nome
+(ex.: `apps/unitv/mobile/apk/app.apk`, não
+`unitv-mobile-v3.24.2.apk`). A versão já existe na coluna `version`
+do banco — versionar o nome do arquivo também só faria a URL pública
+mudar a cada atualização sem necessidade. Atualizar o APK/ícone/banner
+= mesmo path, conteúdo novo (via `storage.replace()`), banco atualiza
+só a versão.
+
 ## Colunas no banco (sem migração necessária)
 
 As mesmas colunas já usadas para o plano Supabase continuam válidas —
@@ -90,16 +99,26 @@ src/lib/storage/
   remote-storage.ts      # implementação FTP/SFTP
 ```
 
-Uso em qualquer Server Action:
+Uso em qualquer Server Action — `replace()` para qualquer path que
+possa já ter um arquivo (todo upload de APK/ícone/banner do painel,
+já que o nome é fixo); `upload()` só faz sentido pra um path que se
+sabe que é novo:
 
 ```ts
 import { storage } from "@/lib/storage/provider";
 
-const { path, url } = await storage.upload({
-  path: "apps/unitv/mobile/apk/unitv-mobile-v3.24.2.apk",
+const { path, url } = await storage.replace({
+  path: "apps/unitv/mobile/apk/app.apk",
   data: buffer,
 });
 ```
+
+`replace()` nunca sobrescreve diretamente: envia para
+`{path}.uploading`, confirma que o tamanho enviado bate com o
+recebido pelo servidor, só então renomeia por cima do destino final.
+Se a conexão cair no meio do envio, o arquivo em `path` continua
+intacto — o `.uploading` órfão é removido em caso de falha. Testado
+contra a Hostinger real em 2026-08-06 (`npm run storage:test`).
 
 Nenhum componente ou Server Action deve importar `ssh2-sftp-client`,
 `basic-ftp` ou `remote-storage.ts` diretamente.

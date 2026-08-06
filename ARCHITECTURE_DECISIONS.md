@@ -316,4 +316,8 @@ conceito de "storage provider", nunca do nome da hospedagem
 específica. **Testada com sucesso via `npm run storage:test` em
 2026-08-06** — conecta, cria diretório, envia, confirma existência,
 monta URL pública, remove e confirma remoção contra a Hostinger real.
-Ainda não usada por nenhuma Server Action de verdade.
+Ganhou `replace()` no mesmo dia: upload seguro para paths que já
+podem ter um arquivo (envia pra `{path}.uploading`, confirma tamanho,
+renomeia por cima do destino final — nunca sobrescreve diretamente),
+também testado contra o servidor real. Ainda não usada por nenhuma
+Server Action de verdade.

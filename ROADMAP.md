@@ -73,6 +73,15 @@ Friday, Banner Destaque, etc.), não um arquivo anexado a um app.
 
 - [ ] Tela de Configurações
 
+## Melhorias futuras (não bloqueiam nenhuma fase)
+
+**Segurança**
+- [ ] Investigar uso de FTPS com o hostname `*.hstgr.io` em vez do
+  domínio customizado (`ftp.inovatv.pro`) — hoje a conexão cai para
+  FTP sem criptografia por mismatch de certificado, ver `STORAGE.md`.
+- [ ] Verificar disponibilidade de SFTP caso o plano de hospedagem
+  mude.
+
 ---
 
 ## Como este arquivo se relaciona com os outros
