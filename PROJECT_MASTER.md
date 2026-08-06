@@ -76,6 +76,11 @@ Variáveis obrigatórias (`.env.local` — nunca commitado; ver
   operações do dia a dia. Recomendação: revogar em
   Account → Access Tokens no Supabase quando o projeto estabilizar
   ou quando não houver mais necessidade de rodar CLI administrativo)
+- `HOSTINGER_HOST` / `HOSTINGER_USER` / `HOSTINGER_PASSWORD` /
+  `HOSTINGER_ROOT_PATH` / `HOSTINGER_PUBLIC_BASE_URL` (armazenamento
+  de arquivos — ADR-011/ADR-012, ver `STORAGE.md`. Usuário deve ser
+  restrito ao diretório de arquivos, nunca a conta principal da
+  hospedagem)
 
 Essas variáveis existem só em `.env.local` (e nas envs da Vercel em
 produção/preview). Nunca em `README.md`, nunca em qualquer documento
@@ -144,6 +149,10 @@ src/
 │  │  ├─ server.ts               # server client (@supabase/ssr, cookies) — padrão para todo CRUD
 │  │  ├─ admin.ts                 # service_role client — só infraestrutura (ADR-009)
 │  │  └─ middleware.ts            # updateSession() usado por src/proxy.ts
+│  ├─ storage/                  # armazenamento de arquivos (ADR-011/ADR-012)
+│  │  ├─ types.ts                # interface StorageProvider
+│  │  ├─ provider.ts              # export const storage — único ponto de import
+│  │  └─ hostinger.ts               # implementação FTP/SFTP
 │  └─ utils.ts
 ├─ services/
 │  └─ app.service.ts            # getApps/getApp/createApp/updateApp/deleteApp

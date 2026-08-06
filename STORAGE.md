@@ -1,109 +1,130 @@
-# Estrutura do Supabase Storage — InovaTV Painel
+# Armazenamento de Arquivos — InovaTV Painel
 
-> Documento de planejamento. **O bucket descrito aqui ainda não foi
-> criado** (confirmado via API: `storage/v1/bucket` retorna `[]`).
-> Este arquivo existe para validação antes da criação — só criar o
-> bucket e implementar upload depois que a estrutura aqui estiver
-> aprovada.
->
-> **Migração aplicada e bucket criado em 2026-08-06** (via
-> `supabase db push` + `scripts/create-storage-bucket.mjs`, usando
-> `createAdminClient()` — ADR-009). Confirmado via API:
-> `banner_path` existe, `storage_folder` corrigido, bucket `apps`
-> existe (privado).
->
-> **Novo bloqueio, encontrado ao criar o bucket:** o projeto Supabase
-> está no **plano Free**, que tem um teto global de upload de
-> **50MB** (`Project Settings → Storage`, confirmado via Management
-> API: `fileSizeLimit: 52428800`). Isso é bem abaixo dos 300MB
-> decididos para APK — **nenhum bucket-level limit consegue superar
-> esse teto**; tentar configurar 300MB no bucket falhou justamente
-> por isso. Upload de APK real (a maioria fica entre 70MB e 300MB,
-> por decisão do usuário) não é viável no plano atual. Ver
-> `NEXT_SESSION.md` para a decisão pendente.
+> Ver ADR-011 e ADR-012 (`ARCHITECTURE_DECISIONS.md`) para as
+> decisões permanentes por trás deste documento. Este arquivo detalha
+> a implementação; as ADRs registram o porquê.
 
 Última atualização: 2026-08-06
 
-## Decisão
+## Decisão (histórico resumido)
 
-Um único bucket **privado**, chamado `apps`. Leitura (preview,
-download) sempre via URL assinada gerada no servidor (Server
-Action/Server Component) — nunca acesso público direto ao arquivo,
-consistente com a ADR-004 (`ARCHITECTURE_DECISIONS.md`).
+1. Primeira tentativa: Supabase Storage, bucket privado `apps`,
+   estrutura produto/plataforma. Migração aplicada, bucket chegou a
+   ser criado.
+2. Ao criar o bucket, descoberto que o projeto Supabase está no
+   **plano Free**, com teto de upload de **50MB por arquivo, global
+   do projeto** — não configurável por bucket. Abaixo dos 300MB
+   decididos para APK.
+3. Decisão do usuário: **substituir completamente** o Supabase
+   Storage por uma hospedagem própria (**Hostinger**) para todo
+   arquivo público da plataforma — não só APK. O bucket Supabase
+   fica parado, sem uso (não removido).
 
-## Estrutura de pastas
+## Armazenamento oficial: Hostinger
 
-Mantém a convenção que já existe nos dados reais da tabela `apps`
-(produto → plataforma), **não** a de pasta por slug:
+**Acesso:** FTP/SFTP, com um usuário restrito ao diretório de
+arquivos (nunca a conta principal da hospedagem). Preferência SFTP
+sobre FTP — a camada de código detecta automaticamente qual está
+disponível e usa o mais seguro (ver `src/lib/storage/hostinger.ts`).
+
+**Visibilidade:** arquivos são **públicos** — URL direta, sem URL
+assinada. O controle de acesso (quem pode ver o quê no painel) é
+responsabilidade da aplicação, não do armazenamento.
 
 ```
-apps/                         (bucket, privado)
-  unitv/                      (asset_folder)
-    mobile/                   (platform)
-      apk/
-        unitv-mobile-v3.24.2.apk
-      icon/
-        icon.webp
-      banner/
-        banner.webp
-    tv/                       (platform)
-      apk/
-        unitv-tvbox-v4.19.1.00.apk
-      icon/
-        icon.webp
-      banner/
-        banner.webp
+Painel → Server Action → Hostinger (upload) → banco guarda o caminho
+                                                        ↓
+                                     usuário final acessa via URL pública
+                                     construída em runtime (getPublicUrl)
 ```
 
-Motivo: no domínio do produto, "UniTV" é o produto e "Mobile"/"TV Box"
-são variantes dele — a estrutura reflete `Produto → Plataforma`, não
-`Aplicativo → Arquivos`. Um app novo de outro produto (ex.: futuro
-"XPTV") ganha sua própria pasta de produto.
+## Estrutura de diretórios
 
-## Colunas usadas (tabela `apps`, sem renomear nada existente)
+```
+assets/
+  apps/
+    unitv/
+      mobile/
+        apk/
+        icon/
+        banner/
+      tv/
+        apk/
+        icon/
+        banner/
+  tutorials/
+    images/
+    videos/
+  faq/
+  downloads/
+```
 
-| Coluna | Papel | Status |
+Mantém a lógica produto/plataforma já usada para apps (ver histórico
+na ADR-007) e já reserva espaço para os próximos módulos
+(Tutoriais, FAQ) reaproveitarem a mesma raiz `assets/` em vez de cada
+um inventar sua própria convenção — ADR-006 (reutilização).
+
+## Colunas no banco (sem migração necessária)
+
+As mesmas colunas já usadas para o plano Supabase continuam válidas —
+só mudou o que elas apontam:
+
+| Coluna | Antes (Supabase) | Agora (Hostinger) |
 |---|---|---|
-| `storage_path` | caminho do APK dentro do bucket `apps` | já existe, tem dado real |
-| `icon_path` | caminho do ícone | já existe, `null` nos 2 apps reais |
-| `banner_path` | caminho do banner | **novo**, adicionado pela migração |
-| `asset_folder` | nome da pasta do produto (`unitv`) | já existe, mantido |
-| `storage_folder` | raiz física (produto/plataforma) | já existe, dado corrigido pela migração |
-| `download_url` | link público de download (domínio externo `inovatv.pro`) | **depreciado** — ver seção abaixo |
+| `storage_path` | caminho dentro do bucket `apps` | caminho relativo dentro de `assets/` na Hostinger |
+| `icon_path` | idem | idem |
+| `banner_path` | idem | idem |
+| `asset_folder` | nome do produto (`unitv`) | inalterado |
+| `storage_folder` | raiz física produto/plataforma | inalterado |
 
-## Sobre os valores atuais de `storage_path`/`storage_folder`
+`download_url` continua depreciado (ADR-008) — este novo esquema é,
+na prática, a infraestrutura do futuro Portal Público que
+substituirá esse campo.
 
-Os 2 apps reais (`unitv-mobile`, `unitv-tv`) já têm `storage_path`
-preenchido com um formato antigo, ex.:
-`public/apps/unitv/mobile/unitv-mobile.apk` — sem subpasta por tipo
-de arquivo (`apk/`) e com um prefixo `public/apps/` que não
-corresponde ao bucket `apps` decidido aqui (bucket privado, sem
-prefixo `public/`).
+## Camada de código (ADR-012)
 
-Como nenhum arquivo real existe no Storage ainda (bucket nem existe),
-esse valor é só um texto de intenção, não uma referência a um arquivo
-vivo. **Esta migração não reescreve esses valores.** A forma mais
-segura de reconciliar é deixar que o próprio fluxo de upload
-sobrescreva `storage_path` (e passe a preencher `icon_path`) com o
-caminho correto na primeira vez que cada app tiver um arquivo
-enviado/trocado pelo painel — sem migração de dado dedicada para isso.
+```
+src/lib/storage/
+  types.ts       # interface StorageProvider
+  provider.ts     # export const storage — único ponto de import
+  hostinger.ts      # implementação FTP/SFTP
+```
 
-## `download_url` — depreciado, decisão fechada
+Uso em qualquer Server Action:
 
-**Resolvido em 2026-08-06 (não é mais pergunta em aberto):** o
-usuário confirmou que o "Projeto Downloads" (site externo
-`inovatv.pro` referenciado em `download_url`) **será descontinuado**.
-Não há mais nenhuma integração a preservar.
+```ts
+import { storage } from "@/lib/storage/provider";
 
-Regra permanente (ver ADR-008): `download_url` fica ignorado a partir
-de agora — nenhuma funcionalidade nova lê, escreve ou depende dele.
-Ele continua existindo na tabela só por compatibilidade temporária e
-será removido (`ALTER TABLE apps DROP COLUMN download_url;`) em uma
-migração futura, quando o Portal Público de Downloads passar a fazer
-parte do InovaTV Central (`/apps/[slug]` ou `/downloads/[slug]`) —
-**não agora**, não faz parte do escopo atual.
+const { path, url } = await storage.upload({
+  path: "apps/unitv/mobile/apk/unitv-mobile-v3.24.2.apk",
+  data: buffer,
+});
+```
 
-## Tamanho máximo por tipo de arquivo
+Nenhum componente ou Server Action deve importar `ssh2-sftp-client`,
+`basic-ftp` ou `hostinger.ts` diretamente.
+
+## Variáveis de ambiente (`.env.local` — ver `.env.example`)
+
+| Variável | Papel |
+|---|---|
+| `HOSTINGER_HOST` | endereço do servidor FTP/SFTP |
+| `HOSTINGER_USER` | usuário restrito ao diretório de arquivos (não a conta principal) |
+| `HOSTINGER_PASSWORD` | senha desse usuário |
+| `HOSTINGER_ROOT_PATH` | caminho no servidor até a raiz de `assets/` |
+| `HOSTINGER_PUBLIC_BASE_URL` | domínio/URL que serve esse mesmo diretório publicamente |
+| `HOSTINGER_SFTP_PORT` / `HOSTINGER_FTP_PORT` | opcionais, só se as portas padrão (22/21) não forem as certas — **atenção:** hospedagem compartilhada da Hostinger às vezes usa uma porta SSH não-padrão (verificar no hPanel) |
+| `HOSTINGER_PROTOCOL` | opcional, força `sftp` ou `ftp` em vez da detecção automática |
+
+## Status desta implementação
+
+**Escrita, validada por `tsc`/`lint`/`build`, mas NÃO testada contra
+a Hostinger real.** Nenhuma credencial configurada ainda — ninguém
+chama `storage.upload/delete/exists` em nenhuma rota. Antes de
+marcar qualquer upload como concluído no `DEFINITION_OF_DONE.md`,
+fazer um teste manual de conectividade + upload real.
+
+## Tamanho máximo por tipo de arquivo (decisão original, ainda válida)
 
 | Tipo | Limite |
 |---|---|
@@ -111,26 +132,19 @@ parte do InovaTV Central (`/apps/[slug]` ou `/downloads/[slug]`) —
 | Ícone | 5 MB |
 | Banner | 10 MB |
 
+Validado na aplicação (Server Action), não no armazenamento — a
+Hostinger não tem o teto de 50MB que o Supabase Free tinha, mas cada
+plano de hospedagem tem seu próprio limite de upload/PHP
+(`upload_max_filesize` etc. se relevante) — confirmar isso quando a
+conta Hostinger estiver configurada.
+
 ## Política de substituição (sem acumular lixo)
 
-Ao trocar um arquivo (ex.: nova versão do APK):
+Mantida sem alteração: upload do novo → atualizar banco → só depois
+remover o antigo do armazenamento, nunca o inverso.
 
-1. Enviar o novo arquivo para o Storage.
-2. Atualizar a coluna correspondente (`storage_path`/`icon_path`/`banner_path`)
-   no banco **só depois** do upload confirmado.
-3. Remover o arquivo antigo do Storage **só depois** do passo 2 ter
-   sucesso — nunca apagar antes de confirmar que o novo já está
-   salvo e o banco já aponta pra ele.
+## UI planejada (sem alteração)
 
-Isso evita dois problemas: banco apontando para arquivo já apagado
-(se a ordem for invertida) e bucket acumulando arquivos órfãos (se o
-antigo nunca for removido).
-
-## UI planejada (para quando o upload for implementado)
-
-- **Ícone/Banner:** preview imediato da imagem.
-- **APK:** sem preview (não faz sentido); mostrar nome do arquivo,
-  tamanho, versão, data de envio, e ações "Download", "Trocar",
-  "Remover".
-- Todas as leituras (preview e download) passam por URL assinada
-  gerada sob demanda — nunca uma URL pública fixa gravada no banco.
+- Ícone/Banner: preview imediato.
+- APK: sem preview; cartão com nome, tamanho, versão, data de envio,
+  ações Download/Trocar/Remover.

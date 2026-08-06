@@ -139,13 +139,15 @@ convenção produto/plataforma — decisão explícita do usuário de não
 forçar uma reestruturação (slug-based) por cima de uma convenção já
 consistente. Ver `STORAGE.md` para o detalhamento completo.
 
-**Status:** estrutura aprovada e documentada (`STORAGE.md`,
-`supabase/migrations/20260806140000_add_banner_path_fix_storage_folder.sql`).
-Bucket **ainda não criado** e upload **ainda não implementado** —
-bloqueado por (1) migração SQL ainda não aplicada/confirmada pelo
-usuário e (2) ausência de `service_role` key neste ambiente (a chave
-anônima não cria bucket). `download_url`/Projeto Downloads deixou de
-ser pergunta em aberto — ver ADR-008.
+**Status:** **SUPERSEDIDA em 2026-08-06 pela ADR-011** — o
+armazenamento de arquivos deixou de ser Supabase Storage e passou a
+ser Hostinger. Histórico mantido para contexto (migração aplicada,
+bucket `apps` chegou a ser criado — ver `CHANGELOG_AI.md` — mas ficou
+sem uso; não é removido agora, ver ADR-011). As colunas
+`storage_path`/`icon_path`/`banner_path`/`asset_folder`/`storage_folder`
+continuam sendo usadas, só que agora apontam para caminhos na
+Hostinger em vez de um bucket Supabase — nenhuma migração de dado foi
+necessária para essa troca.
 
 ---
 
@@ -172,7 +174,11 @@ mais estar.
 
 **Status:** regra permanente a partir de 2026-08-06. Aplica-se
 imediatamente a `download_url` e a qualquer sistema legado que o
-usuário marque como descontinuado no futuro.
+usuário marque como descontinuado no futuro. **Atualização, mesmo
+dia:** a migração de armazenamento para a Hostinger (ADR-011) é
+confirmada pelo usuário como sendo, na prática, a infraestrutura do
+Portal Público previsto aqui — `download_url` continua depreciado e
+será removido quando esse portal estiver pronto.
 
 ---
 
@@ -222,3 +228,88 @@ o uso e revogar quando não for mais necessário reduz a superfície de
 risco caso o token vaze.
 
 **Status:** regra permanente a partir de 2026-08-06.
+
+---
+
+## ADR-011 — Hostinger como armazenamento oficial de arquivos
+
+**Decisão:** o Supabase Storage deixa de ser usado para arquivos da
+aplicação (APK, ícones, banners, e qualquer arquivo público futuro —
+imagens/vídeos de tutoriais, PDFs de FAQ, downloads). A partir de
+2026-08-06, a **Hostinger** (FTP/SFTP) passa a ser o armazenamento
+oficial. O Supabase continua sendo usado só para banco de dados,
+autenticação e RLS — nunca mais para arquivos.
+
+Os arquivos na Hostinger são **públicos** (URL direta, sem URL
+assinada). Controle de acesso, quando necessário, é feito pela
+aplicação (checagem de sessão/RLS antes de expor o link), não pelo
+armazenamento — diferente do modelo de bucket privado da ADR-007.
+
+Estrutura de diretórios definitiva:
+
+```
+assets/
+  apps/
+    unitv/
+      mobile/{apk,icon,banner}/
+      tv/{apk,icon,banner}/
+  tutorials/
+    images/
+    videos/
+  faq/
+  downloads/
+```
+
+Nenhuma migração de dado foi necessária: as colunas já existentes
+(`storage_path`, `icon_path`, `banner_path`, `asset_folder`,
+`storage_folder`) continuam guardando o **caminho relativo** do
+arquivo — só que agora relativo à raiz da Hostinger, não a um bucket
+Supabase. A URL pública é sempre construída em tempo de execução
+(`getPublicUrl`), nunca gravada como valor fixo no banco.
+
+**Motivo:** o plano Supabase atual (Free) tem um teto de upload de
+50MB por arquivo, abaixo dos 300MB decididos para APK (ADR-007/
+`STORAGE.md`) — não configurável por bucket, é um limite de
+projeto/plano inteiro. Migrar para uma hospedagem com controle total
+sobre limites de arquivo resolve isso e evita precisar migrar de novo
+quando o Portal Público estiver pronto (a Hostinger já nasce como
+infraestrutura definitiva para isso — ver ADR-008).
+
+**Status:** decisão aprovada em 2026-08-06. Implementação (camada de
+abstração) em andamento — ver ADR-012 e `STORAGE.md`. Credenciais da
+Hostinger (FTP/SFTP) ainda não configuradas no `.env.local` no
+momento desta ADR; bloqueado até isso acontecer.
+
+---
+
+## ADR-012 — Camada de abstração de armazenamento
+
+**Decisão:** nenhum componente ou Server Action da aplicação conhece
+FTP, SFTP ou Hostinger diretamente. Todo acesso a arquivos passa por
+uma interface única em `src/lib/storage/`:
+
+```
+src/lib/storage/
+  types.ts       # interface StorageProvider + tipos
+  provider.ts     # export const storage: StorageProvider — ponto único de import
+  hostinger.ts      # implementação concreta (FTP/SFTP)
+```
+
+O resto do código só chama `storage.upload(...)`, `storage.delete(...)`,
+`storage.exists(...)`, `storage.getPublicUrl(...)` — importado de
+`@/lib/storage/provider`, nunca de `hostinger.ts` diretamente.
+
+**Motivo:** trocar de provedor de armazenamento no futuro (outra
+hospedagem, S3, etc.) deve significar escrever um novo arquivo que
+implementa `StorageProvider` e trocar uma linha em `provider.ts` — não
+reescrever cada Server Action que faz upload. Já é a segunda vez que
+o projeto muda de armazenamento (Supabase → Hostinger) em uma única
+sessão; a camada existe para que uma terceira mudança, se acontecer,
+seja barata.
+
+**Status:** interface e implementação Hostinger escritas em
+2026-08-06 (`tsc`/`lint`/`build` limpos). **Não testada** contra a
+Hostinger real — sem credenciais configuradas ainda, ninguém chama
+`storage.*` em nenhuma rota. Primeiro uso real (Server Action de
+upload) deve incluir um teste manual de conectividade antes de
+qualquer coisa ir para o `DEFINITION_OF_DONE.md` como concluída.

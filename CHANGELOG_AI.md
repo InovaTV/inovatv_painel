@@ -7,6 +7,61 @@
 
 ---
 
+## 2026-08-06 (11) — Pivô de armazenamento: Supabase Storage → Hostinger
+
+**Contexto:** o teto de 50MB do plano Free do Supabase (achado na
+entrada anterior) inviabilizava upload de APK. Usuário decidiu trocar
+completamente o armazenamento de arquivos para uma hospedagem própria
+(Hostinger, via FTP/SFTP), não só para APK — para todo arquivo
+público da plataforma (apps, tutoriais, FAQ, downloads futuros).
+Confirmou que isso substitui definitivamente o antigo Projeto
+Downloads (fecha o ciclo da ADR-008) e pediu uma camada de código
+desacoplada antes de qualquer implementação de upload.
+
+**Adicionado**
+- `src/lib/storage/types.ts` — interface `StorageProvider`
+  (`upload`/`delete`/`exists`/`getPublicUrl`) e tipos de suporte.
+- `src/lib/storage/provider.ts` — `export const storage`, único
+  ponto de import para o resto da aplicação.
+- `src/lib/storage/hostinger.ts` — implementação FTP/SFTP. Detecta
+  automaticamente qual protocolo está disponível (tenta SFTP,
+  cai para FTP), com cache por processo e override manual via
+  `HOSTINGER_PROTOCOL`. Usa `ssh2-sftp-client` e `basic-ftp` (novas
+  dependências, mais `@types/ssh2-sftp-client` como dev dependency).
+- ADR-011 (Hostinger como armazenamento oficial) e ADR-012 (camada
+  de abstração de storage) em `ARCHITECTURE_DECISIONS.md`.
+- `.env.example` — 5 novas variáveis `HOSTINGER_*` (host, user,
+  password, root path, public base URL) mais 3 opcionais (portas,
+  protocolo forçado).
+
+**Alterado**
+- `STORAGE.md` — reescrito para descrever a Hostinger como
+  armazenamento real, com a estrutura de diretórios definitiva
+  (`assets/apps/...`, `assets/tutorials/...`, `assets/faq/`,
+  `assets/downloads/`) e a tabela de mapeamento das colunas
+  existentes (nenhuma migração de dado necessária — os mesmos
+  campos `storage_path`/`icon_path`/`banner_path`/`asset_folder`/
+  `storage_folder` continuam sendo usados, só aponta pra outro
+  backend agora).
+- ADR-007 — Status atualizado para "superseded pela ADR-011"
+  (decisão original preservada, não reescrita).
+- ADR-008 — nota adicionada confirmando que a Hostinger é, na
+  prática, a infraestrutura do Portal Público previsto ali.
+- `PROJECT_MASTER.md` — §1.1 com as novas variáveis, §4 com
+  `src/lib/storage/` na estrutura de pastas.
+
+**Importante — NÃO testado:** nenhuma credencial `HOSTINGER_*` está
+configurada no `.env.local` ainda. O código compila e passa
+`tsc`/`lint`/`build`, mas a conexão FTP/SFTP real nunca foi exercida.
+Ninguém chama `storage.*` em nenhuma rota/Server Action ainda —
+puramente preparação de infraestrutura, igual ao padrão já usado com
+Supabase (documentar/preparar antes de credenciais existirem).
+
+**Verificação:** `npx tsc --noEmit`, `npm run lint`, `npm run build`
+— todos limpos.
+
+---
+
 ## 2026-08-06 (10) — Migração aplicada, bucket criado, bloqueio de plano descoberto
 
 **Contexto:** usuário confirmou `SUPABASE_SERVICE_ROLE_KEY` e
