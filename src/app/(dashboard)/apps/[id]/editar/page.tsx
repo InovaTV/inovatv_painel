@@ -19,9 +19,11 @@ export default async function EditarAppPage({ params }: Props) {
     notFound();
   }
 
-  const [products, apkStat] = await Promise.all([
+  const [products, apkStat, iconStat, bannerStat] = await Promise.all([
     getProducts(),
     app.storage_path ? storage.stat(app.storage_path) : Promise.resolve(null),
+    app.icon_path ? storage.stat(app.icon_path) : Promise.resolve(null),
+    app.banner_path ? storage.stat(app.banner_path) : Promise.resolve(null),
   ]);
 
   return (
@@ -38,7 +40,13 @@ export default async function EditarAppPage({ params }: Props) {
 
       </div>
 
-      <AppForm app={app} products={products} apkStat={apkStat} />
+      <AppForm
+        app={app}
+        products={products}
+        apkStat={apkStat}
+        iconStat={iconStat}
+        bannerStat={bannerStat}
+      />
 
     </>
   );

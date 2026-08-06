@@ -7,6 +7,52 @@
 
 ---
 
+## 2026-08-06 (23) — Upload de Ícone e Banner (reaproveitando a infraestrutura por completo)
+
+**Contexto:** usuário validou a revisão de UX (entrada anterior) e o
+Upload de APK pelo navegador, e autorizou Ícone/Banner reaproveitando
+`uploadAppAsset`/Route Handler/`StorageProvider` sem duplicar código —
+exatamente o que a entrada 18 já tinha preparado (`ASSET_CONFIG` já
+suportava os três tipos desde o início).
+
+**Alterado**
+- `[id]/editar/page.tsx` — busca `storage.stat()` também para
+  `icon_path`/`banner_path` (se existirem), em paralelo com o do APK.
+- `AppForm.tsx` — os dois `LockedAssetPlaceholder` ("Disponível em
+  breve") foram substituídos por `AssetUploadField` reais
+  (`type="icon"`/`type="banner"`), mesmo componente já usado pro APK.
+  Função `LockedAssetPlaceholder` removida (sem uso restante). Helper
+  `toCurrentAsset()` extraído para não repetir a conversão
+  `AssetStat → { size, modifiedAt }` três vezes.
+
+**Não foi necessário mudar:** `app.service.ts` (`uploadAppAsset`/
+`ASSET_CONFIG`), a Route Handler, `AssetUploadField.tsx` — zero
+duplicação, exatamente como pedido.
+
+**Testado:** `replace()`+`stat()`+`delete()` para os paths reais de
+ícone (`.../icon/icon.png`) e banner (`.../banner/banner.webp`) via
+script descartável (criado e removido nesta entrada), confirmando o
+mesmo mecanismo genérico funciona para os dois tipos.
+
+**Verificação:** `npx tsc --noEmit`, `npm run lint`, `npm run build`
+limpos.
+
+**ROADMAP.md / DEFINITION_OF_DONE.md atualizados:** Upload de Ícone e
+Upload Banner do app marcados como concluídos. Itens restantes do
+módulo Aplicativos: Preview, Download, Ordenação (UI de
+reordenação — hoje só automática), Status (toggle visual), Busca,
+Paginação, validação além de `required`, tratamento de erro visível
+mais completo.
+
+**Escopo mantido estrito:** nenhuma melhoria visual foi feita nesta
+entrada — usuário reservou isso para uma fase exclusiva de UI/UX após
+o módulo Aplicativos estar 100% fechado. Auditoria do banco (`apps`,
+`products` e relacionadas) também **não** foi feita — fica para
+depois de Ícone/Banner estarem concluídos *e validados* pelo usuário
+no navegador.
+
+---
+
 ## 2026-08-06 (22) — Revisão funcional da tela de Aplicativos: proposta aprovada e implementada
 
 **Contexto:** com Upload de APK validado pelo navegador de verdade, o

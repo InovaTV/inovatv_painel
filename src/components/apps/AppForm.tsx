@@ -33,27 +33,19 @@ function SubmitButton({ editing }: { editing: boolean }) {
   );
 }
 
-function LockedAssetPlaceholder({ label }: { label: string }) {
-  return (
-    <div className="flex items-center justify-between rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
-      <span className="font-medium">
-        {label}
-      </span>
-
-      <span>
-        🔒 Disponível em breve
-      </span>
-    </div>
-  );
+function toCurrentAsset(stat?: AssetStat | null) {
+  return stat ? { size: stat.size, modifiedAt: stat.modifiedAt.toISOString() } : null;
 }
 
 interface Props {
   app?: App;
   products: Product[];
   apkStat?: AssetStat | null;
+  iconStat?: AssetStat | null;
+  bannerStat?: AssetStat | null;
 }
 
-export default function AppForm({ app, products, apkStat }: Props) {
+export default function AppForm({ app, products, apkStat, iconStat, bannerStat }: Props) {
   const router = useRouter();
 
   const editing = Boolean(app);
@@ -240,25 +232,36 @@ export default function AppForm({ app, products, apkStat }: Props) {
         </h2>
 
         {app ? (
-          <AssetUploadField
-            appId={app.id}
-            type="apk"
-            label="APK"
-            accept=".apk,application/vnd.android.package-archive"
-            current={
-              apkStat
-                ? { size: apkStat.size, modifiedAt: apkStat.modifiedAt.toISOString() }
-                : null
-            }
-          />
+          <>
+            <AssetUploadField
+              appId={app.id}
+              type="apk"
+              label="APK"
+              accept=".apk,application/vnd.android.package-archive"
+              current={toCurrentAsset(apkStat)}
+            />
+
+            <AssetUploadField
+              appId={app.id}
+              type="icon"
+              label="Ícone"
+              accept="image/png"
+              current={toCurrentAsset(iconStat)}
+            />
+
+            <AssetUploadField
+              appId={app.id}
+              type="banner"
+              label="Banner"
+              accept="image/webp"
+              current={toCurrentAsset(bannerStat)}
+            />
+          </>
         ) : (
           <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
             Salve o aplicativo para habilitar o envio de arquivos.
           </div>
         )}
-
-        <LockedAssetPlaceholder label="Ícone" />
-        <LockedAssetPlaceholder label="Banner" />
       </div>
     </form>
   );

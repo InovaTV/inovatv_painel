@@ -39,8 +39,8 @@ documentos. O esforço agora é 100% em código.
 - [x] Update
 - [x] Delete
 - [x] Upload APK
-- [ ] Upload Ícone
-- [ ] Upload Banner do app (imagem promocional — pertence ao
+- [x] Upload Ícone
+- [x] Upload Banner do app (imagem promocional — pertence ao
   cadastro do app, **não** é o módulo "Banners" de marketing da Fase 3)
 - [ ] Preview
 - [ ] Download
