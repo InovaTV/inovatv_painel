@@ -313,8 +313,7 @@ genérica: arquivo `remote-storage.ts` (não `hostinger.ts`), variáveis
 `STORAGE_*` (não `HOSTINGER_*`), seleção de provider via
 `STORAGE_PROVIDER` em `provider.ts` — a aplicação depende só do
 conceito de "storage provider", nunca do nome da hospedagem
-específica. **Não testada** contra a Hostinger real — sem credenciais
-configuradas ainda, ninguém chama `storage.*` em nenhuma rota.
-Primeiro uso real (Server Action de upload) deve incluir um teste de
-conectividade (`npm run storage:test`) antes de qualquer coisa ir
-para o `DEFINITION_OF_DONE.md` como concluída.
+específica. **Testada com sucesso via `npm run storage:test` em
+2026-08-06** — conecta, cria diretório, envia, confirma existência,
+monta URL pública, remove e confirma remoção contra a Hostinger real.
+Ainda não usada por nenhuma Server Action de verdade.

@@ -3,15 +3,18 @@ import { Readable } from "node:stream";
 import SftpClient from "ssh2-sftp-client";
 import { Client as FtpClient } from "basic-ftp";
 
-import type { StorageProvider, UploadInput } from "./types";
+import type { StorageProvider, UploadInput } from "./types.ts";
 
 const HOST = process.env.STORAGE_HOST!;
 const USER = process.env.STORAGE_USER!;
 const PASSWORD = process.env.STORAGE_PASSWORD!;
 const ROOT_PATH = (process.env.STORAGE_ROOT_PATH ?? "").replace(/\/+$/, "");
 const PUBLIC_BASE_URL = (process.env.STORAGE_PUBLIC_BASE_URL ?? "").replace(/\/+$/, "");
-const SFTP_PORT = Number(process.env.STORAGE_SFTP_PORT ?? 22);
-const FTP_PORT = Number(process.env.STORAGE_FTP_PORT ?? 21);
+// STORAGE_PORT é um fallback genérico — usado quando só existe uma porta
+// configurada (comum em hospedagem compartilhada) em vez de uma por protocolo.
+const GENERIC_PORT = process.env.STORAGE_PORT;
+const SFTP_PORT = Number(process.env.STORAGE_SFTP_PORT ?? GENERIC_PORT ?? 22);
+const FTP_PORT = Number(process.env.STORAGE_FTP_PORT ?? GENERIC_PORT ?? 21);
 const FORCED_PROTOCOL = process.env.STORAGE_PROTOCOL as "sftp" | "ftp" | undefined;
 const FORCED_FTP_SECURE =
   process.env.STORAGE_FTP_SECURE === undefined

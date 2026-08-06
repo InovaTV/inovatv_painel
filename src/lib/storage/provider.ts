@@ -1,6 +1,6 @@
-import { createRemoteStorageProvider } from "./remote-storage";
+import { createRemoteStorageProvider } from "./remote-storage.ts";
 
-import type { StorageProvider } from "./types";
+import type { StorageProvider } from "./types.ts";
 
 const PROVIDER = process.env.STORAGE_PROVIDER ?? "hostinger";
 
@@ -15,4 +15,4 @@ function resolveProvider(): StorageProvider {
 
 export const storage: StorageProvider = resolveProvider();
 
-export type { StorageProvider, UploadInput } from "./types";
+export type { StorageProvider, UploadInput } from "./types.ts";

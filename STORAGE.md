@@ -119,11 +119,24 @@ Nenhum componente ou Server Action deve importar `ssh2-sftp-client`,
 
 ## Status desta implementação
 
-**Escrita, validada por `tsc`/`lint`/`build`, mas NÃO testada contra
-a Hostinger real.** Nenhuma credencial configurada ainda — ninguém
-chama `storage.upload/delete/exists` em nenhuma rota. Antes de
-marcar qualquer upload como concluído no `DEFINITION_OF_DONE.md`,
-fazer um teste manual de conectividade + upload real.
+**Testada com sucesso contra a Hostinger real em 2026-08-06**
+(`npm run storage:test`): conecta, cria diretório, envia arquivo,
+confirma existência, monta URL pública
+(`https://inovatv.pro/assets/...`), remove e confirma remoção — todos
+os 5 checks passaram. Infraestrutura de Storage validada de ponta a
+ponta. Ainda não usada por nenhuma Server Action de verdade (próximo
+passo: Upload de APK).
+
+**Protocolo real usado: FTP puro, sem TLS.** SFTP não está disponível
+nesse host (handshake SSH falha). FTPS falha por mismatch de
+certificado — o certificado TLS do servidor é `*.hstgr.io` (do
+provedor), não `ftp.inovatv.pro` (domínio customizado), então o
+Node rejeita a conexão seguindo o hostname configurado. O fallback
+automático (ADR-012) cai corretamente para FTP sem criptografia.
+Credenciais trafegam em texto claro nessa conexão — risco aceito por
+ora; se quiser eliminar isso, uma opção futura é conectar via
+hostname `*.hstgr.io` em vez do domínio customizado (não implementado
+— decisão do usuário, não presumida aqui).
 
 ## Tamanho máximo por tipo de arquivo (decisão original, ainda válida)
 

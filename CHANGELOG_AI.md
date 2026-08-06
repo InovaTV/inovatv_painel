@@ -7,6 +7,44 @@
 
 ---
 
+## 2026-08-06 (15) — storage:test validado contra a Hostinger real
+
+**Usuário configurou as credenciais `STORAGE_*` no `.env.local`.**
+Rodei `npm run storage:test`: os 5 checks passaram (conecta, envia,
+confirma existência, monta URL pública, remove, confirma remoção).
+Infraestrutura de Storage validada de ponta a ponta.
+
+**Corrigido no processo (bugs de compatibilidade, não decisão de
+arquitetura):**
+- `.env.local` tinha `STORAGE_PORT` (genérico), código só lia
+  `STORAGE_SFTP_PORT`/`STORAGE_FTP_PORT`. `remote-storage.ts` agora
+  aceita `STORAGE_PORT` como fallback para os dois.
+- Imports internos de `src/lib/storage/` (`provider.ts` →
+  `remote-storage.ts`/`types.ts`) precisaram de extensão `.ts`
+  explícita — obrigatório pro Node resolver o módulo ao rodar
+  `storage-doctor.ts` nativamente (o Next.js/Turbopack tolera
+  extensão explícita normalmente, então não deve quebrar o build).
+
+**Alterado:** `STORAGE.md` e ADR-012 — status atualizado de "não
+testada" para "testada com sucesso" (2026-08-06).
+
+**Verificação:** `npx tsc --noEmit` limpo, `npm run storage:test`
+com todos os 5 checks ✔.
+
+**Achado de segurança, registrado (não é um bug a corrigir agora):**
+usei debug temporário (removido antes do commit) pra confirmar qual
+protocolo realmente foi usado — SFTP falha (SSH indisponível),
+FTPS falha por mismatch de certificado (`ftp.inovatv.pro` vs
+`*.hstgr.io`), fallback cai pra **FTP puro, sem TLS**. Credenciais
+trafegam em texto claro nessa conexão. Documentado em `STORAGE.md`
+como risco aceito por ora; possível mitigação futura (conectar via
+hostname `*.hstgr.io`) fica para o usuário decidir, não implementada.
+
+**Próximo passo:** Upload de APK — primeira Server Action real
+usando `storage.upload()`.
+
+---
+
 ## 2026-08-06 (14) — Detecção automática de FTPS vs FTP puro
 
 Completa a detecção automática já existente (SFTP vs FTP) um nível
