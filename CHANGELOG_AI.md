@@ -7,6 +7,17 @@
 
 ---
 
+## 2026-08-06 (17) — Convenção definitiva de nomes de arquivo
+
+Só documentação — nenhum código do módulo de Storage foi tocado
+(decisão explícita do usuário: módulo está maduro, só mexe de novo
+por bug/troca de provedor/protocolo). `STORAGE.md` agora fixa os
+nomes exatos, sem ambiguidade: `app.apk`, `icon.png`, `banner.webp`
+— sempre esses nomes, nunca variação por app. Árvore de diretórios
+atualizada com os nomes de arquivo completos, não só as pastas.
+
+---
+
 ## 2026-08-06 (16) — storage.replace(), nome de arquivo fixo, item de segurança no ROADMAP
 
 **Contexto:** usuário pediu 3 coisas antes de começar Upload de APK:

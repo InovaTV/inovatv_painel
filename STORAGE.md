@@ -45,13 +45,13 @@ assets/
   apps/
     unitv/
       mobile/
-        apk/
-        icon/
-        banner/
+        apk/app.apk
+        icon/icon.png
+        banner/banner.webp
       tv/
-        apk/
-        icon/
-        banner/
+        apk/app.apk
+        icon/icon.png
+        banner/banner.webp
   tutorials/
     images/
     videos/
@@ -59,15 +59,28 @@ assets/
   downloads/
 ```
 
+**Convenção definitiva de nome — o painel nunca pergunta o nome do
+arquivo, ele já sabe:**
+
+| Tipo | Nome fixo |
+|---|---|
+| APK | `app.apk` |
+| Ícone | `icon.png` |
+| Banner | `banner.webp` |
+
+Nunca `unitv_icon_final.png`, `logo-v2.png`, `app-v3.24.2.apk` etc. —
+o nome nunca varia por app, só o caminho da pasta
+(`{asset_folder}/{platform}/`) muda. Isso significa que o futuro
+Portal Público (e qualquer outro consumidor) descobre o arquivo só
+pela combinação produto+plataforma+tipo, sem precisar consultar o
+banco para saber o nome.
+
 Mantém a lógica produto/plataforma já usada para apps (ver histórico
 na ADR-007) e já reserva espaço para os próximos módulos
 (Tutoriais, FAQ) reaproveitarem a mesma raiz `assets/` em vez de cada
 um inventar sua própria convenção — ADR-006 (reutilização).
 
-**Nome de arquivo fixo, não versionado.** Dentro de cada pasta de
-tipo (`apk/`, `icon/`, `banner/`), o arquivo tem sempre o mesmo nome
-(ex.: `apps/unitv/mobile/apk/app.apk`, não
-`unitv-mobile-v3.24.2.apk`). A versão já existe na coluna `version`
+Nome nunca versionado porque a versão já existe na coluna `version`
 do banco — versionar o nome do arquivo também só faria a URL pública
 mudar a cada atualização sem necessidade. Atualizar o APK/ícone/banner
 = mesmo path, conteúdo novo (via `storage.replace()`), banco atualiza
