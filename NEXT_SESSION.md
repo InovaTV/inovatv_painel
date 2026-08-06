@@ -1,54 +1,57 @@
 # Próxima Sessão
 
 > Documento descartável — reescrito por completo a cada sessão.
-> Para contexto permanente, ver `PROJECT_MASTER.md`, `ROADMAP.md` e
-> `DEFINITION_OF_DONE.md`. Documentação continua congelada — só
-> código, exceto pelas atualizações mecânicas de fim de sessão.
+> Para contexto permanente, ver `PROJECT_MASTER.md`, `ROADMAP.md`,
+> `DEFINITION_OF_DONE.md`, `STORAGE.md` e ADR-007.
 
 ## Último commit
 
-Ver `git log` — commit desta sessão implementa Update de Aplicativos
-(CRUD 100% completo). O anterior, `01bf70e`, foi o congelamento da
-documentação (`DEFINITION_OF_DONE.md` + split Apps/Banners).
+Ver `git log` — commit desta sessão adiciona a migração SQL e o
+`STORAGE.md` (sem código, sem bucket criado). O anterior, `4acbd24`,
+implementou o Update de Aplicativos.
 
 ## Objetivo da próxima sessão
 
-CRUD de Aplicativos está completo (Create/Read/Update/Delete). Próximo
-item do `DEFINITION_OF_DONE.md`: **Upload de APK, Ícone e Banner do
-app** via Supabase Storage (ADR-004 — obrigatoriamente por Server
-Action). Antes de começar: `npm run build` + `npm run lint` (regra
-§9.1).
+Dois passos possíveis, nessa ordem:
 
-## Arquivos que serão alterados
+1. **Bloqueante fora do meu controle:** aplicar manualmente
+   `supabase/migrations/20260806140000_add_banner_path_fix_storage_folder.sql`
+   no Supabase (SQL Editor ou `supabase db push`) — não tenho
+   permissão de DDL com a chave anônima disponível neste ambiente.
+2. Depois disso confirmado: criar o bucket `apps` (privado) no
+   Supabase Storage e implementar upload de APK/Ícone/Banner via
+   Server Action, seguindo exatamente `STORAGE.md`/ADR-007.
 
-- `src/lib/supabase/storage.ts` ou similar (novo) — helpers de
-  upload/URL pública.
-- `src/app/(dashboard)/apps/actions.ts` e/ou `apps/novo/actions.ts` —
-  Server Actions de upload passam a receber os arquivos via
-  `FormData`.
+## Arquivos que serão alterados (quando o upload for implementado)
+
+- `src/lib/supabase/storage.ts` (novo) — helpers de upload/URL
+  assinada.
+- `src/app/(dashboard)/apps/actions.ts` — Server Actions de upload
+  recebendo arquivo via `FormData`.
 - `src/components/apps/AppForm.tsx` — os 3 `<Input type="file" disabled />`
-  atuais precisam virar inputs reais, com `name` para chegar no
-  `FormData` do Server Action.
-- Possivelmente `src/services/app.service.ts` — se as colunas
-  `apk_url`/`icon_url`/`banner_url` (ou nomes equivalentes) ainda não
-  existirem na tabela `apps` do Supabase, será preciso confirmar com
-  o usuário antes de gravar.
+  viram inputs reais.
+- `src/components/apps/` — novo componente para o "cartão" do APK
+  (nome, tamanho, versão, data, Download/Trocar/Remover) e preview de
+  ícone/banner.
 
 ## Riscos
 
-- Não existe `SUPABASE_SERVICE_ROLE_KEY` em `.env.local` — só a chave
-  anônima. Se o bucket do Storage exigir bypass de RLS para escrita
-  via Server Action, será necessário pedir essa chave ao usuário
-  (nunca expor no browser — ADR-004/ADR-001).
-- Não sabemos ainda o nome/estrutura dos buckets no Supabase Storage
-  nem os nomes de coluna para as URLs resultantes na tabela `apps` —
-  **perguntar ao usuário antes de implementar**, não presumir.
-- Tamanho máximo de arquivo (especialmente APK) precisa de decisão
-  explícita antes de codar validação.
+- Migração SQL ainda não foi aplicada no banco — nada do upload deve
+  ser codado assumindo que `banner_path` já existe até isso ser
+  confirmado pelo usuário.
+- **Pergunta em aberto, não resolvida:** qual a relação entre
+  `download_url` (aponta para `https://inovatv.pro/...`, fora do
+  Supabase) e o novo Storage do painel? O assistente não tem acesso
+  ao repositório do "Projeto Downloads" para investigar — só o
+  usuário pode responder isso. Não bloqueia o upload em si (que não
+  toca em `download_url`), mas bloqueia decidir se/quando
+  `download_url` passa a ser atualizado automaticamente.
+- Não existe `SUPABASE_SERVICE_ROLE_KEY` em `.env.local`. Se a
+  política do bucket privado exigir bypass de RLS para o upload via
+  Server Action, será necessário pedir essa chave ao usuário.
 
 ## Primeiro passo
 
-Perguntar ao usuário: (1) nomes/estrutura dos buckets no Supabase
-Storage, (2) se as colunas de URL já existem na tabela `apps` ou
-precisam ser criadas, (3) tamanho máximo aceito por tipo de arquivo.
-Só então desenhar o Server Action de upload.
+Confirmar com o usuário: (1) a migração SQL foi aplicada? (2) alguma
+resposta sobre a relação `download_url` / Projeto Downloads? Só então
+criar o bucket `apps` e começar o Server Action de upload.

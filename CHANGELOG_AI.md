@@ -7,6 +7,55 @@
 
 ---
 
+## 2026-08-06 (6) — Estrutura do Storage validada antes do upload (só SQL + doc, sem bucket/código)
+
+**Contexto:** antes de implementar upload de APK/Ícone/Banner, o
+usuário pediu para investigar o schema real antes de propor
+migração. Ao consultar a tabela `apps` via REST (chave anônima), veio
+à tona que **já existem dados reais de produção** (2 apps: UniTV
+Mobile, UniTV TV Box) com colunas (`storage_path`, `icon_path`,
+`asset_folder`, `storage_folder`, `download_url`) que não batiam com
+a proposta inicial (bucket por slug, colunas `apk_path`/`banner_path`
+novas). Nenhum bucket existe ainda no Storage (`[]` via API).
+
+Decisão do usuário: preservar a convenção existente
+(produto/plataforma, não slug), não renomear colunas, adicionar só o
+que falta.
+
+**Adicionado**
+- `supabase/migrations/20260806140000_add_banner_path_fix_storage_folder.sql`
+  — `ALTER TABLE` adicionando `banner_path`, e `UPDATE` corrigindo o
+  bug de dado em `storage_folder` (valor salvo como
+  `"storage_folder = <path>"` em vez de só `<path>`, confirmado nas 2
+  linhas reais). **Não aplicada ainda** — precisa ser rodada
+  manualmente (SQL Editor do Supabase ou `supabase db push`); este
+  ambiente só tem a chave anônima, que não executa DDL.
+- `STORAGE.md` — estrutura de pastas do bucket `apps` (privado,
+  produto/plataforma/tipo), tabela de colunas usadas, tamanhos
+  máximos por tipo (APK 300MB, Ícone 5MB, Banner 10MB), política de
+  substituição sem lixo (upload → atualizar banco → remover antigo),
+  e nota explícita de que os valores atuais de `storage_path` dos 2
+  apps reais não são tocados por esta migração (formato antigo,
+  `public/apps/...`, sem subpasta por tipo — será naturalmente
+  sobrescrito na primeira troca de arquivo pelo painel).
+- ADR-007 em `ARCHITECTURE_DECISIONS.md` — registra a decisão de
+  estrutura do Storage.
+
+**Não feito nesta entrada (aguardando aprovação/decisão do usuário):**
+- Bucket `apps` **não foi criado**.
+- Upload **não foi implementado**.
+- `download_url` não foi tocado nem investigado — o assistente não
+  tem acesso ao repositório do "Projeto Downloads" (fora deste
+  diretório de trabalho) para investigar como esse campo é
+  consumido. Pergunta em aberto registrada em `NEXT_SESSION.md`; a
+  implementação de upload não escreverá em `download_url` de qualquer
+  forma, independente da resposta.
+
+**Verificação:** nenhuma mudança de código nesta entrada — SQL de
+migração (não aplicada) + documentação.
+
+---
+
 ## 2026-08-06 (5) — Update de Aplicativos implementado (CRUD 100% completo)
 
 **Contexto:** primeira sessão de código após o congelamento da

@@ -120,3 +120,28 @@ e o padrão realmente for específico do módulo.
 
 **Status:** regra permanente a partir de 2026-08-06, vale para todos
 os módulos daqui pra frente.
+
+---
+
+## ADR-007 — Estrutura do Storage
+
+**Decisão:** um único bucket privado `apps`, com pastas por
+produto/plataforma (`{asset_folder}/{platform}/{apk,icon,banner}/`),
+**não** por slug do app. Colunas existentes (`storage_path`,
+`icon_path`, `asset_folder`, `storage_folder`, `download_url`)
+mantidas sem renomear; adicionada apenas `banner_path`. Leitura
+sempre via URL assinada gerada no servidor — nunca acesso público
+direto. Troca de arquivo segue upload → atualizar banco → remover
+antigo (nessa ordem), nunca o inverso.
+
+**Motivo:** já existiam dados reais de produção (2 apps) seguindo a
+convenção produto/plataforma — decisão explícita do usuário de não
+forçar uma reestruturação (slug-based) por cima de uma convenção já
+consistente. Ver `STORAGE.md` para o detalhamento completo.
+
+**Status:** estrutura definida e documentada (`STORAGE.md`,
+`supabase/migrations/20260806140000_add_banner_path_fix_storage_folder.sql`).
+Bucket **ainda não criado** e upload **ainda não implementado** —
+aguardando aprovação desta estrutura antes do próximo passo. Relação
+com `download_url`/Projeto Downloads é pergunta em aberto, registrada
+em `NEXT_SESSION.md`.
