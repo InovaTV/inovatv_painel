@@ -36,7 +36,7 @@ documentos. O esforço agora é 100% em código.
 
 - [x] Create
 - [x] Read
-- [ ] Update
+- [x] Update
 - [x] Delete
 - [ ] Upload APK
 - [ ] Upload Ícone

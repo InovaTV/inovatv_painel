@@ -7,6 +7,48 @@
 
 ---
 
+## 2026-08-06 (5) — Update de Aplicativos implementado (CRUD 100% completo)
+
+**Contexto:** primeira sessão de código após o congelamento da
+documentação. Objetivo único: fechar o item "Update" do
+`DEFINITION_OF_DONE.md` para o módulo Aplicativos. Árvore verificada
+limpa antes de começar (regra §9.1).
+
+**Adicionado**
+- `updateAppAction` em `src/app/(dashboard)/apps/actions.ts` — Server
+  Action, reaproveita `updateApp()` já existente em
+  `app.service.ts`, redireciona para `/apps` após salvar.
+- `src/app/(dashboard)/apps/[id]/editar/page.tsx` — busca o app via
+  `getApp(id)`, `notFound()` se não existir, renderiza `AppForm` em
+  modo edição.
+
+**Alterado**
+- `src/components/apps/AppForm.tsx` — agora aceita `app?: App`
+  opcional. Quando presente: preenche todos os campos via
+  `defaultValue`, usa `updateAppAction.bind(null, app.id)` como
+  action do form (padrão de Server Action com argumento extra via
+  `.bind`), e o botão muda para "Salvar Alterações". Sem `app`:
+  comportamento igual ao de antes (`createAppAction`).
+- `src/components/common/ActionsMenu.tsx` — item "Editar" deixou de
+  ser `disabled`; agora é um `Link` real para `/apps/[id]/editar`
+  (`DropdownMenuItem asChild`).
+
+**Verificação**
+- `npx tsc --noEmit` — sem erros.
+- `npm run lint` — sem erros/warnings.
+- `npm run build` — sucesso; nova rota `/apps/[id]/editar` aparece
+  no build como dinâmica.
+- Testado via `curl`: `/apps/<uuid>/editar` sem sessão → `307` para
+  `/login` (proxy cobre a rota dinâmica corretamente).
+
+**Estado do módulo Aplicativos após esta entrada** (ver
+`DEFINITION_OF_DONE.md`): Create/Read/Update/Delete ✅. Ainda faltam:
+Upload APK/Ícone/Banner, Preview, Download, Ordenação, Status
+(toggle), Busca, Paginação, validação além de `required`, tratamento
+de erro visível ao usuário.
+
+---
+
 ## 2026-08-06 (4) — DEFINITION_OF_DONE.md, split Apps/Banners, congelamento da documentação
 
 **Contexto:** usuário decidiu que a documentação atingiu um bom ponto

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import {
@@ -59,14 +60,15 @@ export default function ActionsMenu({
 
       <DropdownMenuContent align="end">
 
-        <DropdownMenuItem
-          disabled
-          title="Edição ainda não implementada"
-        >
+        <DropdownMenuItem asChild>
 
-          <Pencil className="mr-2 h-4 w-4" />
+          <Link href={`/apps/${id}/editar`}>
 
-          Editar
+            <Pencil className="mr-2 h-4 w-4" />
+
+            Editar
+
+          </Link>
 
         </DropdownMenuItem>
 

@@ -7,23 +7,37 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import { createAppAction } from "@/app/(dashboard)/apps/novo/actions";
+import { updateAppAction } from "@/app/(dashboard)/apps/actions";
 
-function SubmitButton() {
+import type { App } from "@/services/app.service";
+
+function SubmitButton({ editing }: { editing: boolean }) {
   const { pending } = useFormStatus();
 
   return (
     <Button type="submit" disabled={pending}>
-      {pending ? "Salvando..." : "Salvar Aplicativo"}
+      {pending
+        ? "Salvando..."
+        : editing
+          ? "Salvar Alterações"
+          : "Salvar Aplicativo"}
     </Button>
   );
 }
 
-export default function AppForm() {
+interface Props {
+  app?: App;
+}
+
+export default function AppForm({ app }: Props) {
   const router = useRouter();
+
+  const editing = Boolean(app);
+  const action = app ? updateAppAction.bind(null, app.id) : createAppAction;
 
   return (
     <form
-      action={createAppAction}
+      action={action}
       className="max-w-4xl rounded-xl border bg-white p-8"
     >
       <div className="grid grid-cols-2 gap-6">
@@ -35,6 +49,7 @@ export default function AppForm() {
           <Input
             name="name"
             required
+            defaultValue={app?.name}
             placeholder="UniTV Mobile"
           />
         </div>
@@ -47,6 +62,7 @@ export default function AppForm() {
           <Input
             name="slug"
             required
+            defaultValue={app?.slug}
             placeholder="unitv-mobile"
           />
         </div>
@@ -59,6 +75,7 @@ export default function AppForm() {
           <Input
             name="version"
             required
+            defaultValue={app?.version}
             placeholder="3.24.2"
           />
         </div>
@@ -72,7 +89,7 @@ export default function AppForm() {
             name="display_order"
             type="number"
             min={1}
-            defaultValue={1}
+            defaultValue={app?.display_order ?? 1}
             required
           />
         </div>
@@ -86,7 +103,7 @@ export default function AppForm() {
 
           <select
             name="platform"
-            defaultValue="mobile"
+            defaultValue={app?.platform ?? "mobile"}
             className="w-full rounded-md border px-3 py-2"
           >
             <option value="mobile">
@@ -106,7 +123,7 @@ export default function AppForm() {
 
           <select
             name="is_active"
-            defaultValue="true"
+            defaultValue={app ? String(app.is_active) : "true"}
             className="w-full rounded-md border px-3 py-2"
           >
             <option value="true">
@@ -128,6 +145,7 @@ export default function AppForm() {
         <textarea
           name="description"
           rows={5}
+          defaultValue={app?.description}
           className="w-full rounded-md border p-3"
           placeholder="Descrição..."
         />
@@ -159,7 +177,7 @@ export default function AppForm() {
           Cancelar
         </Button>
 
-        <SubmitButton />
+        <SubmitButton editing={editing} />
       </div>
     </form>
   );
