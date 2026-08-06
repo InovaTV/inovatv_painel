@@ -241,6 +241,11 @@ A partir do commit `17bdff3` (2026-08-06), a arquitetura-base
 do `ROADMAP.md` sobre novas abstrações/refatorações estruturais — só
 criar nova abstração diante de necessidade real comprovada (ADR-006).
 
+> Qualquer mudança arquitetural futura deve demonstrar um benefício
+> concreto que não possa ser alcançado reutilizando a arquitetura
+> existente. Na ausência desse benefício, a implementação deve seguir
+> a estrutura atual.
+
 ## 9. Fluxo de trabalho fixado
 
 ### 9.1 Antes de iniciar qualquer funcionalidade nova
