@@ -46,9 +46,14 @@ export async function uploadAppAsset(app: App, type: AssetType, file: File): Pro
   }
 
   const path = `apps/${app.asset_folder}/${app.platform}/${config.folder}/${config.filename}`;
+  const startedAt = Date.now();
+  const sizeMb = (file.size / 1024 / 1024).toFixed(2);
+
   const data = Buffer.from(await file.arrayBuffer());
 
+  const replaceStartedAt = Date.now();
   await storage.replace({ path, data });
+  const replaceMs = Date.now() - replaceStartedAt;
 
   const supabase = await createClient();
 
@@ -61,6 +66,10 @@ export async function uploadAppAsset(app: App, type: AssetType, file: File): Pro
     console.error(error);
     throw error;
   }
+
+  console.log(
+    `[upload] ${type} "${path}": ${sizeMb}MB — storage.replace() ${replaceMs}ms, total ${Date.now() - startedAt}ms`
+  );
 
   return path;
 }

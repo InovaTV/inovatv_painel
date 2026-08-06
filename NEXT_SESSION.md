@@ -6,32 +6,32 @@
 
 ## Último commit
 
-Ver `git log` — commit desta sessão implementa Upload de APK
-(`uploadAppAsset` em `app.service.ts`, ligado a `createAppAction`/
-`updateAppAction`, campo `asset_folder` novo no `AppForm`). Testado
-via script direto (bypassa `next/headers`) — 7/7 checks, mas **ainda
-não testado via o app rodando de verdade no navegador** (eu não
-tenho login/senha do painel).
+Ver `git log` — commit desta sessão adiciona log de instrumentação
+em `uploadAppAsset` (tamanho do arquivo, tempo do `storage.replace()`,
+tempo total). Decisão do usuário: **não avançar para Ícone/Banner
+antes de validar Upload de APK pelo navegador de verdade.**
 
 ## Objetivo da próxima sessão
 
-Dois caminhos possíveis:
+**Bloqueado até o usuário fazer o teste manual no navegador.** Não
+sou eu quem faz esse teste — não tenho login/senha do painel.
 
-**A) Verificação humana primeiro (recomendado antes de seguir):**
-Rodar o painel (`npm run dev`), logar, criar um app novo com um APK
-pequeno de teste, confirmar que salva, editar esse app trocando o
-APK, confirmar que troca. Isso valida o caminho real (multipart
-FormData via Server Action rodando no Next), que é diferente do
-script que usei pra testar nesta sessão.
+Teste que o usuário vai rodar: `npm run dev`, logar, editar um app,
+selecionar um APK real (20-45MB, conforme os apps reais do projeto),
+enviar, e confirmar: arquivo chegou na Hostinger, banco atualizou
+(`storage_path`), o log `[upload] apk "...": XXmb — storage.replace()
+XXms, total XXms` aparece no terminal do `npm run dev` com números
+plausíveis (não travando/timeout).
 
-**B) Seguir direto pra Ícone/Banner** — `uploadAppAsset` já suporta
-os dois tipos (`ASSET_CONFIG` já tem `icon`/`banner`), só falta:
-1. Habilitar os inputs de Ícone/Banner no `AppForm.tsx` (hoje
-   `disabled`), `name="icon"`/`name="banner"`.
-2. `createAppAction`/`updateAppAction` — mesmo padrão do `apk`:
-   pegar o `File` do FormData, chamar `uploadAppAsset(app, "icon", file)`
-   / `"banner"` se presente.
-3. Nenhuma mudança em `app.service.ts` — a função já é genérica.
+**Se passar:** Upload de APK fechado de verdade → seguir pra
+Ícone/Banner (`uploadAppAsset` já suporta os dois, só falta habilitar
+os inputs no `AppForm.tsx` + uma chamada igual à do `apk` em
+`createAppAction`/`updateAppAction` — zero mudança em
+`app.service.ts`).
+
+**Se não passar (timeout, erro, ou muito lento):** investigar com os
+números do log em mãos — não é a Vercel ainda (isso só importa em
+produção), é validar o caminho local/self-hosted primeiro.
 
 ## Risco importante, não resolvido
 

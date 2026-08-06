@@ -7,6 +7,23 @@
 
 ---
 
+## 2026-08-06 (19) — Log de instrumentação para o teste manual de Upload de APK
+
+Usuário decidiu **não avançar para Ícone/Banner** antes de validar
+Upload de APK pelo navegador de verdade (script da entrada anterior
+provou a infraestrutura, não o caminho real do usuário). Pediu log
+de tamanho/tempo pra ter dado concreto se o teste manual falhar ou
+for lento.
+
+**Alterado:** `uploadAppAsset` (`app.service.ts`) agora loga
+`[upload] {tipo} "{path}": {tamanho}MB — storage.replace() {ms}ms,
+total {ms}ms` ao final de cada upload bem-sucedido.
+
+**Verificação:** `tsc`/`lint` limpos. Sem novo teste automatizado —
+a validação agora é manual, pelo usuário, no navegador.
+
+---
+
 ## 2026-08-06 (18) — Upload de APK implementado e testado de ponta a ponta
 
 **Contexto:** primeira funcionalidade construída sobre a infraestrutura
