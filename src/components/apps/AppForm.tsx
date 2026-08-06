@@ -245,7 +245,7 @@ export default function AppForm({ app, products, apkStat, iconStat, bannerStat }
               appId={app.id}
               type="icon"
               label="Ícone"
-              accept="image/png"
+              accept="image/*"
               current={toCurrentAsset(iconStat)}
             />
 
@@ -253,7 +253,7 @@ export default function AppForm({ app, products, apkStat, iconStat, bannerStat }
               appId={app.id}
               type="banner"
               label="Banner"
-              accept="image/webp"
+              accept="image/*"
               current={toCurrentAsset(bannerStat)}
             />
           </>
