@@ -10,13 +10,16 @@
 
 ## Foco atual
 
-**Regra fixada pelo usuário:** não abrir um módulo novo (Banners,
-FAQ, Tutoriais, Clientes, Configurações) enquanto o módulo
-**Aplicativos** não estiver 100% fechado — Create, Read, Update,
-Delete, Upload (APK/Ícone/Banner), teste manual e documentação em
-dia. Ver ADR-006 em `ARCHITECTURE_DECISIONS.md` sobre por quê isso
-importa: os próximos módulos vão reaproveitar os padrões que saírem
-daqui.
+**Regra fixada pelo usuário:** não abrir um módulo novo enquanto o
+módulo **Aplicativos** não estiver 100% fechado — critério objetivo
+em `DEFINITION_OF_DONE.md`, não "CRUD básico funciona". Ver ADR-006
+em `ARCHITECTURE_DECISIONS.md` sobre por quê isso importa: os
+próximos módulos vão reaproveitar os padrões que saírem daqui.
+
+Documentação e arquitetura estão **congeladas** a partir de
+2026-08-06 — só voltam a mudar se surgir uma decisão arquitetônica
+real (vira ADR) ou o fim de sessão exigir atualização mecânica dos
+documentos. O esforço agora é 100% em código.
 
 ---
 
@@ -26,19 +29,33 @@ daqui.
 - [x] Middleware (`src/proxy.ts`, proteção de rotas)
 - [x] Dashboard (layout + cards — dados ainda estáticos)
 
-## Fase 2 — CRUD Aplicativos
+## Fase 2 — Módulo Aplicativos
 
-- [ ] CRUD Apps completo
-  - [x] Create
-  - [x] Read
-  - [x] Delete
-  - [ ] Update
+Único módulo em trabalho agora. Concluído quando atender
+`DEFINITION_OF_DONE.md` por completo — não antes.
 
-## Fase 3 — Upload (Aplicativos)
-
+- [x] Create
+- [x] Read
+- [ ] Update
+- [x] Delete
 - [ ] Upload APK
 - [ ] Upload Ícone
-- [ ] Upload Banner (imagem promocional do app)
+- [ ] Upload Banner do app (imagem promocional — pertence ao
+  cadastro do app, **não** é o módulo "Banners" de marketing da Fase 3)
+- [ ] Preview
+- [ ] Download
+- [ ] Ordenação
+- [ ] Status (toggle ativo/inativo)
+- [ ] Busca
+- [ ] Paginação
+
+## Fase 3 — Banners (Marketing)
+
+Módulo separado do "Upload Banner" da Fase 2 — aqui é conteúdo
+próprio (Banner Home, Banner Promoção, Banner Novidade, Banner Black
+Friday, Banner Destaque, etc.), não um arquivo anexado a um app.
+
+- [ ] CRUD Banners (Marketing)
 
 ## Fase 4 — Clientes
 
@@ -56,15 +73,6 @@ daqui.
 
 - [ ] Tela de Configurações
 
-## Módulo em aberto (não posicionado ainda)
-
-- [ ] **Banners** (módulo de marketing, distinto do "Upload Banner"
-  da Fase 3 — este é conteúdo próprio, já existe item "Banners" no
-  `Sidebar` e no `README.md`, mas não tem fase definida na ordem que
-  o usuário passou). Perguntar ao usuário onde encaixar isso quando
-  chegar a hora — provavelmente entre a Fase 3 e a Fase 4, mas não
-  presumir.
-
 ---
 
 ## Como este arquivo se relaciona com os outros
@@ -79,3 +87,5 @@ daqui.
   apagado.
 - **`ROADMAP.md`** (este arquivo) — visão geral do progresso por
   fase. Atualizado, nunca reescrito do zero.
+- **`DEFINITION_OF_DONE.md`** — critério objetivo para marcar um
+  módulo como concluído aqui.

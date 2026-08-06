@@ -7,6 +7,46 @@
 
 ---
 
+## 2026-08-06 (4) — DEFINITION_OF_DONE.md, split Apps/Banners, congelamento da documentação
+
+**Contexto:** usuário decidiu que a documentação atingiu um bom ponto
+e pediu para parar de refiná-la — risco de "documentar o projeto em
+vez de construir o projeto". Últimos dois ajustes autorizados antes do
+congelamento: um sexto documento (`DEFINITION_OF_DONE.md`) e a
+separação clara entre "Upload Banner" (arquivo do cadastro de um app)
+e o módulo "Banners" (conteúdo de marketing, distinto).
+
+**Adicionado**
+- `DEFINITION_OF_DONE.md` — critério objetivo de conclusão de módulo
+  (CRUD, upload, busca, paginação, ordenação, filtros, preview,
+  validação, tratamento de erro, tipagem sem `any`, sem `TODO`,
+  build/lint OK, docs em dia, commit feito). Já aplicado ao módulo
+  Aplicativos, com checklist detalhado do estado atual.
+- §9.1 em `PROJECT_MASTER.md` — regra "nunca iniciar uma feature com
+  a árvore de trabalho suja" (build → lint → corrigir → commit →
+  só então começar).
+
+**Alterado**
+- `ROADMAP.md` — Fase 2 ("Módulo Aplicativos") passou a listar o
+  checklist completo do `DEFINITION_OF_DONE.md` (Update, Upload
+  APK/Ícone/Banner do app, Preview, Download, Ordenação, Status,
+  Busca, Paginação), em vez de só CRUD básico. Banners (marketing)
+  virou Fase 3, com Clientes/FAQ/Tutoriais/Configurações
+  renumerados para Fase 4–7.
+- `PROJECT_MASTER.md` — topo do arquivo lista os 6 documentos e
+  declara congelamento a partir de 2026-08-06 (só mudam por pedido
+  explícito ou atualização mecânica de fim de sessão).
+
+**Decisão registrada (não é ADR — é diretriz de processo, não
+arquitetura):** documentação e arquitetura congeladas; todo esforço
+daqui pra frente é fechar o módulo Aplicativos até bater 100% do
+`DEFINITION_OF_DONE.md`, sem abrir nenhum outro módulo antes disso.
+
+**Verificação:** nenhuma mudança de código nesta entrada — só
+documentação (a última antes do congelamento).
+
+---
+
 ## 2026-08-06 (3) — Reorganização dos documentos de continuidade
 
 **Contexto:** usuário definiu papéis mais claros para os documentos

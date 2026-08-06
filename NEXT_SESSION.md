@@ -2,41 +2,42 @@
 
 > Documento descartável — reescrito por completo a cada sessão.
 > Para contexto permanente, ver `PROJECT_MASTER.md`, `ROADMAP.md` e
-> `ARCHITECTURE_DECISIONS.md`.
+> `DEFINITION_OF_DONE.md`. **Documentação está congelada — esta
+> sessão é só código.**
 
 ## Último commit
 
-`7faff8e` — feat(auth): migrate to Supabase SSR with protected admin panel
-(mais o commit de documentação desta sessão — ver `git log`).
+Ver `git log` — commit desta sessão é só documentação (o anterior,
+`4044f56`, foi o último antes do congelamento).
 
 ## Objetivo da próxima sessão
 
-Fechar o **Update** de Aplicativos — última peça do CRUD antes de
-poder avançar para upload (regra fixada: não abrir módulo novo
-enquanto Aplicativos não estiver 100% fechado, ver `ROADMAP.md`).
+Implementar **Update** de Aplicativos (primeiro item em aberto do
+checklist em `DEFINITION_OF_DONE.md` / `ROADMAP.md` Fase 2). Antes de
+começar: `npm run build` + `npm run lint` para garantir árvore limpa
+(regra `PROJECT_MASTER.md` §9.1).
 
 ## Arquivos que serão alterados
 
 - `src/app/(dashboard)/apps/[id]/editar/page.tsx` (novo)
 - `src/app/(dashboard)/apps/actions.ts` (adicionar `updateAppAction`)
-- `src/components/apps/AppForm.tsx` (precisa aceitar modo edição:
-  `defaultValues` + decidir entre `createAppAction`/`updateAppAction`)
+- `src/components/apps/AppForm.tsx` (suportar modo edição via prop de
+  `defaultValues` + qual action usar)
 - `src/components/common/ActionsMenu.tsx` (trocar `disabled` do
   "Editar" por link real)
 
 ## Riscos
 
-- `AppForm` hoje é hardcoded para `createAppAction`; a forma mais
-  limpa de suportar os dois modos sem duplicar o componente é passar
-  a action como prop — checar se isso quebra o `useFormStatus` do
-  `SubmitButton` interno (não deveria, mas validar).
-- `[id]/editar` é uma rota dinâmica nova — confirmar que `proxy.ts`
-  cobre esse padrão de rota (matcher é genérico, deve cobrir, mas
-  testar).
+- `AppForm` hoje é hardcoded para `createAppAction`; melhor forma de
+  suportar os dois modos sem duplicar o componente é passar a action
+  como prop — validar que `useFormStatus` do `SubmitButton` interno
+  continua funcionando.
+- `[id]/editar` é rota dinâmica nova — confirmar que `proxy.ts` cobre
+  esse padrão (matcher é genérico, deve cobrir, mas testar).
 
 ## Primeiro passo
 
-Ler `src/components/apps/AppForm.tsx` e `src/app/(dashboard)/apps/novo/actions.ts`
-atuais, decidir a interface de `AppForm` para os dois modos, e então
-criar `updateAppAction` reaproveitando `updateApp()` que já existe em
-`src/services/app.service.ts`.
+Ler `src/components/apps/AppForm.tsx` e
+`src/app/(dashboard)/apps/novo/actions.ts`, decidir a interface de
+`AppForm` para os dois modos, e criar `updateAppAction` reaproveitando
+`updateApp()` já existente em `src/services/app.service.ts`.

@@ -19,6 +19,13 @@
 > - **`ARCHITECTURE_DECISIONS.md`** — permanente, decisões que exigem
 >   aprovação explícita do usuário para serem revertidas. Nunca
 >   apagado.
+> - **`DEFINITION_OF_DONE.md`** — permanente, critério objetivo para
+>   marcar um módulo como concluído no `ROADMAP.md`.
+>
+> **Estes 6 documentos estão congelados a partir de 2026-08-06.**
+> Só voltam a ser reestruturados por pedido explícito do usuário — a
+> atualização mecânica de fim de sessão (§9) não conta como
+> reestruturação. Foco a partir daqui é 100% código.
 
 Última atualização: 2026-08-06
 
@@ -195,7 +202,19 @@ feito, o que falta) → **`NEXT_SESSION.md`** (o próximo passo exato).
 sob demanda (histórico e decisões que não podem ser revertidas sem
 aprovação explícita, respectivamente).
 
-## 9. Fluxo de trabalho fixado ao final de cada sessão
+## 9. Fluxo de trabalho fixado
+
+### 9.1 Antes de iniciar qualquer funcionalidade nova
+
+1. `npm run build`.
+2. `npm run lint`.
+3. Corrigir tudo o que estiver quebrado.
+4. Commitar.
+5. Só então iniciar a próxima funcionalidade.
+
+Nunca iniciar uma feature com a árvore de trabalho suja.
+
+### 9.2 Ao final de cada sessão
 
 1. Corrigir todos os erros.
 2. Rodar `npm run build`.
