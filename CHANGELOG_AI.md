@@ -7,6 +7,15 @@
 
 ---
 
+## 2026-08-06 (13) — Arquitetura declarada congelada
+
+Nota curta em `PROJECT_MASTER.md` §8.1: a partir do commit `17bdff3`,
+a arquitetura-base é considerada congelada. Próximas sessões focam em
+funcionalidades do `ROADMAP.md`, não em novas refatorações
+estruturais. Sem mudança de código.
+
+---
+
 ## 2026-08-06 (12) — Nomenclatura genérica de Storage Provider
 
 **Contexto:** revisão rápida (usuário com limite de uso quase

@@ -233,6 +233,14 @@ feito, o que falta) → **`NEXT_SESSION.md`** (o próximo passo exato).
 sob demanda (histórico e decisões que não podem ser revertidas sem
 aprovação explícita, respectivamente).
 
+## 8.1 Arquitetura Congelada
+
+A partir do commit `17bdff3` (2026-08-06), a arquitetura-base
+(Storage Provider, Auth, Banco, ADRs, documentação) é considerada
+**congelada**. Próximas sessões priorizam entrega de funcionalidades
+do `ROADMAP.md` sobre novas abstrações/refatorações estruturais — só
+criar nova abstração diante de necessidade real comprovada (ADR-006).
+
 ## 9. Fluxo de trabalho fixado
 
 ### 9.1 Antes de iniciar qualquer funcionalidade nova
