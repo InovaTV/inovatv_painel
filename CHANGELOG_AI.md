@@ -7,6 +7,43 @@
 
 ---
 
+## 2026-08-06 (21) — Corrigido "Timeout (control socket)" no Upload de APK
+
+**Contexto:** com o multipart resolvido (entrada 20), o teste manual
+do usuário avançou e revelou um segundo erro real: `Timeout (control
+socket)` durante o envio via FTP.
+
+**Causa raiz encontrada** (lendo o source do `basic-ftp`, não
+supondo): a biblioteca tem uma proteção padrão contra bounce attack —
+quando o servidor responde ao comando PASV com um host **diferente**
+do host da conexão de controle, o `basic-ftp` por padrão
+(`allowSeparateTransferHost: false`) ignora esse host e força o da
+conexão de controle. Em hospedagem compartilhada atrás de load
+balancer (Hostinger, aqui), isso trava a conexão de dados até estourar
+o timeout de 30s da conexão de controle. Confirmado no próprio código
+fonte (`node_modules/basic-ftp/dist/transfer.js`), não deduzido só
+pela mensagem de erro.
+
+**Alterado:** `src/lib/storage/remote-storage.ts` — todas as 6
+instâncias de `FtpClient` agora passam por `createFtpClient()`, que
+define `allowSeparateTransferHost: true` (confiável aqui: o host é
+`STORAGE_HOST` conhecido, não input de terceiros) e aumenta o timeout
+de 30s (padrão) para 20 minutos (medido: 20MB reais levaram ~28s
+nesse servidor — ~0,7MB/s; no mesmo ritmo, 300MB, o teto decidido
+para APK, levaria ~7min — 20min dá margem confortável).
+
+**Testado de verdade:** script descartável (criado e removido nesta
+entrada) enviou 20MB reais via `storage.replace()` — sucesso em
+~27.6s, arquivo confirmado no Storage, removido depois. `storage:test`
+padrão (arquivos pequenos) continua passando, sem regressão.
+
+**Verificação:** `tsc`/`lint`/`build` limpos.
+
+**Ainda pendente:** reconfirmação do usuário no navegador (fluxo real
+com sessão + Server Action), que é diferente do teste via script.
+
+---
+
 ## 2026-08-06 (20) — Corrigido "Unexpected end of form" no Upload de APK
 
 **Contexto:** teste manual do usuário no navegador falhou com

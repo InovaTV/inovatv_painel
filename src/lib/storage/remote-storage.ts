@@ -21,6 +21,21 @@ const FORCED_FTP_SECURE =
     ? undefined
     : process.env.STORAGE_FTP_SECURE === "true";
 
+// Hospedagem compartilhada atrás de load balancer costuma responder ao PASV
+// com um host diferente da conexão de controle. Por padrão o basic-ftp
+// ignora esse host "por segurança" (proteção contra bounce attack) e força
+// o host da conexão de controle — que aqui não é alcançável, travando a
+// conexão de dados até estourar "Timeout (control socket)". Confiável nesse
+// caso porque o host é conhecido (STORAGE_HOST, não input de terceiros).
+// Timeout também aumentado: os 30s padrão são curtos para um APK real.
+// Medido: 20MB reais levaram ~28s nesse servidor (~0,7MB/s) — no mesmo
+// ritmo, 300MB (teto decidido para APK) levaria ~7min. 20min dá margem.
+const FTP_TIMEOUT_MS = 20 * 60 * 1000;
+
+function createFtpClient() {
+  return new FtpClient(FTP_TIMEOUT_MS, { allowSeparateTransferHost: true });
+}
+
 type Protocol = "sftp" | "ftp";
 
 // Detectado uma vez por processo e reutilizado — evita reconectar via SFTP a
@@ -36,7 +51,7 @@ async function resolveFtpSecure(): Promise<boolean> {
   if (FORCED_FTP_SECURE !== undefined) return FORCED_FTP_SECURE;
   if (cachedFtpSecure !== null) return cachedFtpSecure;
 
-  const probe = new FtpClient();
+  const probe = createFtpClient();
 
   try {
     await probe.access({ host: HOST, port: FTP_PORT, user: USER, password: PASSWORD, secure: true });
@@ -96,7 +111,7 @@ async function uploadViaSftp(input: UploadInput) {
 }
 
 async function uploadViaFtp(input: UploadInput) {
-  const client = new FtpClient();
+  const client = createFtpClient();
   const full = remotePath(input.path);
   const { dir, file } = splitDirAndFile(full);
 
@@ -125,7 +140,7 @@ async function deleteViaSftp(path: string) {
 }
 
 async function deleteViaFtp(path: string) {
-  const client = new FtpClient();
+  const client = createFtpClient();
 
   await client.access({ host: HOST, port: FTP_PORT, user: USER, password: PASSWORD, secure: await resolveFtpSecure() });
 
@@ -150,7 +165,7 @@ async function existsViaSftp(path: string) {
 }
 
 async function existsViaFtp(path: string) {
-  const client = new FtpClient();
+  const client = createFtpClient();
 
   await client.access({ host: HOST, port: FTP_PORT, user: USER, password: PASSWORD, secure: await resolveFtpSecure() });
 
@@ -178,7 +193,7 @@ async function sizeViaSftp(path: string) {
 }
 
 async function sizeViaFtp(path: string) {
-  const client = new FtpClient();
+  const client = createFtpClient();
 
   await client.access({ host: HOST, port: FTP_PORT, user: USER, password: PASSWORD, secure: await resolveFtpSecure() });
 
@@ -202,7 +217,7 @@ async function renameViaSftp(from: string, to: string) {
 }
 
 async function renameViaFtp(from: string, to: string) {
-  const client = new FtpClient();
+  const client = createFtpClient();
 
   await client.access({ host: HOST, port: FTP_PORT, user: USER, password: PASSWORD, secure: await resolveFtpSecure() });
 
