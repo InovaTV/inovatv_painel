@@ -7,6 +7,38 @@
 
 ---
 
+## 2026-08-06 (7) — download_url depreciado; ainda bloqueado para o upload
+
+**Contexto:** usuário confirmou que a migração SQL ainda não foi
+aplicada (upload continua bloqueado até isso acontecer) e resolveu a
+pergunta em aberto sobre `download_url`: o Projeto Downloads externo
+será descontinuado, `download_url` fica ignorado a partir de agora e
+será removido numa migração futura (não nesta). Também pediu uma
+regra permanente contra manter compatibilidade com sistemas
+legados marcados para descontinuação.
+
+**Alterado**
+- `STORAGE.md` — seção `download_url` reescrita: deixa de ser
+  pergunta em aberto, vira decisão fechada (ignorar completamente,
+  remoção futura). Adicionado aviso no topo listando os dois
+  bloqueios reais antes de criar o bucket: migração não aplicada, e
+  falta de `service_role` key neste ambiente para criar bucket (a
+  chave anônima não tem essa permissão).
+- `ARCHITECTURE_DECISIONS.md` — ADR-008 nova: "sem compatibilidade
+  com sistemas legados marcados para descontinuação", aplicada
+  imediatamente a `download_url`. ADR-007 atualizada para refletir
+  que `download_url` não é mais pergunta em aberto.
+
+**Ainda bloqueado (sem mudança de código nesta entrada):**
+- Migração SQL não aplicada — usuário confirmou explicitamente.
+- Criação do bucket `apps` — além de depender da migração, também
+  precisa de `service_role` key (não disponível) ou criação manual
+  pelo usuário via painel do Supabase.
+
+**Verificação:** nenhuma mudança de código — só documentação.
+
+---
+
 ## 2026-08-06 (6) — Estrutura do Storage validada antes do upload (só SQL + doc, sem bucket/código)
 
 **Contexto:** antes de implementar upload de APK/Ícone/Banner, o

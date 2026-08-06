@@ -139,9 +139,37 @@ convenção produto/plataforma — decisão explícita do usuário de não
 forçar uma reestruturação (slug-based) por cima de uma convenção já
 consistente. Ver `STORAGE.md` para o detalhamento completo.
 
-**Status:** estrutura definida e documentada (`STORAGE.md`,
+**Status:** estrutura aprovada e documentada (`STORAGE.md`,
 `supabase/migrations/20260806140000_add_banner_path_fix_storage_folder.sql`).
 Bucket **ainda não criado** e upload **ainda não implementado** —
-aguardando aprovação desta estrutura antes do próximo passo. Relação
-com `download_url`/Projeto Downloads é pergunta em aberto, registrada
-em `NEXT_SESSION.md`.
+bloqueado por (1) migração SQL ainda não aplicada/confirmada pelo
+usuário e (2) ausência de `service_role` key neste ambiente (a chave
+anônima não cria bucket). `download_url`/Projeto Downloads deixou de
+ser pergunta em aberto — ver ADR-008.
+
+---
+
+## ADR-008 — Sem compatibilidade com sistemas legados marcados para descontinuação
+
+**Decisão:** toda funcionalidade nova deve ser implementada pensando
+na futura interface pública do InovaTV Central, não em manter
+compatibilidade com sistemas que já foram marcados para
+descontinuação. Especificamente: o "Projeto Downloads" (site externo
+`inovatv.pro`, referenciado por `apps.download_url`) será
+descontinuado — nenhuma funcionalidade nova deve ler, escrever ou
+depender de `download_url`. O campo permanece na tabela só por
+compatibilidade temporária; será removido
+(`ALTER TABLE apps DROP COLUMN download_url;`) em uma migração futura,
+quando existir um Portal Público de Downloads dentro do próprio
+InovaTV Central (`/apps/[slug]` ou `/downloads/[slug]`) — não faz
+parte do escopo atual.
+
+**Motivo:** evitar gastar esforço construindo pontes/compatibilidade
+temporária com algo que já tem data marcada para deixar de existir.
+O painel deve ser desenhado para onde o produto está indo (Portal
+Público integrado ao InovaTV Central), não para onde ele já não vai
+mais estar.
+
+**Status:** regra permanente a partir de 2026-08-06. Aplica-se
+imediatamente a `download_url` e a qualquer sistema legado que o
+usuário marque como descontinuado no futuro.

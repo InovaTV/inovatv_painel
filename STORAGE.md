@@ -5,6 +5,14 @@
 > Este arquivo existe para validação antes da criação — só criar o
 > bucket e implementar upload depois que a estrutura aqui estiver
 > aprovada.
+>
+> **Estrutura aprovada em 2026-08-06.** Ainda bloqueado por dois
+> itens fora do controle do assistente, nessa ordem: (1) a migração
+> SQL precisa ser aplicada e confirmada pelo usuário — **ainda não
+> foi**; (2) a chave disponível neste ambiente é só a anônima
+> (`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`), que **não tem permissão
+> para criar bucket** — isso exige `service_role` key ou criação
+> manual pelo usuário no painel do Supabase.
 
 Última atualização: 2026-08-06
 
@@ -53,7 +61,7 @@ são variantes dele — a estrutura reflete `Produto → Plataforma`, não
 | `banner_path` | caminho do banner | **novo**, adicionado pela migração |
 | `asset_folder` | nome da pasta do produto (`unitv`) | já existe, mantido |
 | `storage_folder` | raiz física (produto/plataforma) | já existe, dado corrigido pela migração |
-| `download_url` | link público de download (domínio externo `inovatv.pro`) | já existe, **não é tocado** por esta fase |
+| `download_url` | link público de download (domínio externo `inovatv.pro`) | **depreciado** — ver seção abaixo |
 
 ## Sobre os valores atuais de `storage_path`/`storage_folder`
 
@@ -72,14 +80,20 @@ sobrescreva `storage_path` (e passe a preencher `icon_path`) com o
 caminho correto na primeira vez que cada app tiver um arquivo
 enviado/trocado pelo painel — sem migração de dado dedicada para isso.
 
-## `download_url` — não mexer ainda
+## `download_url` — depreciado, decisão fechada
 
-Aponta para um domínio externo (`https://inovatv.pro/...`), fora do
-Supabase — provavelmente o "Projeto Downloads (Vercel)" citado no
-`README.md`. Relação entre esse campo e o novo Storage do painel
-ainda não está definida — **pergunta em aberto para o usuário**, ver
-`NEXT_SESSION.md`. Enquanto não houver resposta, nenhum Server Action
-de upload escreve em `download_url`.
+**Resolvido em 2026-08-06 (não é mais pergunta em aberto):** o
+usuário confirmou que o "Projeto Downloads" (site externo
+`inovatv.pro` referenciado em `download_url`) **será descontinuado**.
+Não há mais nenhuma integração a preservar.
+
+Regra permanente (ver ADR-008): `download_url` fica ignorado a partir
+de agora — nenhuma funcionalidade nova lê, escreve ou depende dele.
+Ele continua existindo na tabela só por compatibilidade temporária e
+será removido (`ALTER TABLE apps DROP COLUMN download_url;`) em uma
+migração futura, quando o Portal Público de Downloads passar a fazer
+parte do InovaTV Central (`/apps/[slug]` ou `/downloads/[slug]`) —
+**não agora**, não faz parte do escopo atual.
 
 ## Tamanho máximo por tipo de arquivo
 
