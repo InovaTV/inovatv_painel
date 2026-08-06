@@ -7,6 +7,63 @@
 
 ---
 
+## 2026-08-06 (18) — Upload de APK implementado e testado de ponta a ponta
+
+**Contexto:** primeira funcionalidade construída sobre a infraestrutura
+de Storage já pronta. Seguiu as duas regras do usuário: nenhum
+componente React fala com o Storage (só Server Actions →
+`storage.replace()`), e a lógica ficou genérica (`uploadAppAsset`)
+para Ícone/Banner reaproveitarem depois sem reescrever nada.
+
+**Adicionado**
+- `uploadAppAsset(app, type, file)` em `app.service.ts` — valida
+  tamanho por tipo (`ASSET_CONFIG`: apk 300MB, icon 5MB, banner
+  10MB, nomes fixos `app.apk`/`icon.png`/`banner.webp`), monta o path
+  fixo (`apps/{asset_folder}/{platform}/{tipo}/{arquivo}`), chama
+  `storage.replace()`, grava a coluna certa (`storage_path`/
+  `icon_path`/`banner_path`) no banco. Só o `type: "apk"` está
+  ligado a uma Server Action por enquanto — `"icon"`/`"banner"` já
+  funcionam na função, só falta o input habilitado no form.
+- `AppData`/`App` (`app.service.ts`) ganharam `asset_folder`
+  (obrigatório, novo campo no form) e os 3 campos de path para
+  leitura (`storage_path`/`icon_path`/`banner_path`).
+- `next.config.ts` — `experimental.serverActions.bodySizeLimit: "300mb"`
+  (default do Next é 1MB, bem abaixo do necessário pro APK).
+
+**Alterado**
+- `createAppAction`/`updateAppAction` — recebem o arquivo `apk` do
+  `FormData`; se presente, chamam `uploadAppAsset` depois de
+  criar/atualizar a linha (precisam do `id` e do `asset_folder`
+  já salvos).
+- `AppForm.tsx` — campo `asset_folder` novo (texto, obrigatório);
+  input de APK habilitado (`name="apk"`, `accept=".apk"`), mostra o
+  path atual quando já existe; Ícone/Banner continuam `disabled`.
+
+**Testado de verdade** (script descartável, criado e removido nesta
+entrada — não faz parte do repo): criou uma linha de app de teste,
+chamou `storage.replace()` com o path real, atualizou `storage_path`,
+releu do banco pra confirmar, checou existência no Storage, limpou
+arquivo e linha. 7/7 checks ✔. (`uploadAppAsset` em si não pôde ser
+chamada fora do runtime do Next — depende de `next/headers` via
+`server.ts` — o teste replicou a mesma sequência de operações.)
+
+**Risco identificado, não resolvido — importante:** `PROJECT_MASTER.md`
+lista Vercel como deploy alvo. Plataformas serverless (Vercel
+incluída) costumam ter um teto de tamanho de payload por requisição
+**independente** do `bodySizeLimit` do Next.js — historicamente bem
+abaixo de 300MB nos planos mais comuns. `experimental.serverActions.bodySizeLimit`
+só remove o limite do lado do Next; não garante que a Vercel deixe um
+upload de 300MB passar. Isso funciona local/self-hosted (testado
+nesta sessão só via Node/script direto, não via Server Action real
+rodando num servidor Next) mas **precisa ser validado em produção**
+antes de confiar nisso pra APKs grandes — não presumido, não
+resolvido aqui. Ver `NEXT_SESSION.md`.
+
+**Verificação:** `npx tsc --noEmit`, `npm run lint`, `npm run build`
+limpos.
+
+---
+
 ## 2026-08-06 (17) — Convenção definitiva de nomes de arquivo
 
 Só documentação — nenhum código do módulo de Storage foi tocado

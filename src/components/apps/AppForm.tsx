@@ -69,6 +69,19 @@ export default function AppForm({ app }: Props) {
 
         <div>
           <label className="mb-2 block text-sm font-medium">
+            Pasta do produto
+          </label>
+
+          <Input
+            name="asset_folder"
+            required
+            defaultValue={app?.asset_folder}
+            placeholder="unitv"
+          />
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm font-medium">
             Versão
           </label>
 
@@ -158,14 +171,44 @@ export default function AppForm({ app }: Props) {
       </h2>
 
       <p className="text-sm text-muted-foreground mb-5">
-        Upload de APK, ícone e banner será habilitado na próxima etapa
-        (Supabase Storage).
+        Upload de ícone e banner ainda serão habilitados. Enviar um
+        APK novo substitui o arquivo atual.
       </p>
 
       <div className="grid grid-cols-3 gap-6">
-        <Input type="file" disabled />
-        <Input type="file" disabled />
-        <Input type="file" disabled />
+        <div>
+          <label className="mb-2 block text-sm font-medium">
+            APK
+          </label>
+
+          <Input
+            type="file"
+            name="apk"
+            accept=".apk"
+          />
+
+          {app?.storage_path && (
+            <p className="mt-1 text-xs text-muted-foreground break-all">
+              Atual: {app.storage_path}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm font-medium">
+            Ícone
+          </label>
+
+          <Input type="file" disabled />
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm font-medium">
+            Banner
+          </label>
+
+          <Input type="file" disabled />
+        </div>
       </div>
 
       <div className="flex justify-end gap-3 mt-10">

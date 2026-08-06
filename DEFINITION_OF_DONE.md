@@ -35,7 +35,7 @@ Primeiro módulo a ser medido por este arquivo. Estado atual (ver
 - [x] Read
 - [x] Update
 - [x] Delete
-- [ ] Upload APK
+- [x] Upload APK
 - [ ] Upload Ícone
 - [ ] Upload Banner do app
 - [ ] Preview

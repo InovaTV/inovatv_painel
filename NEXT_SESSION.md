@@ -1,55 +1,61 @@
 # Próxima Sessão
 
 > Documento descartável — reescrito por completo a cada sessão.
-> Para contexto permanente, ver `PROJECT_MASTER.md` §8.1 (arquitetura
-> congelada), `ROADMAP.md`, `DEFINITION_OF_DONE.md`, `STORAGE.md`.
+> Para contexto permanente, ver `PROJECT_MASTER.md` §8.1, `ROADMAP.md`,
+> `DEFINITION_OF_DONE.md`, `STORAGE.md`.
 
 ## Último commit
 
-Ver `git log` — commit desta sessão adiciona `storage.replace()`
-(upload seguro: temp → valida tamanho → renomeia) e a convenção de
-nome de arquivo fixo. `storage:test` com 6/6 checks ✔ contra a
-Hostinger real, incluindo `replace()`.
+Ver `git log` — commit desta sessão implementa Upload de APK
+(`uploadAppAsset` em `app.service.ts`, ligado a `createAppAction`/
+`updateAppAction`, campo `asset_folder` novo no `AppForm`). Testado
+via script direto (bypassa `next/headers`) — 7/7 checks, mas **ainda
+não testado via o app rodando de verdade no navegador** (eu não
+tenho login/senha do painel).
 
 ## Objetivo da próxima sessão
 
-**Infraestrutura 100% pronta e testada — sem bloqueios.** Implementar
-Upload de APK. Arquitetura congelada (§8.1) — só feature, sem novas
-abstrações.
+Dois caminhos possíveis:
 
-1. Server Action de upload chamando `storage.replace()` (não
-   `upload()` — o path é fixo e pode já ter um arquivo) de
-   `@/lib/storage/provider`.
-2. `AppForm.tsx` — trocar o `<Input type="file" disabled />` do APK
-   por um input real, `name="apk"`.
-3. `app.service.ts` — `AppData`/`App` ganham `storage_path` (já
-   existe na tabela).
-4. Validar tamanho (300MB) e tipo de arquivo antes do upload.
-5. Path fixo, sem versão no nome:
-   `apps/{asset_folder}/{platform}/apk/app.apk` (ver `STORAGE.md`).
-   Versão do app continua vindo só da coluna `version` do banco.
+**A) Verificação humana primeiro (recomendado antes de seguir):**
+Rodar o painel (`npm run dev`), logar, criar um app novo com um APK
+pequeno de teste, confirmar que salva, editar esse app trocando o
+APK, confirmar que troca. Isso valida o caminho real (multipart
+FormData via Server Action rodando no Next), que é diferente do
+script que usei pra testar nesta sessão.
 
-## Arquivos que serão alterados
+**B) Seguir direto pra Ícone/Banner** — `uploadAppAsset` já suporta
+os dois tipos (`ASSET_CONFIG` já tem `icon`/`banner`), só falta:
+1. Habilitar os inputs de Ícone/Banner no `AppForm.tsx` (hoje
+   `disabled`), `name="icon"`/`name="banner"`.
+2. `createAppAction`/`updateAppAction` — mesmo padrão do `apk`:
+   pegar o `File` do FormData, chamar `uploadAppAsset(app, "icon", file)`
+   / `"banner"` se presente.
+3. Nenhuma mudança em `app.service.ts` — a função já é genérica.
 
-- `src/app/(dashboard)/apps/actions.ts` ou local equivalente.
-- `src/components/apps/AppForm.tsx`.
-- `src/services/app.service.ts`.
+## Risco importante, não resolvido
 
-## Riscos
+`PROJECT_MASTER.md` lista **Vercel** como deploy alvo. Configurei
+`next.config.ts` (`serverActions.bodySizeLimit: "300mb"`), mas
+plataformas serverless costumam ter teto de payload por requisição
+**independente** disso — historicamente bem abaixo de 300MB nos
+planos comuns da Vercel. Isso não foi testado em produção nesta
+sessão (só localmente via script). **Antes de confiar em upload de
+APK grande de verdade:** confirmar com o usuário qual plano/produto
+Vercel será usado e se suporta payloads desse tamanho, ou considerar
+alternativa (upload direto do browser pro Storage, streaming, ou
+outro host que não seja serverless para essa rota específica) — não
+presumir, perguntar.
 
-- FTP sem TLS (achado da sessão anterior) — já registrado como
-  melhoria futura no `ROADMAP.md`, não bloqueia o upload.
-- Uploads grandes (até 300MB) por FTP podem ser lentos — Next.js tem
-  limite de tamanho de body padrão para Server Actions que pode
-  precisar de ajuste (`serverActions.bodySizeLimit` em
-  `next.config.ts`) para arquivos desse tamanho. Verificar antes de
-  testar upload de APK real.
-- `replace()` já cobre a troca segura (upload → valida → renomeia) —
-  não reimplementar essa lógica na Server Action, só chamar o método.
+## Arquivos já alterados nesta sessão (contexto, não repetir)
+
+- `src/services/app.service.ts`, `src/app/(dashboard)/apps/actions.ts`,
+  `src/app/(dashboard)/apps/novo/actions.ts`,
+  `src/components/apps/AppForm.tsx`, `next.config.ts`.
 
 ## Primeiro passo
 
-Verificar o limite de tamanho de body de Server Actions no
-`next.config.ts` (provavelmente precisa aumentar para 300MB), depois
-ler `AppForm.tsx` atual e escrever a Server Action usando
-`storage.replace()`.
+Perguntar ao usuário se quer testar manualmente no navegador antes
+de avançar (opção A) ou seguir direto pra Ícone/Banner (opção B) —
+e, separadamente, esclarecer o plano Vercel antes de considerar
+Upload de APK "pronto para produção".
