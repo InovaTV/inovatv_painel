@@ -1,12 +1,19 @@
 import {
   Bell,
+  LogOut,
   Menu,
   Search,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 
-export default function Header() {
+import { signOutAction } from "@/lib/actions/auth";
+
+interface Props {
+  email: string;
+}
+
+export default function Header({ email }: Props) {
   return (
     <header className="h-16 bg-white border-b px-6 flex items-center justify-between">
 
@@ -64,7 +71,7 @@ export default function Header() {
         <div className="text-right">
 
           <div className="font-semibold">
-            José Antônio
+            {email}
           </div>
 
           <div className="text-xs text-slate-500">
@@ -72,6 +79,16 @@ export default function Header() {
           </div>
 
         </div>
+
+        <form action={signOutAction}>
+          <button
+            type="submit"
+            title="Sair"
+            className="h-10 w-10 rounded-lg border flex items-center justify-center hover:bg-slate-100 transition"
+          >
+            <LogOut size={18} />
+          </button>
+        </form>
 
       </div>
 

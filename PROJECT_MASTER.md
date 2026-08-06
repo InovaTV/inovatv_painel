@@ -1,0 +1,178 @@
+# InovaTV Painel — Documento Mestre
+
+> Este arquivo é a fonte da verdade sobre o estado do projeto. Deve ser
+> lido no início de qualquer sessão nova (humana ou IA) antes de
+> qualquer alteração. Mantido atualizado a cada etapa concluída.
+
+Última atualização: 2026-08-06
+
+---
+
+## 0. Estado do Projeto
+
+| | |
+|---|---|
+| Versão Arquitetural | v1.0 |
+| Último commit (antes das mudanças desta sessão) | `ecc6b53` |
+| Build (`npm run build`) | ✅ OK |
+| TypeScript (`npx tsc --noEmit`) | ✅ OK |
+| Lint (`npm run lint`) | ✅ OK |
+
+> O hash acima é o `HEAD` no início da sessão que gerou este commit —
+> o commit resultante desta sessão ainda não existe no momento em que
+> este arquivo foi escrito. Ver `CHANGELOG_AI.md` para o commit real
+> quando disponível.
+
+Ver **ADR** (`ARCHITECTURE_DECISIONS.md`) para as decisões
+arquitetônicas permanentes que não devem ser revertidas sem decisão
+explícita do usuário.
+
+## 1. O que é o projeto
+
+**InovaTV Painel** — painel administrativo web da plataforma InovaTV.
+Não armazena conteúdo por conta própria: tudo é administrado via
+Supabase (Database + Storage). Público: administradores internos da
+InovaTV, autenticados via Supabase Auth.
+
+Módulos previstos: Dashboard, Aplicativos, Banners, Tutoriais, FAQ,
+Clientes, Configurações.
+
+## 2. Stack
+
+- Next.js 16 (App Router, Turbopack)
+- React 19
+- TypeScript (strict)
+- Tailwind CSS v4
+- shadcn/ui (style `radix-nova`, baseColor `neutral`)
+- Supabase (`@supabase/ssr` + `@supabase/supabase-js`)
+- Deploy alvo: Vercel
+
+## 3. Arquitetura obrigatória (decisão fixada)
+
+- Autenticação via **Supabase Auth**, sessão gerenciada por cookies
+  (`@supabase/ssr`), nunca `localStorage`/token manual.
+- **`src/proxy.ts`** protege as rotas (Next.js 16 renomeou o antigo
+  `middleware.ts` para `proxy.ts` — mesma função, nova convenção de
+  arquivo). Redireciona não-autenticados para `/login` e usuários
+  autenticados para fora de `/login`.
+- **Server Components** por padrão; `"use client"` só quando há
+  interatividade real (formulário controlado, estado, hooks).
+- **Server Actions** para toda escrita (create/update/delete) — nunca
+  chamada direta do Supabase a partir do browser para operações de
+  escrita.
+- **Supabase Server Client** (`src/lib/supabase/server.ts`) para
+  Server Components e Server Actions. **Supabase Browser Client**
+  (`src/lib/supabase/client.ts`) reservado para casos futuros que
+  exijam interatividade client-side (ex.: realtime) — hoje não é
+  usado por nenhum fluxo de escrita.
+- Nunca usar chave de acesso administrativo (`service_role`) no
+  browser. Hoje o projeto só tem a chave pública (`anon`) configurada
+  em `.env.local`; se uploads/Storage exigirem privilégios elevados,
+  isso deve acontecer via Server Action, nunca client-side.
+
+## 4. Estrutura de pastas
+
+```
+src/
+├─ app/
+│  ├─ (auth)/login/          # página de login, fora do layout do dashboard
+│  ├─ (dashboard)/           # rotas protegidas — layout com Header+Sidebar
+│  │  ├─ layout.tsx           # busca o usuário da sessão, passa pro Header
+│  │  ├─ page.tsx             # Dashboard (cards de resumo)
+│  │  └─ apps/
+│  │     ├─ page.tsx          # listagem de apps
+│  │     ├─ actions.ts        # Server Action deleteAppAction
+│  │     └─ novo/
+│  │        ├─ page.tsx       # form de novo app
+│  │        └─ actions.ts     # Server Action createAppAction
+│  ├─ layout.tsx              # layout raiz (html/body, fontes)
+│  └─ globals.css
+├─ components/
+│  ├─ apps/                  # AppForm, AppsTable, AppsTableRow, StatusBadge
+│  ├─ common/                 # ActionsMenu, PlatformBadge
+│  ├─ dashboard/               # DashboardCards, StatCard
+│  ├─ layout/                  # Header, Sidebar
+│  └─ ui/                       # shadcn primitives (badge, button, card, ...)
+├─ lib/
+│  ├─ actions/auth.ts          # signInAction, signOutAction
+│  ├─ supabase/
+│  │  ├─ client.ts              # browser client (@supabase/ssr)
+│  │  ├─ server.ts               # server client (@supabase/ssr, cookies)
+│  │  └─ middleware.ts            # updateSession() usado por src/proxy.ts
+│  └─ utils.ts
+├─ services/
+│  └─ app.service.ts            # getApps/getApp/createApp/updateApp/deleteApp
+├─ types/database.ts            # (vazio — tipos gerados do Supabase pendentes)
+└─ proxy.ts                     # proteção de rotas (convenção Next 16)
+```
+
+## 5. Status por módulo
+
+| Módulo | Status | Observações |
+|---|---|---|
+| Autenticação (login/logout) | ✅ Funcional | Email/senha via `signInWithPassword`. Sem cadastro público — admins criados direto no Supabase. |
+| Middleware / proteção de rotas | ✅ Funcional | `src/proxy.ts`, redireciona por sessão. |
+| Dashboard (layout + cards) | ✅ Funcional (dados estáticos) | Cards ainda mostram números fixos (2 apps, 0 nos demais) — não busca contagem real ainda. |
+| CRUD Aplicativos — Create | ✅ Funcional | Via Server Action `createAppAction`. |
+| CRUD Aplicativos — Read (listagem) | ✅ Funcional | `getApps()` em Server Component. |
+| CRUD Aplicativos — Update | ⬜ Pendente | `updateApp()` existe no service, sem página/action/UI. Botão "Editar" no `ActionsMenu` fica `disabled` até existir. |
+| CRUD Aplicativos — Delete | ✅ Funcional | `deleteAppAction` (Server Action, `apps/actions.ts`) + `ActionsMenu` com confirmação via `window.confirm`. |
+| Upload APK / Ícone / Banner | ⬜ Pendente | Inputs de arquivo no `AppForm` são visuais e `disabled`. Precisa Supabase Storage + Server Action de upload. |
+| Banners | ⬜ Não iniciado | |
+| Tutoriais | ⬜ Não iniciado | |
+| FAQ | ⬜ Não iniciado | |
+| Clientes | ⬜ Não iniciado | |
+| Configurações | ⬜ Não iniciado | |
+| Tipos gerados do Supabase | ⬜ Pendente | `src/types/database.ts` continua vazio, mas o módulo Aplicativos já tem tipagem manual forte (`App`/`AppData` em `app.service.ts`) — sem `any` no caminho de Aplicativos. Demais módulos precisarão do mesmo tratamento ao serem criados. |
+
+## 6. Decisões e convenções fixadas
+
+- **Padrão de rota protegida**: tudo dentro de `(dashboard)/` assume
+  sessão válida (garantida pelo `proxy.ts`); não repetir checagem de
+  auth em cada página.
+- **Padrão de formulário de escrita**: Server Component da página +
+  Server Action colocada em `actions.ts` ao lado da página + o form
+  (client component só se precisar de estado/interatividade) chama a
+  action via `<form action={...}>`, usando `useFormStatus` para estado
+  de "salvando".
+- **Nomenclatura de arquivos**: componentes em PascalCase, um
+  componente por arquivo, subpastas por domínio dentro de
+  `components/`.
+- **`.env.local`** contém apenas `NEXT_PUBLIC_SUPABASE_URL` e
+  `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (chave anônima). Nenhuma
+  chave de service role configurada até o momento.
+- **Next.js 16 renomeou `middleware.ts` → `proxy.ts`** (mesma
+  funcionalidade, arquivo/nome de export diferentes). Usar sempre
+  `proxy.ts` daqui pra frente, nunca recriar `middleware.ts`.
+- **Arquivos `AGENTS.md` e `CLAUDE.md` na raiz do projeto** são
+  gerados automaticamente pelo `next dev`/`next build` (feature nativa
+  do Next 16, `agentRules`). Não são os arquivos de governança deste
+  fluxo de memória — não confundir com `PROJECT_MASTER.md` /
+  `NEXT_SESSION.md` / `CHANGELOG_AI.md`.
+
+## 7. Pendências conhecidas / dívidas técnicas
+
+- Sem tipos gerados do Supabase (`any` usado em `apps: any[]` em
+  `AppsTable`, `AppsTableRow`, `AppsPageClient` — este último já
+  removido).
+- `AppData` (em `app.service.ts`) não é validado com uma lib de schema
+  (ex. Zod) — validação de formulário é só `required` no HTML.
+- Sem testes automatizados no projeto ainda.
+- Cards do Dashboard não refletem contagens reais do banco.
+
+## 8. Como retomar
+
+Ver **`NEXT_SESSION.md`** para o próximo passo imediato,
+**`CHANGELOG_AI.md`** para o histórico de alterações feitas por IA, e
+**`ARCHITECTURE_DECISIONS.md`** para as decisões permanentes que não
+podem ser desfeitas sem aprovação explícita.
+
+## 9. Fluxo de trabalho fixado ao final de cada sessão
+
+1. Corrigir todos os erros.
+2. Rodar `npm run build`.
+3. Rodar `npm run lint`.
+4. Atualizar `PROJECT_MASTER.md`, `NEXT_SESSION.md`,
+   `CHANGELOG_AI.md` e, se houver decisão arquitetônica nova,
+   `ARCHITECTURE_DECISIONS.md`.
+5. Commitar.
