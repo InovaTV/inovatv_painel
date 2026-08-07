@@ -611,3 +611,37 @@ normalmente com as novas constraints em vigor. Segunda de quatro fases
 da auditoria de banco — ver ADR-017 (fase 1) e `ROADMAP.md`/
 `CHANGELOG_AI.md` para as fases seguintes (evolução de schema, limpeza
 de colunas legadas).
+
+---
+
+## ADR-019 — `updated_at` automático em `apps` via função genérica (fase 3 da auditoria)
+
+**Decisão:** `apps` ganhou a coluna `updated_at` (`timestamptz not null
+default now()`), mantida automaticamente por um trigger `BEFORE UPDATE`
+— sem depender da aplicação lembrar de setá-la em cada escrita.
+
+Migração: `supabase/migrations/20260807180000_apps_updated_at_trigger.sql`.
+
+**Por que a função é genérica:** `public.set_updated_at()` não
+referencia `apps` nem nenhuma coluna além de `updated_at` — decisão
+explícita do usuário para reusar a mesma função em módulos futuros que
+também ganharem `updated_at` (Banners, Notícias, FAQ, Tutoriais, etc.),
+em vez de recriar uma função por tabela. Só o **trigger** é específico
+por tabela (`apps_set_updated_at`); o padrão a repetir em módulos
+futuros é `add column updated_at ... ; create trigger
+<tabela>_set_updated_at before update on public.<tabela> for each row
+execute function public.set_updated_at();` — sem recriar a função.
+
+**Backfill:** linhas existentes (5 apps) receberam `updated_at =
+created_at` em vez do timestamp da migração — nunca foram de fato
+atualizadas desde a criação, então `created_at` é o valor
+semanticamente correto, não "agora".
+
+**Status:** aplicado em produção via Management API do Supabase em
+2026-08-07. Verificado com um `UPDATE` real (`RETURNING`) numa linha de
+teste: `updated_at` mudou para o timestamp do update, `created_at`
+ficou intacto; linha revertida ao estado original logo em seguida.
+`npx tsc --noEmit`, `npm run lint` e `npm run build` limpos depois da
+migração. Terceira de quatro fases da auditoria de banco — ver
+ADR-017 (fase 1), ADR-018 (fase 2) e `ROADMAP.md`/`CHANGELOG_AI.md`
+para a fase seguinte (limpeza de colunas legadas).

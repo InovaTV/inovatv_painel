@@ -75,8 +75,11 @@ aplicar:
   `NOT NULL` + FK `apps.asset_folder → products.asset_folder`
   (`ON UPDATE/DELETE RESTRICT`). Ver ADR-018. Aplicado e verificado em
   2026-08-07.
-- [ ] **Fase 3 — Evolução de schema:** `updated_at` + trigger
-  automático em `apps`.
+- [x] **Fase 3 — Evolução de schema:** `updated_at` + trigger
+  automático em `apps`, via função genérica reutilizável
+  `public.set_updated_at()` (pensada pra Banners/Notícias/FAQ/
+  Tutoriais futuros — só o trigger é por tabela). Ver ADR-019.
+  Aplicado e verificado em 2026-08-07.
 - [ ] **Fase 4 — Limpeza:** remover `download_url`, `downloader_code`,
   `storage_folder` (colunas legadas, ligadas ao sistema `inovatv.pro`
   já descontinuado — ver `reference_downloads_project`).

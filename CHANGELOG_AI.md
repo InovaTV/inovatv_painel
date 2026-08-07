@@ -7,6 +7,50 @@
 
 ---
 
+## 2026-08-07 (29) — Auditoria de banco: Fase 3 (evolução de schema) aplicada — updated_at automático em apps
+
+**Contexto:** handoff entre computadores desde a entrada 28 (fim da
+Fase 2). `.env.local` local estava desatualizado (sem
+`SUPABASE_ACCESS_TOKEN`/`STORAGE_PORT`) — sincronizado a partir da
+cópia canônica no Google Drive antes de continuar (ver `.gitignore`,
+memória `env_local_sync_drive`). Usuário aprovou seguir direto para a
+Fase 3.
+
+**Aplicado** (`supabase/migrations/20260807180000_apps_updated_at_trigger.sql`,
+via Management API do Supabase, com aprovação explícita antes de
+rodar):
+- `apps.updated_at` (`timestamptz not null default now()`).
+- Backfill: linhas existentes (5 apps) receberam `updated_at =
+  created_at`, não o timestamp da migração — nunca foram de fato
+  atualizadas desde a criação.
+- Função `public.set_updated_at()` — **genérica de propósito**, sem
+  referenciar `apps` nem nenhuma coluna além de `updated_at`, a pedido
+  explícito do usuário: reusar a mesma função em módulos futuros que
+  também ganharem `updated_at` (Banners, Notícias, FAQ, Tutoriais
+  etc.), criando só um trigger específico por tabela
+  (`<tabela>_set_updated_at`), nunca uma função por tabela.
+- Trigger `apps_set_updated_at` (`BEFORE UPDATE ... FOR EACH ROW`).
+
+**Verificado:**
+- `npx tsc --noEmit`, `npm run lint` e `npm run build` limpos.
+- Coluna e trigger confirmados via `information_schema` depois da
+  aplicação.
+- Testado com um `UPDATE ... RETURNING` real numa linha de teste:
+  `updated_at` mudou para o timestamp do update, `created_at` ficou
+  intacto; linha revertida ao estado original (`is_active`) logo em
+  seguida.
+
+Ver ADR-019 para o registro completo da decisão, incluindo o padrão a
+repetir em módulos futuros (reusar a função, criar só o trigger).
+
+**Não incluído nesta entrada:** Fase 4 (remover
+`download_url`/`downloader_code`/`storage_folder`) — ainda não
+iniciada, precisa de confirmação explícita antes de qualquer `DROP
+COLUMN` (operação destrutiva, `download_url` tem dado real nos 2 apps
+reais).
+
+---
+
 ## 2026-08-07 (28) — Auditoria de banco: Fase 2 (integridade) aplicada — UNIQUE/NOT NULL/FK em apps
 
 **Contexto:** entrada 27 fechou a Fase 1 (segurança) da auditoria de
