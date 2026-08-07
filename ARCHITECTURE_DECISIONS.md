@@ -546,3 +546,68 @@ status) funcionando normalmente. Primeira de quatro fases de uma
 auditoria de banco mais ampla (`apps`/`products`/relacionadas) — ver
 `ROADMAP.md` e `CHANGELOG_AI.md` para as fases seguintes (integridade,
 evolução de schema, limpeza de colunas legadas).
+
+---
+
+## ADR-018 — Integridade de `apps.slug` e `apps.asset_folder` no banco (fase 2 da auditoria)
+
+**Decisão:** `apps.slug` e `apps.asset_folder` passaram de opcionais/
+sem garantia de integridade real para:
+- `slug`: `NOT NULL` + `UNIQUE` (`apps_slug_key`).
+- `asset_folder`: `NOT NULL` + `FOREIGN KEY` para
+  `products.asset_folder`, com `ON UPDATE RESTRICT ON DELETE
+  RESTRICT` (`apps_asset_folder_fkey`).
+
+Migração: `supabase/migrations/20260807170000_apps_integrity_slug_asset_folder.sql`.
+
+**Motivo:** os dois campos já eram tratados como obrigatórios e (no
+caso do slug) únicos **só na camada de aplicação**
+(`validateAppFields`/`isSlugTaken` em `app.service.ts`, e
+`resolveProductAssetFolder` sempre retornando um valor não vazio).
+Decisão explícita do usuário: o banco deve refletir exatamente as
+mesmas regras da aplicação, para que um estado inconsistente não seja
+possível mesmo por um caminho que não passe pela aplicação (acesso
+direto ao banco, script, migração futura mal escrita, bug).
+
+**Por que `RESTRICT` e não `CASCADE` na FK:** `asset_folder` não é só
+uma chave lógica — é literalmente um componente do caminho físico de
+armazenamento na Hostinger
+(`apps/{asset_folder}/{platform}/apk|icon|banner/...`, ver
+`uploadAppAsset` em `app.service.ts`). Um `ON UPDATE CASCADE`
+atualizaria `apps.asset_folder` no banco automaticamente se
+`products.asset_folder` mudasse, mas os arquivos já enviados para a
+Hostinger **não se moveriam** — o caminho salvo no banco ficaria
+divergente do caminho real no FTP, silenciosamente. `RESTRICT` nos
+dois lados força uma decisão explícita (hoje não há UI de edição de
+produto, então isso não afeta nenhum fluxo em uso).
+
+**Rede de segurança para corrida (race condition):** a checagem
+`isSlugTaken()` na aplicação não cobre duas criações/edições
+simultâneas com o mesmo slug passando pela validação ao mesmo tempo —
+quem perde a corrida esbarraria na `UNIQUE` constraint do banco como
+um erro genérico. Adicionado `rethrowAsSlugConflict()` em
+`app.service.ts`: detecta o código Postgres `23505` (violação de
+unicidade) na constraint `apps_slug_key` especificamente e relança
+como `AppValidationError({ slug: "Já existe um aplicativo com esse
+slug." })` — a mesma mensagem amigável de sempre, mesmo nesse caminho
+raro que só a integridade do banco consegue pegar.
+
+**Como aplicar:** qualquer coluna que a aplicação já trata como
+"sempre obrigatória"/"sempre única" deveria, com o tempo, ganhar a
+constraint equivalente no banco — não deixar a validação de aplicação
+como única linha de defesa quando o dado já é conhecido como
+verdadeiramente obrigatório/único em produção. Repetir esse padrão
+(constraint no banco + tradução do erro correspondente pra mensagem
+amigável) em módulos futuros que tiverem o mesmo tipo de campo.
+
+**Status:** aplicado em produção via Management API do Supabase em
+2026-08-07 (pré-condições verificadas antes: 0 slugs duplicados, 0
+`asset_folder` órfão, 0 valores nulos em `slug`/`asset_folder` nas 5
+linhas existentes — migração aplicada sem conflito). Verificado
+via `pg_constraint`/`information_schema.columns` depois da aplicação
+(constraints e `NOT NULL` confirmados). Testado ao vivo no navegador:
+editar um app existente (UniTV Mobile) continua funcionando
+normalmente com as novas constraints em vigor. Segunda de quatro fases
+da auditoria de banco — ver ADR-017 (fase 1) e `ROADMAP.md`/
+`CHANGELOG_AI.md` para as fases seguintes (evolução de schema, limpeza
+de colunas legadas).

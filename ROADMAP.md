@@ -71,8 +71,10 @@ aplicar:
   permissivas pra `public`/`anon`, permitindo INSERT/UPDATE/DELETE
   direto via API REST sem login. Ver ADR-017. Aplicado e verificado
   em 2026-08-07.
-- [ ] **Fase 2 — Integridade:** `UNIQUE` em `apps.slug` + FK
-  `apps.asset_folder → products.asset_folder`.
+- [x] **Fase 2 — Integridade:** `UNIQUE` + `NOT NULL` em `apps.slug`;
+  `NOT NULL` + FK `apps.asset_folder → products.asset_folder`
+  (`ON UPDATE/DELETE RESTRICT`). Ver ADR-018. Aplicado e verificado em
+  2026-08-07.
 - [ ] **Fase 3 — Evolução de schema:** `updated_at` + trigger
   automático em `apps`.
 - [ ] **Fase 4 — Limpeza:** remover `download_url`, `downloader_code`,

@@ -58,6 +58,20 @@ function validateAppFields(app: AppData): Record<string, string> {
   return errors;
 }
 
+// Rede de segurança para a corrida que a checagem isSlugTaken() sozinha não
+// cobre: duas criações/edições simultâneas com o mesmo slug podem passar
+// pela validação da aplicação ao mesmo tempo — quem perde a corrida esbarra
+// na UNIQUE constraint do banco (apps_slug_key). Sem isso, a mensagem
+// viraria um erro genérico em vez da mesma mensagem amigável de sempre.
+function rethrowAsSlugConflict(error: { code?: string; message?: string }): never {
+  if (error.code === "23505" && error.message?.includes("apps_slug_key")) {
+    throw new AppValidationError({ slug: "Já existe um aplicativo com esse slug." });
+  }
+
+  console.error(error);
+  throw error;
+}
+
 async function isSlugTaken(
   supabase: Awaited<ReturnType<typeof createClient>>,
   slug: string,
@@ -296,8 +310,7 @@ export async function createApp(
     .single();
 
   if (error) {
-    console.error(error);
-    throw error;
+    rethrowAsSlugConflict(error);
   }
 
   return data as App;
@@ -335,8 +348,7 @@ export async function updateApp(
     .single();
 
   if (error) {
-    console.error(error);
-    throw error;
+    rethrowAsSlugConflict(error);
   }
 
   return data as App;

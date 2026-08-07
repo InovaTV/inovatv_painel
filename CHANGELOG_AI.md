@@ -7,6 +7,58 @@
 
 ---
 
+## 2026-08-07 (28) — Auditoria de banco: Fase 2 (integridade) aplicada — UNIQUE/NOT NULL/FK em apps
+
+**Contexto:** entrada 27 fechou a Fase 1 (segurança) da auditoria de
+banco, num commit próprio (`2f27978`). Usuário aprovou a Fase 2
+(integridade) com um ajuste em relação à proposta inicial: além do
+`UNIQUE` em `apps.slug` e da FK `apps.asset_folder → products.
+asset_folder`, pediu para também tornar os dois campos `NOT NULL`,
+alinhando o banco com o que a aplicação já trata como obrigatório.
+
+**Aplicado** (`supabase/migrations/20260807170000_apps_integrity_slug_asset_folder.sql`,
+via Management API do Supabase, com aprovação explícita antes de
+rodar):
+- `apps.slug`: `NOT NULL` + `UNIQUE` (`apps_slug_key`).
+- `apps.asset_folder`: `NOT NULL` + `FOREIGN KEY` para
+  `products.asset_folder`, `ON UPDATE RESTRICT ON DELETE RESTRICT`
+  (`apps_asset_folder_fkey`) — `RESTRICT` e não `CASCADE` porque
+  `asset_folder` é literalmente um componente do caminho físico de
+  armazenamento na Hostinger; um `CASCADE` atualizaria o valor no
+  banco mas nunca moveria os arquivos já enviados.
+
+**Pré-condições verificadas antes de aplicar:** 0 slugs duplicados, 0
+`asset_folder` órfão (sem produto correspondente), 0 valores nulos em
+`slug`/`asset_folder` nas 5 linhas existentes — migração aplicada sem
+nenhum conflito de dado.
+
+**Rede de segurança adicionada** — `src/services/app.service.ts`:
+`rethrowAsSlugConflict()` detecta o código Postgres `23505` na
+constraint `apps_slug_key` especificamente e relança como
+`AppValidationError({ slug: "Já existe um aplicativo com esse slug." })`
+em vez de deixar o erro genérico do banco vazar. Cobre o caso raro de
+corrida que `isSlugTaken()` sozinho não pega (duas criações/edições
+simultâneas com o mesmo slug passando pela validação da aplicação ao
+mesmo tempo) — mantém a mensagem amigável mesmo nesse caminho. Usado
+em `createApp()` e `updateApp()`.
+
+**Verificado:**
+- `npx tsc --noEmit`, `npm run lint` e `npm run build` limpos.
+- Constraints e `NOT NULL` confirmados via `pg_constraint`/
+  `information_schema.columns` depois da aplicação.
+- Testado ao vivo no navegador: editar um app existente (UniTV
+  Mobile) continua funcionando normalmente com as novas constraints em
+  vigor (sem erro, redireciona pra `/apps` como sempre).
+
+Ver ADR-018 para o registro completo da decisão.
+
+**Não incluído nesta entrada (próximas fases, mesma auditoria):** Fase
+3 (`updated_at` + trigger automático) e Fase 4 (remover
+`download_url`/`downloader_code`/`storage_folder`) — nenhuma migração
+criada ou aplicada ainda, aguardando aprovação fase a fase.
+
+---
+
 ## 2026-08-07 (27) — Auditoria de banco: achado crítico de RLS + Fase 1 (segurança) aplicada
 
 **Contexto:** com o módulo Aplicativos funcionalmente concluído
