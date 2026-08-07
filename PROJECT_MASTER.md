@@ -174,7 +174,7 @@ src/
 | CRUD Aplicativos — Read (listagem) | ✅ Funcional | `getApps()` em Server Component. |
 | CRUD Aplicativos — Update | ⬜ Pendente | `updateApp()` existe no service, sem página/action/UI. Botão "Editar" no `ActionsMenu` fica `disabled` até existir. |
 | CRUD Aplicativos — Delete | ✅ Funcional | `deleteAppAction` (Server Action, `apps/actions.ts`) + `ActionsMenu` com confirmação via `window.confirm`. |
-| Upload APK / Ícone / Banner | ⬜ Pendente | Inputs de arquivo no `AppForm` são visuais e `disabled`. Precisa Supabase Storage + Server Action de upload. |
+| Upload APK / Ícone / Banner | ✅ Funcional | Route Handler + XHR (ADR-013), armazenamento Hostinger via FTP (ADR-011/012), progresso real ponta a ponta incluindo a etapa servidor→FTP (ADR-014). Validado no navegador em 2026-08-07. |
 | Banners | ⬜ Não iniciado | |
 | Tutoriais | ⬜ Não iniciado | |
 | FAQ | ⬜ Não iniciado | |
@@ -195,9 +195,13 @@ src/
 - **Nomenclatura de arquivos**: componentes em PascalCase, um
   componente por arquivo, subpastas por domínio dentro de
   `components/`.
-- **`.env.local`** contém apenas `NEXT_PUBLIC_SUPABASE_URL` e
-  `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (chave anônima). Nenhuma
-  chave de service role configurada até o momento.
+- **`.env.local`** (não versionado; sincronizado entre os dois
+  computadores do usuário via `G:\Meu Drive\INOVATV PAINEL - ENV\`)
+  contém as credenciais Supabase (URL, publishable key, service role
+  key, access token) **e** as credenciais de armazenamento Hostinger
+  (ver ADR-011/012, `STORAGE.md`). Se algum valor tiver `$` literal
+  (ex.: senha gerada aleatoriamente), precisa vir escapado (`\$`) —
+  ver ADR-015.
 - **Next.js 16 renomeou `middleware.ts` → `proxy.ts`** (mesma
   funcionalidade, arquivo/nome de export diferentes). Usar sempre
   `proxy.ts` daqui pra frente, nunca recriar `middleware.ts`.

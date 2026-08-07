@@ -7,6 +7,75 @@
 
 ---
 
+## 2026-08-07 (24) — Bug real de senha FTP corrigido + progresso completo no upload
+
+**Contexto:** sessão começou sincronizando `.env.local` entre os dois
+computadores do usuário (compartilhado via Google Drive desde a sessão
+anterior — pasta `INOVATV PAINEL - ENV`). A senha FTP tinha sido
+rotacionada num dos computadores; o outro ainda tinha a antiga. Ao
+sincronizar e testar, apareceu um bug real e intermitente: Upload de
+Ícone/Banner/APK dava `530 Login incorrect` no navegador **mesmo com a
+senha certa** no `.env.local` — mas `npm run storage:test` (diagnóstico
+via CLI) sempre passava com a mesma senha.
+
+**Causa raiz:** a senha FTP contém um `$` seguido de letras
+(`...e$RrJp...`). O loader de env do Next.js (`@next/env`) expande
+`$VAR` automaticamente dentro de `.env*` (feature documentada, não bug
+do framework) — como não existe variável `RrJp`, o Next silenciosamente
+apagava esse trecho da senha em runtime. `storage-doctor.ts` usava
+`node --env-file=.env.local` (loader nativo do Node, sem expansão), por
+isso sempre via a senha correta e nunca reproduzia o bug — falso
+negativo estrutural no diagnóstico.
+
+**Corrigido**
+- `.env.local` (não versionado, sincronizado via Drive): `$` escapado
+  para `\$` na senha FTP.
+- `scripts/storage-doctor.ts`: passou a carregar env via
+  `@next/env#loadEnvConfig` (mesmo loader do app), com `import()`
+  dinâmico do storage provider *depois* de carregar o env (import
+  estático seria hoisted e avaliaria `remote-storage.ts` — que lê
+  `process.env` no topo do módulo — antes do loadEnvConfig rodar).
+- `package.json`: `storage:test` não usa mais `--env-file`.
+
+Ver ADR-015 para o registro permanente dessa regra (sempre usar o
+loader do Next em qualquer script/diagnóstico deste projeto).
+
+**Também implementado:** progresso real de upload também na etapa
+servidor→armazenamento remoto (antes só cobria navegador→servidor,
+ficando parada em "Processando no servidor... 100%" pelo tempo todo da
+transferência FTP real — a etapa mais lenta). Ver ADR-014.
+
+- `src/lib/storage/types.ts` — `UploadInput` ganhou `onProgress?:
+  (sentBytes: number) => void`.
+- `src/lib/storage/remote-storage.ts` — `uploadViaFtp` usa
+  `client.trackProgress()` (API nativa do `basic-ftp`) para chamar
+  `onProgress` a cada ~500ms de transferência. SFTP não reporta
+  progresso incremental (sem impacto prático — conexão real é sempre
+  FTP puro, SFTP falha e cai no fallback).
+- `src/app/api/apps/[id]/upload/route.ts` — resposta virou streaming
+  ndjson (uma linha de JSON por evento de progresso + evento final com
+  `{done: true, path}` ou `{done: true, error}`). Erros agora vêm
+  no corpo do stream, não mais via status HTTP (a resposta já fixa
+  status 200 assim que o streaming começa).
+- `src/components/apps/AssetUploadField.tsx` — lê o stream via
+  `xhr.addEventListener("progress", ...)` (evento de download do XHR,
+  não o de upload), parseando linhas ndjson conforme chegam.
+- `package.json`: `dev`/`start` fixados na porta `3900` — a 3000
+  default colide com outro serviço já rodando neste PC
+  (`shwaserver2.exe`, projeto não relacionado do usuário).
+
+**Testado:** `npx tsc --noEmit` e `npm run lint` limpos. Upload real de
+ícone (~4.7MB) testado ao vivo no navegador via Claude in Chrome —
+barra de progresso subindo de 0%→100% de verdade durante a etapa FTP
+(antes ficava travada), "Enviado com sucesso" confirmado. Testado
+também via requisição sintética direta à Route Handler (sem
+autenticação — descartado, rota exige sessão; validação real foi pelo
+navegador autenticado).
+
+**Commit:** `28464df`, push feito para `origin/main`.
+
+---
+
 ## 2026-08-06 (23) — Upload de Ícone e Banner (reaproveitando a infraestrutura por completo)
 
 **Contexto:** usuário validou a revisão de UX (entrada anterior) e o

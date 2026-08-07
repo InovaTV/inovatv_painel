@@ -359,3 +359,88 @@ quando forem habilitados. Progresso é real só na etapa
 navegador→servidor (não inclui a etapa servidor→Hostinger) — decisão
 consciente do usuário para manter a implementação simples agora;
 evoluir para SSE só se a UX atual não for suficiente na prática.
+**Atualização 2026-08-07:** a UX atual não foi suficiente na prática
+(barra ficava presa em "processando" pela transferência FTP inteira,
+a etapa mais lenta) — ver ADR-014, que cobre exatamente esse caso
+previsto aqui.
+
+---
+
+## ADR-014 — Progresso real também na etapa servidor→armazenamento remoto
+
+**Decisão:** a Route Handler de upload (ADR-013) responde em
+**streaming** (ndjson — uma linha de JSON por evento), em vez de um
+único `NextResponse.json()` no final. Durante o upload FTP, cada
+evento de progresso do `basic-ftp` (`client.trackProgress()`, nativo
+da lib) vira uma linha `{stage: "storage", sentBytes, totalBytes}`
+enviada ao client assim que acontece. O evento final é `{done: true,
+path}` (sucesso) ou `{done: true, error}` (falha) — erros passam a
+vir no corpo do stream, não mais via status HTTP, porque a resposta já
+fixa status 200 assim que o streaming começa.
+
+No client, `AssetUploadField.tsx` continua usando `XMLHttpRequest`
+(não `fetch`) para poder ler a resposta enquanto ela chega: o evento
+`xhr.addEventListener("progress", ...)` (progresso de **download** da
+resposta, não confundir com `xhr.upload.addEventListener("progress")`
+usado pra etapa navegador→servidor) dispara a cada chunk recebido,
+e o client faz parsing incremental de `xhr.responseText` por linha.
+
+**Motivo:** a barra de progresso cobria só navegador→servidor (rápida,
+quase instantânea em qualquer rede razoável) e ficava travada em
+"Processando no servidor... 100%" durante toda a transferência real
+pro FTP da Hostinger — a etapa que de fato demora (segundos, às vezes
+vários, dependendo do tamanho do arquivo). Usuário reportou isso como
+"a barra não tem valor nenhum" — já estava prevista como possível
+próximo passo na ADR-013 ("evoluir para SSE só se a UX atual não for
+suficiente na prática").
+
+**Como aplicar:** qualquer novo tipo de upload que reaproveite
+`uploadAppAsset`/`storage.replace()` já ganha esse progresso de graça
+— basta passar um `onProgress` (ver `UploadInput.onProgress` em
+`src/lib/storage/types.ts`). SFTP não implementa `onProgress` (a lib
+`ssh2-sftp-client` não expõe um callback de progresso equivalente) —
+sem impacto prático hoje porque a conexão real é sempre FTP puro
+(SFTP falha na negociação e cai no fallback, ver `STORAGE.md`), mas se
+isso mudar no futuro o progresso da etapa storage volta a ficar
+estático pra uploads via SFTP.
+
+**Status:** implementado e validado ao vivo no navegador (Claude in
+Chrome, upload real de ~4.7MB, barra confirmada subindo 0%→100%
+durante a etapa FTP) em 2026-08-07.
+
+---
+
+## ADR-015 — Env vars em scripts: sempre usar o loader do Next, nunca `node --env-file`
+
+**Decisão:** qualquer script Node deste projeto que precise ler
+`.env.local` (diagnósticos, seeds, migrações futuras) deve carregar o
+env via `@next/env` (`loadEnvConfig(process.cwd())`), nunca via
+`node --env-file=.env.local` nem `dotenv` puro sem expansão. Se o
+import do que depende do env for estático, ele precisa vir depois do
+`loadEnvConfig` via `import()` dinâmico — um `import` estático no topo
+do arquivo é *hoisted* e avalia antes de qualquer código do próprio
+módulo rodar, inclusive antes do `loadEnvConfig`.
+
+**Motivo:** o Next.js expande `$VAR` dentro de `.env*` automaticamente
+(feature documentada — permite um valor referenciar outro). Um `$`
+literal numa credencial (ex.: senha gerada aleatoriamente) precisa
+estar escapado (`\$`) pra não ser interpretado como referência a uma
+variável inexistente e virar string vazia **silenciosamente** — sem
+erro, sem warning, só o valor errado em runtime. `node --env-file` (o
+loader nativo do Node) não faz essa expansão, então um script que use
+esse loader para "testar" credenciais pode passar perfeitamente
+enquanto o app real, usando o loader do Next, falha com a mesma
+variável — foi exatamente esse o descompasso que escondeu o bug da
+entrada 2026-08-07 (24) do `CHANGELOG_AI.md` por trás de um `530 Login
+incorrect` intermitente e difícil de reproduzir via CLI.
+
+**Como aplicar:** ao escrever qualquer script novo fora do runtime do
+Next que precise das mesmas credenciais que o app usa em produção/dev,
+copiar o padrão de `scripts/storage-doctor.ts` (loadEnvConfig +
+import dinâmico). Nunca assumir que um valor com `$` em `.env.local`
+"deveria simplesmente funcionar" sem checar se precisa de escape — em
+caso de dúvida, testar o valor efetivo com `loadEnvConfig` antes de
+usá-lo numa credencial real.
+
+**Status:** implementado (`scripts/storage-doctor.ts`,
+`package.json#scripts.storage:test`) em 2026-08-07.
