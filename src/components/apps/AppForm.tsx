@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useFormStatus } from "react-dom";
 
@@ -13,11 +13,13 @@ import AssetUploadField from "./AssetUploadField";
 
 import { slugify } from "@/lib/utils";
 
-import type { App } from "@/services/app.service";
+import type { App, AppActionState } from "@/services/app.service";
 import type { Product } from "@/services/product.service";
 import type { AssetStat } from "@/lib/storage/types";
 
 const NEW_PRODUCT_VALUE = "__new__";
+
+const INITIAL_STATE: AppActionState = {};
 
 function SubmitButton({ editing }: { editing: boolean }) {
   const { pending } = useFormStatus();
@@ -33,6 +35,16 @@ function SubmitButton({ editing }: { editing: boolean }) {
   );
 }
 
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+
+  return (
+    <p className="mt-1 text-xs text-red-600">
+      {message}
+    </p>
+  );
+}
+
 function toCurrentAsset(stat?: AssetStat | null) {
   return stat ? { size: stat.size, modifiedAt: stat.modifiedAt.toISOString() } : null;
 }
@@ -43,13 +55,25 @@ interface Props {
   apkStat?: AssetStat | null;
   iconStat?: AssetStat | null;
   bannerStat?: AssetStat | null;
+  iconUrl?: string | null;
+  bannerUrl?: string | null;
 }
 
-export default function AppForm({ app, products, apkStat, iconStat, bannerStat }: Props) {
+export default function AppForm({
+  app,
+  products,
+  apkStat,
+  iconStat,
+  bannerStat,
+  iconUrl,
+  bannerUrl,
+}: Props) {
   const router = useRouter();
 
   const editing = Boolean(app);
   const action = app ? updateAppAction.bind(null, app.id) : createAppAction;
+  const [state, formAction] = useActionState(action, INITIAL_STATE);
+  const fieldErrors = state.fieldErrors ?? {};
 
   const [name, setName] = useState(app?.name ?? "");
   const [slug, setSlug] = useState(app?.slug ?? "");
@@ -73,10 +97,16 @@ export default function AppForm({ app, products, apkStat, iconStat, bannerStat }
 
   return (
     <form
-      action={action}
+      action={formAction}
       className="grid grid-cols-1 gap-8 lg:grid-cols-2"
     >
       <div className="rounded-xl border bg-white p-8">
+        {state.error && (
+          <p className="mb-6 rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
+            {state.error}
+          </p>
+        )}
+
         <div className="grid grid-cols-2 gap-6">
           <div>
             <label className="mb-2 block text-sm font-medium">
@@ -89,7 +119,10 @@ export default function AppForm({ app, products, apkStat, iconStat, bannerStat }
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
               placeholder="UniTV Mobile"
+              className={fieldErrors.name ? "border-red-500" : undefined}
             />
+
+            <FieldError message={fieldErrors.name} />
           </div>
 
           <div>
@@ -106,7 +139,10 @@ export default function AppForm({ app, products, apkStat, iconStat, bannerStat }
                 setSlugTouched(true);
               }}
               placeholder="unitv-mobile"
+              className={fieldErrors.slug ? "border-red-500" : undefined}
             />
+
+            <FieldError message={fieldErrors.slug} />
           </div>
 
           <div>
@@ -132,14 +168,18 @@ export default function AppForm({ app, products, apkStat, iconStat, bannerStat }
             </select>
 
             {productId === NEW_PRODUCT_VALUE && (
-              <Input
-                name="new_product_name"
-                required
-                value={newProductName}
-                onChange={(e) => setNewProductName(e.target.value)}
-                placeholder="Nome do novo produto"
-                className="mt-2"
-              />
+              <>
+                <Input
+                  name="new_product_name"
+                  required
+                  value={newProductName}
+                  onChange={(e) => setNewProductName(e.target.value)}
+                  placeholder="Nome do novo produto"
+                  className={`mt-2 ${fieldErrors.new_product_name ? "border-red-500" : ""}`}
+                />
+
+                <FieldError message={fieldErrors.new_product_name} />
+              </>
             )}
           </div>
 
@@ -153,7 +193,10 @@ export default function AppForm({ app, products, apkStat, iconStat, bannerStat }
               required
               defaultValue={app?.version}
               placeholder="3.24.2"
+              className={fieldErrors.version ? "border-red-500" : undefined}
             />
+
+            <FieldError message={fieldErrors.version} />
           </div>
         </div>
 
@@ -176,6 +219,8 @@ export default function AppForm({ app, products, apkStat, iconStat, bannerStat }
                 📺 TV Box
               </option>
             </select>
+
+            <FieldError message={fieldErrors.platform} />
           </div>
 
           <div>
@@ -247,6 +292,7 @@ export default function AppForm({ app, products, apkStat, iconStat, bannerStat }
               label="Ícone"
               accept="image/*"
               current={toCurrentAsset(iconStat)}
+              previewUrl={iconUrl}
             />
 
             <AssetUploadField
@@ -255,6 +301,7 @@ export default function AppForm({ app, products, apkStat, iconStat, bannerStat }
               label="Banner"
               accept="image/*"
               current={toCurrentAsset(bannerStat)}
+              previewUrl={bannerUrl}
             />
           </>
         ) : (

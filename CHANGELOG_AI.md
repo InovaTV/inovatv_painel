@@ -7,6 +7,153 @@
 
 ---
 
+## 2026-08-07 (26) — Validação de formulário + tratamento de erro — módulo Aplicativos CONCLUÍDO
+
+**Contexto:** entrada 25 fechou Download/Preview/Status/Busca/
+Ordenação/Paginação e deixou pendentes os dois últimos itens do
+`DEFINITION_OF_DONE.md`: validação de formulário além de `required` e
+tratamento de erro visível ao usuário. Usuário pediu para concluir os
+dois, rodar `tsc`/`lint`/`build` de novo, e então fazer **um único
+commit** representando o encerramento funcional do módulo — sem abrir
+outro módulo depois; próximo passo é a auditoria do banco de dados e,
+só depois, a fase de UI/UX.
+
+**Validação de formulário** — `src/services/app.service.ts`:
+- `AppValidationError` (novo): erro de negócio com `fieldErrors:
+  Record<string,string>`, distinto de erro de infraestrutura.
+- `validateAppFields()`: nome (obrigatório, mín. 2 chars), slug
+  (obrigatório, regex `^[a-z0-9]+(-[a-z0-9]+)*$`), versão (obrigatória,
+  regex `^\d+(\.\d+)*$` — aceita os formatos reais já em uso: "1",
+  "5", "012", "3.24.2", "4.19.1.00"), plataforma (contra allowlist
+  `["mobile","tv"]`, defesa em profundidade além do `<select>`).
+- `isSlugTaken()`: checagem de unicidade contra o banco (excluindo o
+  próprio id em updates). **Descoberto via teste real:** a tabela
+  `apps` não tem `UNIQUE` constraint em `slug` (confirmado inserindo e
+  removendo uma linha de teste via `createAdminClient()`) — a
+  unicidade agora é garantida na camada de aplicação.
+- `createApp()`/`updateApp()` chamam a validação antes de tocar no
+  banco e lançam `AppValidationError` se algo falhar; valores são
+  `.trim()`ados antes de salvar.
+
+**Tratamento de erro visível** — Server Actions pararam de deixar erro
+"vazar" como página de erro genérica do Next:
+- `AppActionState` (novo tipo, em `app.service.ts`):
+  `{ error?: string; fieldErrors?: Record<string,string> }`.
+- `createAppAction`/`updateAppAction` mudaram de assinatura para
+  `(prevState, formData)` (compatível com `useActionState`) e retornam
+  `AppActionState` em vez de lançar — capturam `AppValidationError`
+  (vira `fieldErrors`) e qualquer outro erro (vira `error` genérico +
+  `console.error` para debug). `redirect()` continua fora do
+  `try/catch` (nunca deve ser capturado).
+- `AppForm.tsx`: passou a usar `useActionState` em vez de só
+  `action={...}`; cada campo mostra sua mensagem (`FieldError`) e um
+  banner vermelho aparece no topo para erro genérico. Também mapeia o
+  erro de `resolveProductAssetFolder()` ("Nome do novo produto é
+  obrigatório.") para o campo `new_product_name`.
+- `ActionsMenu` (excluir), `StatusToggle` (toggle) e `OrderControls`
+  (reordenar): as três agora envolvem a chamada da Server Action em
+  `try/catch` e mostram `window.alert()` em caso de falha, em vez de
+  falhar silenciosamente. `StatusToggle` também reverte o estado
+  otimista do `Switch` se a chamada falhar.
+
+**Verificado:** `npx tsc --noEmit`, `npm run lint` e `npm run build`
+limpos. Testado ao vivo no navegador: slug duplicado (usando o slug
+real de um app existente) bloqueado com mensagem inline antes de
+qualquer escrita no banco; slug com caracteres inválidos e versão com
+letras bloqueados com mensagens específicas; criação com dados válidos
+funcionando normalmente (redireciona para a edição). App de teste
+criado durante a verificação removido depois via script descartável
+(`_tmp-cleanup-test-app.ts`) — nenhum dado de teste ficou no banco.
+
+**Módulo Aplicativos está funcionalmente concluído** conforme
+`DEFINITION_OF_DONE.md` (ver seção "CONCLUÍDO" naquele arquivo e
+`ROADMAP.md` Fase 2). Próximo passo combinado: auditoria de banco,
+depois fase de UI/UX — nenhum outro módulo deve começar antes disso.
+
+---
+
+## 2026-08-07 (25) — Download, Preview, Status, Busca, Ordenação e Paginação do módulo Aplicativos
+
+**Contexto:** com CRUD + os 3 uploads já fechados (entrada 24), o
+usuário pediu para seguir a lista de pendências do
+`DEFINITION_OF_DONE.md` nesta ordem exata: Download, Preview, Status,
+Busca, Ordenação, Paginação — sem entrar na fase de UI/UX antes de
+concluir todos.
+
+**Download** (ADR-016) — `src/app/api/apps/[id]/download/route.ts`
+(Route Handler `GET`) resolve `storage_path` no banco e responde com
+`NextResponse.redirect()` para a URL pública. Indireção proposital: o
+client sempre aponta para `/api/apps/{id}/download`, nunca direto pra
+Hostinger — permite adicionar estatística/auditoria/controle de
+acesso depois sem mudar o client. `ActionsMenu` ganhou prop opcional
+`downloadHref` (item "Baixar APK" só aparece com `storage_path`
+setado). Testado ao vivo: fetch com `redirect: "manual"` retorna
+`type: "opaqueredirect"` para app real; id inexistente retorna `500`
+(mesmo comportamento de qualquer página deste projeto que dependa de
+um id inválido).
+
+**Preview** — `editar/page.tsx` monta `iconUrl`/`bannerUrl` via
+`storage.getPublicUrl()` e repassa por `AppForm` até
+`AssetUploadField`, que agora recebe `previewUrl` opcional e renderiza
+uma thumbnail (`<img>`, com `?v=modifiedAt` para invalidar cache após
+um replace no mesmo path). Testado ao vivo com upload real de um PNG
+de teste no app "UniTV Mobile" — depois **revertido** (arquivo
+apagado da Hostinger via script `_tmp-revert-icon.ts` descartável +
+`icon_path` restaurado para `null`), a pedido do usuário, que prefere
+apps sem mídia real permanecerem sem mídia em vez de placeholder.
+
+**Status** — `StatusToggle` (`src/components/apps/StatusToggle.tsx`):
+`Switch` do shadcn (`npx shadcn add switch`, sem dependência nova além
+do componente) + `StatusBadge` existente, chamando a nova Server
+Action `toggleAppStatusAction` → `setAppActive()` em
+`app.service.ts`. Substituiu o `StatusBadge` estático na tabela.
+
+**Busca** — `AppsSearch` (client, debounce 300ms) escreve `?q=` na URL
+via `router.replace`; `getApps()` ganhou `GetAppsOptions.q` (filtro
+`.ilike("name", ...)`). `AppsPage` virou async com `searchParams`.
+`AppsTable` ganhou estado vazio ("Nenhum aplicativo encontrado.").
+
+**Ordenação** — a pedido do usuário, implementação simples (setas
+↑/↓, sem drag-and-drop, sem lib nova). Primitiva de backend
+desacoplada da UI: `swapDisplayOrder(a, b)` em `app.service.ts` só
+troca o `display_order` de dois apps — não sabe quem é "vizinho".
+`OrderControls` (client) calcula prev/next a partir do array já
+renderizado (`AppsTable` passa `apps[index-1]`/`apps[index+1]`) e
+chama a Server Action `swapAppOrderAction`. Seta ↑ desabilitada no
+primeiro item, ↓ desabilitada no último. Preparado para, no futuro,
+trocar só a interação (drag-and-drop) sem tocar em
+`swapDisplayOrder`/`swapAppOrderAction`.
+
+**Paginação** — `getApps()` ganhou `page`/`APPS_PAGE_SIZE` (10) e
+passou a retornar `{ apps, total, page, pageSize }`. **Bug real
+pego em teste manual:** PostgREST responde `PGRST103` ("Requested
+range not satisfiable") quando o offset do `.range()` é `>=` à
+contagem real de linhas (mas não quando os dois são `0`) — acontecia
+ao acessar `/apps?page=2` com só 5 apps no banco, quebrando a página
+inteira (erro 500). Corrigido fazendo a contagem numa query separada
+(`head: true`) *antes* de montar o `.range()`, grampeando a página
+pedida ao número real de páginas — nunca mais pede um offset
+inválido. `AppsPage` agora usa o `page` (já grampeado) devolvido por
+`getApps()`, não o valor cru da URL, pra manter o rótulo "Página X de
+Y" e os estados de disabled do `AppsPagination` sempre consistentes
+com os dados exibidos.
+
+**Verificado:** `npx tsc --noEmit`, `npm run lint` e `npm run build`
+limpos. Todas as seis funcionalidades testadas ao vivo no navegador
+via Claude in Chrome (Download, Preview, Status, Busca, Ordenação) ou
+por chamada direta ao service contra o Supabase real (Paginação, após
+o bug do PGRST103 aparecer num teste no navegador). Nenhum dado de
+teste ficou para trás: ícone de teste revertido, toggles de status e
+trocas de ordem revertidos ao estado original depois de confirmados.
+
+**Não incluído nesta sessão (fica para a próxima):** validação de
+formulário além de `required`, tratamento de erro visível ao usuário
+(hoje só `console.error`) — únicos itens do
+`DEFINITION_OF_DONE.md` do módulo Aplicativos ainda pendentes antes de
+poder considerá-lo 100% concluído.
+
+---
+
 ## 2026-08-07 (24) — Bug real de senha FTP corrigido + progresso completo no upload
 
 **Contexto:** sessão começou sincronizando `.env.local` entre os dois

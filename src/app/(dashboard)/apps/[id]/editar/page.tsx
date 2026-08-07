@@ -46,6 +46,8 @@ export default async function EditarAppPage({ params }: Props) {
         apkStat={apkStat}
         iconStat={iconStat}
         bannerStat={bannerStat}
+        iconUrl={app.icon_path ? storage.getPublicUrl(app.icon_path) : null}
+        bannerUrl={app.banner_path ? storage.getPublicUrl(app.banner_path) : null}
       />
 
     </>

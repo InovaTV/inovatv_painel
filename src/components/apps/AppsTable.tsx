@@ -1,6 +1,7 @@
 import {
   Table,
   TableBody,
+  TableCell,
   TableHead,
   TableHeader,
   TableRow,
@@ -54,12 +55,25 @@ export default function AppsTable({
 
       <TableBody>
 
-        {apps.map((app) => (
-          <AppsTableRow
-            key={app.id}
-            app={app}
-          />
-        ))}
+        {apps.length === 0 ? (
+          <TableRow>
+            <TableCell
+              colSpan={6}
+              className="text-center text-muted-foreground"
+            >
+              Nenhum aplicativo encontrado.
+            </TableCell>
+          </TableRow>
+        ) : (
+          apps.map((app, index) => (
+            <AppsTableRow
+              key={app.id}
+              app={app}
+              prev={apps[index - 1] ?? null}
+              next={apps[index + 1] ?? null}
+            />
+          ))
+        )}
 
       </TableBody>
 

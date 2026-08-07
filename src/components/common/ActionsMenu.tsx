@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import {
+  Download,
   MoreVertical,
   Pencil,
   Trash2,
@@ -22,10 +23,12 @@ import { deleteAppAction } from "@/app/(dashboard)/apps/actions";
 
 interface Props {
   id: string;
+  downloadHref?: string;
 }
 
 export default function ActionsMenu({
   id,
+  downloadHref,
 }: Props) {
   const router = useRouter();
 
@@ -38,9 +41,12 @@ export default function ActionsMenu({
       return;
     }
 
-    await deleteAppAction(id);
-
-    router.refresh();
+    try {
+      await deleteAppAction(id);
+      router.refresh();
+    } catch {
+      window.alert("Não foi possível excluir o aplicativo. Tente novamente.");
+    }
   }
 
   return (
@@ -71,6 +77,22 @@ export default function ActionsMenu({
           </Link>
 
         </DropdownMenuItem>
+
+        {downloadHref && (
+
+          <DropdownMenuItem asChild>
+
+            <a href={downloadHref}>
+
+              <Download className="mr-2 h-4 w-4" />
+
+              Baixar APK
+
+            </a>
+
+          </DropdownMenuItem>
+
+        )}
 
         <DropdownMenuItem
           className="text-red-600"

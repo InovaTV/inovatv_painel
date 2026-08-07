@@ -10,11 +10,22 @@ import {
 } from "@/components/ui/card";
 
 import AppsTable from "@/components/apps/AppsTable";
+import AppsSearch from "@/components/apps/AppsSearch";
+import AppsPagination from "@/components/apps/AppsPagination";
 
 import { getApps } from "@/services/app.service";
 
-export default async function AppsPage() {
-  const apps = await getApps();
+interface Props {
+  searchParams: Promise<{ q?: string; page?: string }>;
+}
+
+export default async function AppsPage({ searchParams }: Props) {
+  const { q, page } = await searchParams;
+  const { apps, total, pageSize, page: currentPage } = await getApps({
+    q,
+    page: page ? Number(page) : undefined,
+  });
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
     <>
@@ -37,14 +48,21 @@ export default async function AppsPage() {
       </div>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle>
             Lista de Aplicativos
           </CardTitle>
+
+          <AppsSearch />
         </CardHeader>
 
         <CardContent>
           <AppsTable apps={apps} />
+
+          <AppsPagination
+            page={currentPage}
+            totalPages={totalPages}
+          />
         </CardContent>
       </Card>
     </>

@@ -444,3 +444,46 @@ usá-lo numa credencial real.
 
 **Status:** implementado (`scripts/storage-doctor.ts`,
 `package.json#scripts.storage:test`) em 2026-08-07.
+
+---
+
+## ADR-016 — Download de APK via Route Handler (indireção proposital)
+
+**Decisão:** o download do APK não é um link direto para a URL
+pública da Hostinger (`storage.getPublicUrl(app.storage_path)`).
+É uma **Route Handler** própria
+(`src/app/api/apps/[id]/download/route.ts`, `GET`) que resolve o
+`storage_path` do app no banco e responde com
+`NextResponse.redirect()` para a URL pública. O client (`ActionsMenu`)
+sempre aponta para `/api/apps/{id}/download`, nunca para a URL da
+Hostinger diretamente.
+
+**Motivo:** requisito explícito do usuário — mesmo sem nenhuma lógica
+extra hoje além do redirect, todo download passa por um ponto único
+no servidor. Isso preserva a arquitetura para adicionar, sem mudar o
+client, funcionalidades futuras como contagem/estatística de
+downloads, auditoria (quem baixou o quê e quando) ou controle de
+acesso (ex.: exigir sessão válida, checar plano do cliente).
+
+**Não é uma exceção à ADR-003:** download é leitura (`GET`), não
+CRUD/mutação — não há Server Action equivalente para "ir buscar um
+arquivo", então não há padrão para fugir. Diferente da ADR-013 (upload
+via Route Handler), aqui não existe alternativa nativa do Next.js
+sendo contornada; é simplesmente o tipo certo de rota para o caso.
+
+**Como aplicar:** se um botão de "Ações" (`ActionsMenu`) precisar de
+download em outro módulo no futuro, repetir o mesmo padrão —
+`downloadHref` opcional na prop, apontando para uma Route Handler
+`GET` própria daquele módulo, nunca para a URL do storage diretamente.
+Sem sessão/sem `storage_path` retornam erro (`404` via
+`NextResponse.json`) em vez de redirecionar — evita expor uma URL de
+storage quebrada ou um redirect para `undefined`.
+
+**Status:** implementado em 2026-08-07. `ActionsMenu` ganhou prop
+opcional `downloadHref` (item "Baixar APK" só aparece quando o app tem
+`storage_path`). Testado ao vivo no navegador via Claude in Chrome:
+fetch direto ao endpoint com um app real retorna `type:
+"opaqueredirect"` (confirma o redirect); com um id inexistente,
+`getApp()` lança e a rota responde `500` (mesmo comportamento de
+qualquer outra página que dependa de um id inválido neste projeto —
+não é uma regressão introduzida aqui).

@@ -170,11 +170,16 @@ src/
 | Autenticação (login/logout) | ✅ Funcional | Email/senha via `signInWithPassword`. Sem cadastro público — admins criados direto no Supabase. |
 | Middleware / proteção de rotas | ✅ Funcional | `src/proxy.ts`, redireciona por sessão. |
 | Dashboard (layout + cards) | ✅ Funcional (dados estáticos) | Cards ainda mostram números fixos (2 apps, 0 nos demais) — não busca contagem real ainda. |
-| CRUD Aplicativos — Create | ✅ Funcional | Via Server Action `createAppAction`. |
-| CRUD Aplicativos — Read (listagem) | ✅ Funcional | `getApps()` em Server Component. |
-| CRUD Aplicativos — Update | ⬜ Pendente | `updateApp()` existe no service, sem página/action/UI. Botão "Editar" no `ActionsMenu` fica `disabled` até existir. |
-| CRUD Aplicativos — Delete | ✅ Funcional | `deleteAppAction` (Server Action, `apps/actions.ts`) + `ActionsMenu` com confirmação via `window.confirm`. |
+| CRUD Aplicativos — Create | ✅ Funcional | Via Server Action `createAppAction`, com validação (`validateAppFields`) e erro visível (`useActionState`). |
+| CRUD Aplicativos — Read (listagem) | ✅ Funcional | `getApps()` em Server Component, com busca (`?q=`) e paginação (`?page=`). |
+| CRUD Aplicativos — Update | ✅ Funcional | `updateAppAction` + `AppForm`, mesma validação/tratamento de erro do Create. |
+| CRUD Aplicativos — Delete | ✅ Funcional | `deleteAppAction` (Server Action, `apps/actions.ts`) + `ActionsMenu` com confirmação via `window.confirm` e alerta em caso de falha. |
 | Upload APK / Ícone / Banner | ✅ Funcional | Route Handler + XHR (ADR-013), armazenamento Hostinger via FTP (ADR-011/012), progresso real ponta a ponta incluindo a etapa servidor→FTP (ADR-014). Validado no navegador em 2026-08-07. |
+| Preview (ícone/banner) | ✅ Funcional | Thumbnail via URL pública em `AssetUploadField`. |
+| Download (APK) | ✅ Funcional | Route Handler `GET /api/apps/[id]/download`, redireciona pra URL pública (ADR-016). |
+| Status (toggle) | ✅ Funcional | `StatusToggle` (`Switch` + Server Action `toggleAppStatusAction`). |
+| Ordenação | ✅ Funcional | Setas ↑/↓ (`OrderControls` + `swapDisplayOrder`), sem drag-and-drop. |
+| **Módulo Aplicativos** | ✅ **Concluído (2026-08-07)** | Atende `DEFINITION_OF_DONE.md` por completo. Próximo passo: auditoria de banco, depois fase de UI/UX — ver `ROADMAP.md`. |
 | Banners | ⬜ Não iniciado | |
 | Tutoriais | ⬜ Não iniciado | |
 | FAQ | ⬜ Não iniciado | |

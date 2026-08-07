@@ -6,20 +6,29 @@
 > permanentes (ver `ARCHITECTURE_DECISIONS.md`) — só o "o que já foi
 > feito e o que falta", em ordem.
 
-Última atualização: 2026-08-06
+Última atualização: 2026-08-07
 
 ## Foco atual
 
-**Regra fixada pelo usuário:** não abrir um módulo novo enquanto o
-módulo **Aplicativos** não estiver 100% fechado — critério objetivo
-em `DEFINITION_OF_DONE.md`, não "CRUD básico funciona". Ver ADR-006
-em `ARCHITECTURE_DECISIONS.md` sobre por quê isso importa: os
-próximos módulos vão reaproveitar os padrões que saírem daqui.
+**Módulo Aplicativos concluído funcionalmente em 2026-08-07** —
+atende `DEFINITION_OF_DONE.md` por completo (ver seção "Módulo
+Aplicativos — CONCLUÍDO" naquele arquivo).
 
-Documentação e arquitetura estão **congeladas** a partir de
-2026-08-06 — só voltam a mudar se surgir uma decisão arquitetônica
-real (vira ADR) ou o fim de sessão exigir atualização mecânica dos
-documentos. O esforço agora é 100% em código.
+**Regra fixada pelo usuário:** não abrir a Fase 3 (Banners/Marketing)
+nem qualquer outro módulo novo agora. Próximos passos, nesta ordem:
+1. Auditoria do banco de dados (`apps`/`products`/relacionadas —
+   colunas em uso / reservadas para funcionalidade futura já
+   planejada / legado pra remover).
+2. Fase exclusiva de UI/UX (só depois da auditoria).
+
+Ver ADR-006 em `ARCHITECTURE_DECISIONS.md` sobre por que fechar
+Aplicativos por completo antes de seguir importa: os próximos módulos
+vão reaproveitar os padrões que saíram daqui.
+
+Documentação e arquitetura estão **congeladas** desde 2026-08-06 — só
+voltam a mudar se surgir uma decisão arquitetônica real (vira ADR) ou
+o fim de sessão exigir atualização mecânica dos documentos. O esforço
+agora é 100% em código.
 
 ---
 
@@ -29,10 +38,7 @@ documentos. O esforço agora é 100% em código.
 - [x] Middleware (`src/proxy.ts`, proteção de rotas)
 - [x] Dashboard (layout + cards — dados ainda estáticos)
 
-## Fase 2 — Módulo Aplicativos
-
-Único módulo em trabalho agora. Concluído quando atender
-`DEFINITION_OF_DONE.md` por completo — não antes.
+## Fase 2 — Módulo Aplicativos ✅ CONCLUÍDO (2026-08-07)
 
 - [x] Create
 - [x] Read
@@ -42,12 +48,17 @@ documentos. O esforço agora é 100% em código.
 - [x] Upload Ícone
 - [x] Upload Banner do app (imagem promocional — pertence ao
   cadastro do app, **não** é o módulo "Banners" de marketing da Fase 3)
-- [ ] Preview
-- [ ] Download
-- [ ] Ordenação
-- [ ] Status (toggle ativo/inativo)
-- [ ] Busca
-- [ ] Paginação
+- [x] Preview
+- [x] Download
+- [x] Ordenação
+- [x] Status (toggle ativo/inativo)
+- [x] Busca
+- [x] Paginação
+- [x] Validação de formulário além de `required`
+- [x] Tratamento de erro visível ao usuário
+
+Próximo passo (fixado pelo usuário): auditoria do banco de dados,
+depois fase exclusiva de UI/UX. Não abrir a Fase 3 antes disso.
 
 ## Fase 3 — Banners (Marketing)
 

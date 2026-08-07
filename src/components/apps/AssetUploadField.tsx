@@ -19,6 +19,7 @@ interface Props {
   label: string;
   accept: string;
   current?: CurrentAsset | null;
+  previewUrl?: string | null;
 }
 
 export default function AssetUploadField({
@@ -27,6 +28,7 @@ export default function AssetUploadField({
   label,
   accept,
   current,
+  previewUrl,
 }: Props) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -183,6 +185,15 @@ export default function AssetUploadField({
           </span>
         )}
       </div>
+
+      {previewUrl && current && !busy && (
+        // eslint-disable-next-line @next/next/no-img-element -- thumbnail vem de fora do domínio do app (Hostinger), sem next/image configurado para esse host
+        <img
+          src={`${previewUrl}?v=${encodeURIComponent(current.modifiedAt)}`}
+          alt={`Preview de ${label}`}
+          className="mt-2 h-16 w-16 rounded-md border object-cover"
+        />
+      )}
 
       <input
         ref={inputRef}
