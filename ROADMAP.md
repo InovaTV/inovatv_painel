@@ -80,13 +80,20 @@ aplicar:
   `public.set_updated_at()` (pensada pra Banners/Notícias/FAQ/
   Tutoriais futuros — só o trigger é por tabela). Ver ADR-019.
   Aplicado e verificado em 2026-08-07.
-- [ ] **Fase 4 — Limpeza:** remover `download_url`, `downloader_code`,
-  `storage_folder` (colunas legadas, ligadas ao sistema `inovatv.pro`
-  já descontinuado — ver `reference_downloads_project`).
+- [x] **Fase 4 — Limpeza:** `download_url`, `downloader_code` e
+  `storage_folder` removidas (colunas legadas do antigo Projeto
+  Downloads `inovatv.pro` e da primeira representação de storage deste
+  projeto, ambas substituídas por `asset_folder`/Hostinger). Backup dos
+  valores em `supabase/backups/20260807_apps_legacy_columns_backup.csv`.
+  Ver ADR-020. Aplicado e verificado em 2026-08-07.
 
 Colunas `package_name`/`min_android_version`/`current_version_code`/
 `requires_login` ficam como reservadas para funcionalidade futura —
 nenhuma ação planejada.
+
+**Auditoria de banco encerrada (4/4 fases).** Schema do módulo
+Aplicativos considerado maduro. Próximo passo combinado: fase de
+UI/UX, não um novo módulo.
 
 ## Fase 3 — Banners (Marketing)
 

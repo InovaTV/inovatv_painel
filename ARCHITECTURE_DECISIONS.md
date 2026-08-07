@@ -645,3 +645,61 @@ ficou intacto; linha revertida ao estado original logo em seguida.
 migração. Terceira de quatro fases da auditoria de banco — ver
 ADR-017 (fase 1), ADR-018 (fase 2) e `ROADMAP.md`/`CHANGELOG_AI.md`
 para a fase seguinte (limpeza de colunas legadas).
+
+---
+
+## ADR-020 — Remoção de `download_url`, `downloader_code` e `storage_folder` (fase 4 da auditoria, encerramento)
+
+**Decisão:** as 3 colunas são removidas de `apps` via `ALTER TABLE ...
+DROP COLUMN` (`supabase/migrations/20260807190000_apps_drop_legacy_download_columns.sql`),
+antes de existir o Portal Público de Downloads que a ADR-008
+originalmente colocava como pré-condição para a remoção. Decisão
+explícita do usuário: as colunas já não têm nenhum uso real hoje (nem
+na aplicação, nem em nenhum sistema externo ainda ativo), então esperar
+o Portal Público só prolonga dado morto no schema sem ganho nenhum —
+quando o Portal existir, ele nasce com uma coluna nova e desenhada para
+o caso de uso real dele, não reaproveitando estas.
+
+**Origem das 3 colunas (contexto histórico, não só "colunas
+legadas"):**
+- `download_url` e `downloader_code` vêm do **Projeto Downloads**
+  (`inovatv.pro`, ver `README.md`), um site externo anterior a este
+  painel que hospedava os APKs e gerava um link/código de download
+  próprios — `apps.download_url` era o link direto pra esse site,
+  `downloader_code` um identificador do gerador de downloader dele.
+  Marcado como depreciado desde a ADR-008 (2026-08-06), quando o
+  usuário confirmou a descontinuação do Projeto Downloads e fixou a
+  regra permanente de não manter compatibilidade com sistemas legados
+  marcados para descontinuação.
+- `storage_folder` foi a **primeira representação, dentro deste
+  projeto**, de onde o arquivo de um app fica fisicamente armazenado —
+  anterior tanto à tentativa de bucket no Supabase Storage (ADR-007,
+  depois supersedida) quanto ao padrão real de hoje, `asset_folder`
+  (ligado a `products`, com `FOREIGN KEY` desde a ADR-018), que passou
+  a ser a fonte de verdade depois da migração para a Hostinger
+  (ADR-011). `storage_folder` continuou existindo e sendo lido em
+  paralelo por um tempo (ver `CHANGELOG_AI.md`, bug corrigido em
+  `20260806140000_add_banner_path_fix_storage_folder.sql`), mas nunca
+  mais é escrito por `createApp()`/`updateApp()` desde que
+  `asset_folder` assumiu esse papel.
+
+**Por que é seguro remover agora:** `app.service.ts` não lê nem escreve
+nenhuma das 3 colunas em nenhum fluxo atual (criação, edição, upload,
+download, exibição) — confirmado antes de escrever esta migração.
+`downloader_code` está `NULL` nas 5 linhas existentes (nunca chegou a
+ser usado de fato, nem nos 2 apps reais). `download_url` tem valor real
+só nos 2 apps reais (links pro `inovatv.pro`, hoje sem uso no painel);
+`storage_folder` tem valor real nos mesmos 2 apps (caminho antigo,
+substituído por `asset_folder`).
+
+**Backup:** valores atuais de `id`, `name`, `download_url`,
+`downloader_code`, `storage_folder` das 5 linhas exportados para
+`supabase/backups/20260807_apps_legacy_columns_backup.csv` antes da
+migração — snapshot simples, sem tabela de auditoria nem intenção de
+manter compatibilidade, só para não perder o dado histórico caso seja
+preciso consultar depois.
+
+**Status:** encerra a auditoria de banco de 4 fases desta rodada (ver
+ADR-017, ADR-018, ADR-019). Depois desta fase, o schema do módulo
+Aplicativos é considerado maduro — próximo passo combinado com o
+usuário é uma fase de UI/UX, não um novo módulo.

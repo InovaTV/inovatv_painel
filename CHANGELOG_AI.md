@@ -7,6 +7,42 @@
 
 ---
 
+## 2026-08-07 (30) — Auditoria de banco: backup + migração da Fase 4 (limpeza) preparados, aguardando aplicação
+
+**Contexto:** encerramento combinado da auditoria de banco (entradas
+27-29 cobriram as fases 1-3). Antes de remover `download_url`,
+`downloader_code` e `storage_folder`, usuário pediu um backup simples
+dos valores atuais (sem tabela nova, sem compatibilidade) e que o
+motivo da remoção ficasse documentado como parte da evolução da
+arquitetura (Projeto Downloads antigo + primeira implementação do
+Storage).
+
+**Backup:** `supabase/backups/20260807_apps_legacy_columns_backup.csv`
+— `id`, `name`, `download_url`, `downloader_code`, `storage_folder`
+das 5 linhas de `apps`, lido via Management API antes de qualquer
+`DROP COLUMN`.
+
+**Migração preparada** (`supabase/migrations/20260807190000_apps_drop_legacy_download_columns.sql`,
+**ainda não aplicada** — aguardando confirmação explícita):
+```sql
+alter table public.apps
+  drop column download_url,
+  drop column downloader_code,
+  drop column storage_folder;
+```
+
+**Verificado antes de escrever a migração:** nenhuma referência a
+nenhuma das 3 colunas em `src/` (`grep` sem resultado) — confirma que
+não há leitura/escrita ativa em nenhum fluxo do painel hoje.
+
+Ver ADR-020 para o histórico completo (origem no Projeto Downloads
+`inovatv.pro` e na primeira tentativa de representar armazenamento
+neste projeto, antes de `asset_folder`/Hostinger virarem o padrão) e
+para por que a remoção acontece agora, antes do Portal Público que a
+ADR-008 original colocava como pré-condição.
+
+---
+
 ## 2026-08-07 (29) — Auditoria de banco: Fase 3 (evolução de schema) aplicada — updated_at automático em apps
 
 **Contexto:** handoff entre computadores desde a entrada 28 (fim da
