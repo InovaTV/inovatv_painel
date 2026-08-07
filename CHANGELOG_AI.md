@@ -7,6 +7,78 @@
 
 ---
 
+## 2026-08-07 (27) — Auditoria de banco: achado crítico de RLS + Fase 1 (segurança) aplicada
+
+**Contexto:** com o módulo Aplicativos funcionalmente concluído
+(entrada 26), o usuário pediu a auditoria de banco combinada
+anteriormente (`apps`/`products`/relacionadas — colunas em uso,
+reservadas, legadas, índices, constraints, tipos, simplificação).
+
+**Ferramenta usada:** Management API do Supabase
+(`POST /v1/projects/{ref}/database/query`) com o `SUPABASE_ACCESS_TOKEN`
+já existente no `.env.local` (ver ADR-010) — permite rodar SQL de
+introspecção (e, com aprovação explícita, DDL) direto contra o banco
+real, sem precisar de Docker local para `supabase db dump`.
+
+**Achado crítico (reportado primeiro, antes do resto da auditoria):**
+`public.apps` tinha RLS habilitado mas com as 4 policies
+("Enable ... for all users") permissivas para o role `public`
+(`qual`/`with_check` = `true`), combinado com grants completos de
+SELECT/INSERT/UPDATE/DELETE para `anon`. Ou seja: a chave anônima
+(pública, embutida no bundle do navegador) permitia ler, criar, editar
+e **apagar** qualquer app direto via REST do Supabase, sem logar no
+painel — o login/`proxy.ts` protegia só a UI do Next.js, nunca o
+banco. `products` (sem RLS, grants mais restritos) e `banners`
+(RLS + só policy de SELECT) tinham exposição menor; `banners` já
+seguia o padrão correto.
+
+**Auditoria completa apresentada ao usuário** cobrindo: colunas de
+`apps` (13 em uso, 4 reservadas para funcionalidade futura —
+`package_name`/`min_android_version`/`current_version_code`/
+`requires_login` —, 3 legadas — `download_url`/`downloader_code`/
+`storage_folder`), ausência de `UNIQUE` em `apps.slug`, ausência de FK
+entre `apps.asset_folder` e `products.asset_folder` (hoje só
+convenção de código), ausência de `updated_at`/trigger, e o achado de
+RLS acima. Usuário aprovou a auditoria e definiu a ordem de execução
+(divergindo da apresentação inicial, que tratou tudo como
+"oportunidades" no mesmo nível): Fase 1 Segurança → Fase 2 Integridade
+(UNIQUE slug + FK asset_folder) → Fase 3 Evolução de schema
+(updated_at + trigger) → Fase 4 Limpeza (remover colunas legadas).
+
+**Fase 1 (Segurança) executada nesta entrada** — usuário pediu para
+fechar `apps` **completamente** para `anon` (nem SELECT), não só
+escrita: painel é o único consumidor da tabela hoje, sem portal
+público nem API pública (mesma regra da ADR-008 — não construir
+pensando em compatibilidade futura). Ver ADR-017 para o detalhe
+completo da decisão.
+
+- `supabase/migrations/20260807160000_lock_down_apps_rls_anon.sql`
+  (novo): dropa as 4 policies antigas, cria 4 novas restritas a
+  `to authenticated`, revoga SELECT/INSERT/UPDATE/DELETE de `anon`.
+- Migração **aplicada em produção** via Management API (com aprovação
+  explícita do usuário antes de rodar) — não é só um arquivo esperando
+  aplicação manual, diferente das migrações anteriores deste projeto
+  (que só tinham a chave anônima disponível).
+
+**Verificado:**
+- `curl` direto contra `/rest/v1/apps` com a chave anônima → `401`,
+  `{"code":"42501","message":"permission denied for table apps"}`.
+- Painel logado testado ao vivo no navegador (Claude in Chrome) depois
+  da mudança: listagem carrega normalmente, toggle de status
+  (`teste100` → Ativo → Inativo, revertido ao estado original) prova
+  que leitura e escrita continuam funcionando via sessão autenticada.
+- `npx tsc --noEmit` e `npm run lint` limpos (nenhum código TS mudou
+  nesta entrada, só SQL).
+
+**Não incluído nesta entrada (fica para as próximas fases da mesma
+auditoria, mesma sessão ou seguinte):** Fase 2 (UNIQUE em `apps.slug`,
+FK `apps.asset_folder → products.asset_folder`), Fase 3 (`updated_at`
++ trigger), Fase 4 (remover `download_url`/`downloader_code`/
+`storage_folder`). Nenhuma dessas migrações foi criada nem aplicada
+ainda — aguardando a mesma aprovação explícita fase a fase.
+
+---
+
 ## 2026-08-07 (26) — Validação de formulário + tratamento de erro — módulo Aplicativos CONCLUÍDO
 
 **Contexto:** entrada 25 fechou Download/Preview/Status/Busca/

@@ -16,9 +16,8 @@ Aplicativos — CONCLUÍDO" naquele arquivo).
 
 **Regra fixada pelo usuário:** não abrir a Fase 3 (Banners/Marketing)
 nem qualquer outro módulo novo agora. Próximos passos, nesta ordem:
-1. Auditoria do banco de dados (`apps`/`products`/relacionadas —
-   colunas em uso / reservadas para funcionalidade futura já
-   planejada / legado pra remover).
+1. Auditoria do banco de dados (`apps`/`products`/relacionadas) — em
+   andamento, ver "Auditoria de banco" abaixo.
 2. Fase exclusiva de UI/UX (só depois da auditoria).
 
 Ver ADR-006 em `ARCHITECTURE_DECISIONS.md` sobre por que fechar
@@ -59,6 +58,30 @@ agora é 100% em código.
 
 Próximo passo (fixado pelo usuário): auditoria do banco de dados,
 depois fase exclusiva de UI/UX. Não abrir a Fase 3 antes disso.
+
+## Auditoria de banco (2026-08-07, em andamento)
+
+Auditoria completa apresentada e aprovada pelo usuário (ver
+`CHANGELOG_AI.md` entrada 27 para o detalhe). Execução dividida em 4
+fases, uma de cada vez, cada uma apresentada e aprovada antes de
+aplicar:
+
+- [x] **Fase 1 — Segurança:** `apps` fechada para `anon` (nem
+  `SELECT`) — achado crítico: RLS habilitado mas com policies
+  permissivas pra `public`/`anon`, permitindo INSERT/UPDATE/DELETE
+  direto via API REST sem login. Ver ADR-017. Aplicado e verificado
+  em 2026-08-07.
+- [ ] **Fase 2 — Integridade:** `UNIQUE` em `apps.slug` + FK
+  `apps.asset_folder → products.asset_folder`.
+- [ ] **Fase 3 — Evolução de schema:** `updated_at` + trigger
+  automático em `apps`.
+- [ ] **Fase 4 — Limpeza:** remover `download_url`, `downloader_code`,
+  `storage_folder` (colunas legadas, ligadas ao sistema `inovatv.pro`
+  já descontinuado — ver `reference_downloads_project`).
+
+Colunas `package_name`/`min_android_version`/`current_version_code`/
+`requires_login` ficam como reservadas para funcionalidade futura —
+nenhuma ação planejada.
 
 ## Fase 3 — Banners (Marketing)
 

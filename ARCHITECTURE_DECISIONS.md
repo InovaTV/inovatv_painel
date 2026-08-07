@@ -487,3 +487,62 @@ fetch direto ao endpoint com um app real retorna `type:
 `getApp()` lança e a rota responde `500` (mesmo comportamento de
 qualquer outra página que dependa de um id inválido neste projeto —
 não é uma regressão introduzida aqui).
+
+---
+
+## ADR-017 — RLS de `apps` fechado para `anon` (achado crítico da auditoria de banco)
+
+**Decisão:** a tabela `public.apps` foi completamente fechada para o
+role `anon` — nem `SELECT`. Todas as 4 policies (SELECT/INSERT/
+UPDATE/DELETE) agora são restritas a `to authenticated`, e os grants
+de tabela (`SELECT`/`INSERT`/`UPDATE`/`DELETE`) foram revogados de
+`anon` (migração `20260807160000_lock_down_apps_rls_anon.sql`).
+
+**Achado (auditoria de banco, 2026-08-07):** a tabela tinha RLS
+habilitado, mas as 4 policies originais ("Enable ... for all users")
+tinham `qual`/`with_check` = `true` para o role `public` — que inclui
+`anon` — combinado com grants completos de `SELECT`/`INSERT`/
+`UPDATE`/`DELETE` para `anon`. Na prática, **qualquer requisição com a
+chave anônima** (pública, embutida no bundle do navegador como
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) conseguia ler, criar, editar e
+**apagar** qualquer app diretamente via API REST do Supabase — sem
+precisar logar no painel. O login/`proxy.ts` protegia só a interface
+do Next.js, nunca o banco em si.
+
+**Motivo de fechar SELECT também (não só escrita):** decisão explícita
+do usuário. O painel é hoje o **único** consumidor de `apps` — não
+existe portal público, API pública nem app externo lendo essa tabela.
+Seguindo a mesma regra da ADR-008 (não construir pensando em
+compatibilidade futura), não há razão para manter uma porta de leitura
+aberta "para o caso de precisar um dia". Se/quando existir um portal
+público ou outra integração, a policy de leitura correspondente será
+criada então, específica para esse caso — não antecipada agora.
+
+**Por que isso não quebra o painel:** toda a superfície de leitura e
+escrita de `apps` no código roda via Server Action/Server Component
+com `createClient()` (`src/lib/supabase/server.ts`), que usa o cookie
+de sessão do Supabase Auth — a requisição chega ao PostgREST como
+`authenticated`, nunca `anon`. O próprio `src/proxy.ts` já exige login
+para qualquer rota de `(dashboard)`, então não existe hoje nenhum
+caminho no app que dependa de `anon` conseguir acessar `apps`.
+
+**Como aplicar:** qualquer tabela nova (Banners/Marketing, Clientes,
+FAQ, Tutoriais, Configurações — Fases 3+) deve nascer com o mesmo
+padrão: RLS habilitado, policies restritas a `authenticated`, sem
+grant nenhum para `anon`, a menos que exista uma razão concreta e
+atual (não hipotética) para acesso anônimo. `banners` (tabela já
+existente no banco, módulo ainda não construído) já segue esse padrão
+para escrita (RLS + só policy de `SELECT`), mas teria a mesma revisão
+quando o módulo for iniciado.
+
+**Status:** aplicado em produção via Management API do Supabase
+(token de acesso já usado neste projeto para diagnóstico — ver
+ADR-010) em 2026-08-07, e migração correspondente commitada em
+`supabase/migrations/`. Verificado com `curl` direto contra
+`/rest/v1/apps` usando a chave anônima: `401`, `permission denied for
+table apps` (`42501`). Painel logado testado ao vivo no navegador
+(Claude in Chrome) depois da mudança — leitura e escrita (toggle de
+status) funcionando normalmente. Primeira de quatro fases de uma
+auditoria de banco mais ampla (`apps`/`products`/relacionadas) — ver
+`ROADMAP.md` e `CHANGELOG_AI.md` para as fases seguintes (integridade,
+evolução de schema, limpeza de colunas legadas).
