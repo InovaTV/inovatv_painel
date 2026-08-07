@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3900",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3900",
     "lint": "eslint",
-    "storage:test": "node --env-file=.env.local scripts/storage-doctor.ts"
+    "storage:test": "node scripts/storage-doctor.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

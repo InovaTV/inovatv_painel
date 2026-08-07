@@ -2,6 +2,8 @@ export interface UploadInput {
   path: string;
   data: Buffer;
   contentType?: string;
+  /** Bytes já enviados ao servidor remoto — chamado periodicamente durante a transferência (só FTP; SFTP não reporta progresso). */
+  onProgress?: (sentBytes: number) => void;
 }
 
 export interface AssetStat {

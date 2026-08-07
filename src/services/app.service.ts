@@ -36,7 +36,12 @@ const ASSET_CONFIG: Record<AssetType, AssetConfig> = {
   banner: { folder: "banner", filename: "banner.webp", maxBytes: 10 * 1024 * 1024, column: "banner_path" },
 };
 
-export async function uploadAppAsset(app: App, type: AssetType, file: File): Promise<string> {
+export async function uploadAppAsset(
+  app: App,
+  type: AssetType,
+  file: File,
+  onProgress?: (sentBytes: number) => void
+): Promise<string> {
   const config = ASSET_CONFIG[type];
 
   if (file.size > config.maxBytes) {
@@ -52,7 +57,7 @@ export async function uploadAppAsset(app: App, type: AssetType, file: File): Pro
   const data = Buffer.from(await file.arrayBuffer());
 
   const replaceStartedAt = Date.now();
-  await storage.replace({ path, data });
+  await storage.replace({ path, data, onProgress });
   const replaceMs = Date.now() - replaceStartedAt;
 
   const supabase = await createClient();

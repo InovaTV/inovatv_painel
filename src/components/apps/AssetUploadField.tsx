@@ -59,6 +59,62 @@ export default function AssetUploadField({
     formData.append("file", file);
 
     const xhr = new XMLHttpRequest();
+    let parsedLength = 0;
+    let finished = false;
+
+    // A resposta é ndjson (uma linha de JSON por evento) enquanto o
+    // servidor sobe o arquivo pro armazenamento remoto — sem isso a barra
+    // fica travada em "processando" até a requisição inteira terminar, já
+    // que essa etapa (servidor → FTP) é a mais lenta e não tem como o
+    // XMLHttpRequest.upload enxergar (ele só cobre navegador → servidor).
+    function consumeStream() {
+      const text: string = xhr.responseText.slice(parsedLength);
+      if (!text) return;
+
+      // A última "linha" pode estar incompleta (chunk cortado no meio) —
+      // slice(0, -1) sempre descarta ela, sobre ou não um "\n" final.
+      const complete = text.split("\n").slice(0, -1);
+      const consumedChars = complete.reduce((sum, line) => sum + line.length + 1, 0);
+      parsedLength += consumedChars;
+
+      for (const line of complete) {
+        if (!line) continue;
+
+        let event: {
+          stage?: string;
+          sentBytes?: number;
+          totalBytes?: number;
+          done?: boolean;
+          path?: string;
+          error?: string;
+        };
+
+        try {
+          event = JSON.parse(line);
+        } catch {
+          continue;
+        }
+
+        if (event.stage === "storage" && typeof event.sentBytes === "number") {
+          const total = event.totalBytes ?? file.size;
+          setSentBytes(event.sentBytes);
+          setTotalBytes(total);
+          setProgress(total ? Math.round((event.sentBytes / total) * 100) : 100);
+          setStage("Enviando para o armazenamento...");
+        } else if (event.done) {
+          finished = true;
+
+          if (event.error) {
+            setState("error");
+            setError(event.error);
+          } else {
+            setState("done");
+            setStage("Concluído");
+            router.refresh();
+          }
+        }
+      }
+    }
 
     xhr.upload.addEventListener("progress", (event) => {
       if (event.lengthComputable) {
@@ -69,12 +125,21 @@ export default function AssetUploadField({
     });
 
     xhr.upload.addEventListener("load", () => {
-      setStage("Processando no servidor...");
-      setProgress(100);
+      setStage("Enviando para o armazenamento...");
+      setProgress(0);
+      setSentBytes(0);
     });
 
+    xhr.addEventListener("progress", consumeStream);
+
     xhr.addEventListener("load", () => {
+      consumeStream();
+
+      if (finished) return;
+
       if (xhr.status >= 200 && xhr.status < 300) {
+        // Stream terminou sem um evento "done" — não deveria acontecer,
+        // mas evita deixar a UI travada em "uploading" pra sempre.
         setState("done");
         setStage("Concluído");
         router.refresh();

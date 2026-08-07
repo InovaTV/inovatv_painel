@@ -121,8 +121,12 @@ async function uploadViaFtp(input: UploadInput) {
     if (dir) {
       await client.ensureDir(dir);
     }
+    if (input.onProgress) {
+      client.trackProgress((info) => input.onProgress!(info.bytes));
+    }
     await client.uploadFrom(Readable.from(input.data), file);
   } finally {
+    client.trackProgress();
     client.close();
   }
 }
