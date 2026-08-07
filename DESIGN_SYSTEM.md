@@ -1,9 +1,10 @@
 # Design System — InovaTV Painel
 
 > Documento Mestre da Fase UI/UX. Referência obrigatória para toda
-> implementação visual a partir da sua aprovação. Nenhuma linha de
-> código foi alterada para produzir este documento — é puramente um
-> projeto visual, a ser aprovado antes da Fase 1 de implementação.
+> implementação visual a partir daqui. **Aprovado em 2026-08-07** —
+> identidade visual (Seção 5) e Princípios de Interface (Seção 3)
+> fechados; ver Seção 23 para o histórico da aprovação. Próximo passo:
+> Fase 1 de implementação (Seção 22).
 
 ## 0. Escopo desta fase
 
@@ -107,7 +108,64 @@ cruas, e (c) completar o inventário de componentes que faltam
 
 ---
 
-## 3. Regra de governança: não reinventar componentes
+## 3. Princípios de Interface
+
+Diferente das seções seguintes (cor, tipografia, espaçamento — todas
+sujeitas a evoluir), estes são princípios de raciocínio, não de
+aparência. Uma paleta pode mudar em dois anos; o motivo por trás de
+cada decisão visual do painel deve continuar valendo mesmo assim. Este
+capítulo é o registro desse motivo, não só do resultado.
+
+### 3.1 O painel é uma plataforma, não um produto
+
+Cada serviço administrado (UniTV hoje, outros depois) possui
+identidade própria. O InovaTV Painel mantém uma identidade neutra e
+consistente, que permite diferentes produtos coexistirem sem conflito
+visual. Esta é a premissa que decidiu a Seção 5 (Identidade visual) —
+tudo o que vem depois dela é consequência desta regra, não o
+contrário.
+
+### 3.2 A informação tem prioridade sobre a decoração
+
+Toda decisão visual deve favorecer leitura, compreensão e velocidade
+de operação. Elementos decorativos nunca competem com os dados —
+sombra, cor e animação existem para organizar a leitura, não para
+chamar atenção para si mesmos.
+
+### 3.3 Cor comunica estado antes de comunicar marca
+
+As cores da interface existem primeiro para indicar ações, status,
+sucesso, alerta e erro (`--success`/`--warning`/`--destructive`/
+`--info`, Seção 5). A cor de marca (`--primary`) nunca invade esse
+vocabulário — um badge "Ativo" continua verde independente de qual
+seja a cor de assinatura do painel. Clareza operacional vem antes de
+identidade visual, sempre.
+
+### 3.4 Consistência acima de novidade
+
+Componentes reutilizados mantêm comportamento e aparência previsíveis
+entre módulos (Seção 4, regra de não reinventar componentes). Novos
+módulos ampliam o sistema existente — eles não criam novos padrões de
+card, tabela, formulário ou upload só porque o domínio é diferente.
+
+### 3.5 Produtos possuem identidade própria
+
+UniTV e os produtos que entrarem depois preservam suas próprias
+marcas, cores e materiais — o painel nunca tenta imitá-los nem competir
+visualmente com eles (nem no ícone dentro de uma tabela, nem num
+badge). Ele atua como a camada de gestão comum entre todos os
+produtos, deliberadamente neutra em relação a cada um.
+
+### 3.6 Elegância silenciosa
+
+A interface transmite confiança por meio de proporção, ritmo,
+espaçamento e tipografia — não por efeito. A identidade do painel deve
+ser percebida pela consistência ao longo do tempo, não pela quantidade
+de detalhes chamativos numa tela isolada.
+
+---
+
+## 4. Regra de governança: não reinventar componentes
 
 Regra fixada por você, formalizada aqui como padrão permanente do
 projeto:
@@ -130,35 +188,81 @@ projeto:
 
 ---
 
-## 4. Identidade visual — proposta de cor de marca
+## 5. Identidade visual — decisão fechada
 
-Hoje não existe nenhuma cor de marca definida em lugar nenhum do
-projeto (sem logo além dos SVGs padrão do Next.js em `public/`, sem
-menção a cor institucional em nenhum `.md`). Isso é uma decisão de
-produto que falta tomar — não um ajuste técnico.
+Até 2026-08-07 não existia nenhuma cor de marca definida em lugar
+nenhum do projeto (sem logo além dos SVGs padrão do Next.js em
+`public/`, sem menção a cor institucional em nenhum `.md`). A decisão
+abaixo fecha essa lacuna.
 
-**Proposta:** um azul-índigo vívido como cor primária de interação
-(`--primary`), mantendo o resto da paleta neutra. É o padrão de
-painéis SaaS "prontos para venda" (Linear, Vercel, Stripe, Raycast) —
-neutro em 95% da superfície, com uma cor de assinatura forte só nos
-pontos de ação e identidade (botão primário, link ativo, item ativo da
-sidebar, foco, barra de progresso, gráficos do dashboard).
+### 5.1 Como se chegou até aqui
 
-| Token | Hoje (neutro) | Proposto (light) | Proposto (dark) |
+Antes de propor uma cor, três direções de identidade foram estudadas
+lado a lado, cada uma com paleta e preview de UI aplicado num recorte
+real do painel (registro completo, incluindo as referências visuais
+que motivaram o estudo, em `design-studies/identidade-visual-inovatv.html`):
+
+- **Conceito A — Tech** (azul corporativo, ~230-260°): a opção mais
+  segura, mas com risco real de parecer um painel SaaS genérico —
+  Linear, Jira, Asana e afins usam praticamente a mesma família de
+  azul.
+- **Conceito B — Streaming** (violeta profundo, ~297°): a mais bonita
+  e a mais conectada ao universo audiovisual dos produtos geridos, mas
+  cansativa em uso prolongado (8h/dia olhando tabelas) e arriscada de
+  manter sem "escorregar" de volta para um tom mais próximo do
+  marketing.
+- **Conceito C — InovaTV** (teal, escolhido): não é a cor de nenhum
+  produto administrado — é a cor de quem administra. Resolve o
+  problema estrutural descrito no Princípio 3.1: o painel é uma
+  plataforma que hospeda múltiplos produtos (UniTV hoje, outros
+  depois), não deve competir visualmente com nenhum deles nem herdar a
+  identidade de um específico.
+
+As referências reais do ecossistema — o ícone do app UniTV (gradiente
+âmbar-vermelho-violeta + wordmark azul) e o banner de marketing da
+UniTV (roxo-magenta) — foram estudadas e **deliberadamente não
+copiadas**. O Conceito C ecoa o âmbar do gradiente só como apoio
+esparso (Seção 5.2), nunca como cor de interface.
+
+O tom exato do teal passou por uma segunda rodada: a proposta inicial
+(`#12897D`, matiz ~174°) lia como equipamento médico/monitoramento
+clínico — matiz muito próximo do que softwares de saúde usam. Uma
+rodada isolando a variável matiz (mantendo luminosidade/saturação
+parecidas, variando só o quanto avança em direção ao azul) confirmou
+que o problema era o matiz, não o brilho: escurecer sozinho (~175°,
+mesma família) não resolvia a leitura; deslocar o matiz para ~185°
+resolveu.
+
+### 5.2 Cor primária oficial
+
+```text
+Accent Primary — #0F6D76
+```
+
+| Token | Hoje (neutro) | Oficial (light) | Oficial (dark) |
 |---|---|---|---|
-| `--primary` | `oklch(0.205 0 0)` (quase preto) | `oklch(0.53 0.21 265)` (índigo vívido) | `oklch(0.62 0.19 265)` |
-| `--primary-foreground` | `oklch(0.985 0 0)` | `oklch(0.98 0 0)` (branco) | `oklch(0.15 0.02 265)` |
-| `--ring` | `oklch(0.708 0 0)` | `oklch(0.53 0.21 265 / 0.5)` | `oklch(0.62 0.19 265 / 0.5)` |
-| `--sidebar-primary` | `oklch(0.205 0 0)` | `oklch(0.53 0.21 265)` | já é `oklch(0.488 0.243 264.376)` — mesma família, mantém |
+| `--primary` | `oklch(0.205 0 0)` (quase preto) | `oklch(0.49 0.08 205)` — `#0F6D76` | `oklch(0.68 0.09 205)` aprox. |
+| `--primary-foreground` | `oklch(0.985 0 0)` | `oklch(0.98 0 0)` (branco) | `oklch(0.15 0.02 205)` aprox. |
+| `--ring` | `oklch(0.708 0 0)` | `oklch(0.49 0.08 205 / 0.5)` | `oklch(0.68 0.09 205 / 0.5)` |
+| `--sidebar-primary` | `oklch(0.205 0 0)` | `oklch(0.49 0.08 205)` — `#0F6D76` | `oklch(0.68 0.09 205)` aprox. |
 
-Reparo à parte: o dark mode **já** usa um índigo (`oklch(0.488 0.243
-264.376)`) só em `--sidebar-primary` — um resquício de alguma geração
-anterior do tema shadcn que nunca chegou a virar a cor oficial do
-projeto. A proposta acima adota essa mesma família de matiz (~265°) de
-propósito, para todo o sistema, não só a sidebar do modo escuro.
+`#0F6D76` é o valor de referência exato — os `oklch()` acima foram
+convertidos à mão para manter a convenção do `globals.css` atual, mas
+**devem ser reconferidos com um conversor de cor real (ex. oklch.com)
+na Fase 1 de implementação** antes de entrar no CSS; não copiar sem
+validar.
+
+O dark mode hoje usa um índigo (`oklch(0.488 0.243 264.376)`) só em
+`--sidebar-primary` — resquício de uma geração anterior do tema
+shadcn que nunca virou cor oficial. Esse valor é substituído pelo teal
+acima, junto com todo o resto do sistema.
+
+**Apoio esparso — âmbar:** `#D69A4A`, usado com moderação (ex.: um
+destaque pontual, nunca como cor de botão ou de interface recorrente)
+— único eco intencional do gradiente do ícone UniTV, sem copiá-lo.
 
 **Cores semânticas de status** — hoje `StatusBadge`/`AssetUploadField`
-usam Tailwind cru (`emerald-600`, `red-600`) em vez de token. Proposta:
+usam Tailwind cru (`emerald-600`, `red-600`) em vez de token. Fechado:
 adicionar 3 tokens novos ao `globals.css`, seguindo exatamente o padrão
 que `--destructive` já usa (cor + uso em `/10` de opacidade para fundo
 suave):
@@ -176,18 +280,17 @@ Isso é o que passa a alimentar `StatusBadge` (`bg-success/10
 text-success` em vez de `bg-emerald-600`), barra de progresso de
 upload em sucesso, e qualquer badge de status futuro (Banners
 agendado/publicado, Cliente ativo/inativo etc.) — um lugar só para
-mudar o verde do sistema inteiro.
+mudar o verde do sistema inteiro. Por definição (Princípio 3.3), estes
+tokens nunca competem com `--primary` nem são afetados se a cor de
+marca evoluir no futuro.
 
-**Esta cor é a decisão mais visível deste documento — é a que eu
-recomendaria revisar com mais atenção antes de aprovar o resto.** Se
-preferir outra família de matiz (ex.: um azul mais "tech" tradicional,
-~230°, ou um roxo mais autoral, ~290°), é só ajustar o valor de matiz
-(o terceiro número do `oklch()`) — a estrutura do resto do documento
-não muda.
+**Status:** decisão fechada em 2026-08-07. Reabrir esta seção exige
+decisão explícita — não é para ser ajustada por gosto pessoal numa
+implementação futura.
 
 ---
 
-## 5. Tipografia
+## 6. Tipografia
 
 Mantém **Geist Sans** (já carregada via `next/font/google` em
 `layout.tsx`, zero custo adicional) — é uma escolha já correta,
@@ -212,7 +315,7 @@ muda — detalhe pequeno que separa painel amador de painel comercial.
 
 ---
 
-## 6. Grid e espaçamento
+## 7. Grid e espaçamento
 
 Sua observação de que "hoje está tudo um pouco apertado" está correta
 e é mensurável: `main` do dashboard usa `p-8` (32px) mas os cards
@@ -243,7 +346,7 @@ fileiras de campos sobe de `mt-6` pra `mt-8`).
 
 ---
 
-## 7. Elevação e sombra
+## 8. Elevação e sombra
 
 Hoje **nenhum** componente usa `box-shadow` — só bordas (`border`,
 `ring-1`). É a causa raiz do visual "quadrado" que você identificou.
@@ -266,7 +369,7 @@ borda, mais sombra leve").
 
 ---
 
-## 8. Border radius
+## 9. Border radius
 
 A escala já existe e está correta em `globals.css`
 (`--radius: 0.625rem` = 10px, com `--radius-sm` a `--radius-4xl`
@@ -282,7 +385,7 @@ derivados) — só falta usá-la com critério em vez de valores soltos
 
 ---
 
-## 9. Iconografia
+## 10. Iconografia
 
 `lucide-react` já é o padrão (`iconLibrary: "lucide"` em
 `components.json`) — mantém, é a escolha certa, mesma biblioteca usada
@@ -302,7 +405,7 @@ Regras a formalizar:
 
 ---
 
-## 10. Inventário de componentes
+## 11. Inventário de componentes
 
 ### Já existem (`components/ui/`) — mantêm, só recebem os ajustes de token/sombra acima
 `Button`, `Card` (+ subcomponentes), `Badge`, `Table` (+
@@ -325,11 +428,11 @@ no meio para instalar dependência).
 
 ---
 
-## 11. Padrões — Botões
+## 12. Padrões — Botões
 
 - **Uma ação primária por tela**, sempre `variant="default"` (já é o
   token `bg-primary` — passa a carregar a cor de marca automaticamente
-  quando a Seção 4 for aplicada).
+  quando a Seção 5 for aplicada).
 - **Ação secundária/destrutiva-neutra** (ex.: "Cancelar"): sempre
   `variant="outline"` — nunca outro `variant="default"` do lado da
   ação primária competindo visualmente. É a regra que resolve
@@ -344,10 +447,10 @@ no meio para instalar dependência).
 
 ---
 
-## 12. Padrões — Cards
+## 13. Padrões — Cards
 
-- Base: `border border-border/60` + `shadow-xs` (ver Seção 7),
-  `rounded-xl` (ver Seção 8), `p-6` de padding interno (ver Seção 6).
+- Base: `border border-border/60` + `shadow-xs` (ver Seção 8),
+  `rounded-xl` (ver Seção 9), `p-6` de padding interno (ver Seção 7).
 - `StatCard` do dashboard ganha um ícone (Lucide, `size-5`,
   `text-muted-foreground` ou colorido por categoria) ao lado do
   título — hoje é só número + label, sem nenhum elemento visual de
@@ -355,11 +458,11 @@ no meio para instalar dependência).
 - Todo bloco que hoje é um `<div className="rounded-xl border ...">`
   feito à mão (o formulário inteiro em `AppForm.tsx`, o card de upload
   em `AssetUploadField.tsx`) passa a ser o componente `Card` de verdade
-  — é a regra da Seção 3 aplicada ao caso mais óbvio do código atual.
+  — é a regra da Seção 4 aplicada ao caso mais óbvio do código atual.
 
 ---
 
-## 13. Padrões — Formulários
+## 14. Padrões — Formulários
 
 - Todo campo: `Label` (novo componente) + input/select/textarea +
   espaço reservado para erro (mesmo padrão de hoje, `FieldError`, mas
@@ -372,16 +475,16 @@ no meio para instalar dependência).
   rounded-lg p-3` — em vez do `bg-red-50 text-red-600` cru atual.
   Mesma cor semântica usada no badge "Inativo", consistente em todo o
   painel.
-- `Select`/`Textarea` novos (Seção 10) substituem os elementos nativos
-  — remove os emojis (Seção 9), ganham o mesmo radius/altura dos
+- `Select`/`Textarea` novos (Seção 11) substituem os elementos nativos
+  — remove os emojis (Seção 10), ganham o mesmo radius/altura dos
   outros inputs.
 - Campos relacionados continuam agrupados em grid 2 colunas
   (`AppForm.tsx` já faz isso bem) — não é para virar formulário de uma
-  coluna só; é para ganhar respiro (Seção 6), não estrutura nova.
+  coluna só; é para ganhar respiro (Seção 7), não estrutura nova.
 
 ---
 
-## 14. Padrões — Tabelas
+## 15. Padrões — Tabelas
 
 - Linha com **hover perceptível**: `hover:bg-muted/50` — hoje a
   `TableRow` do shadcn provavelmente já tem uma base disso (conferir em
@@ -390,11 +493,11 @@ no meio para instalar dependência).
 - **Linha ativa/selecionada** (quando aplicável — ex.: item que acabou
   de ser editado, ou seleção futura em massa): `bg-primary/5` +
   borda esquerda de destaque `border-l-2 border-l-primary`.
-- Altura mínima de linha 56px (Seção 6) — tabela hoje é um pouco
+- Altura mínima de linha 56px (Seção 7) — tabela hoje é um pouco
   apertada verticalmente.
 - **Status mais elegante**: `StatusBadge` passa a usar os tokens
   `--success`/`--destructive` em vez de `bg-emerald-600 text-white`
-  cru (Seção 4) — mesmo ícone (`CheckCircle2`/`XCircle`), cor vem do
+  cru (Seção 5) — mesmo ícone (`CheckCircle2`/`XCircle`), cor vem do
   tema.
 - Estado vazio (`"Nenhum aplicativo encontrado."`) vira um empty state
   de verdade: ícone Lucide grande (`size-10`, `text-muted-foreground`),
@@ -407,7 +510,7 @@ no meio para instalar dependência).
 
 ---
 
-## 15. Padrões — Upload
+## 16. Padrões — Upload
 
 Hoje funciona bem tecnicamente (progresso real via streaming ndjson,
 já validado em produção) — só falta acabamento visual, exatamente como
@@ -422,8 +525,8 @@ você resumiu ("Hoje funciona. Agora tem que ficar bonito.").
 - Estado **com arquivo atual**: vira um card de arquivo — nome do
   tipo, tamanho, data (já calculado hoje via `formatBytes`/
   `formatDate`), com o preview (ícone/banner) como thumbnail à
-  esquerda em vez de abaixo (Seção 8, `rounded-lg`).
-- Estado **uploading**: `Progress` (componente novo, Seção 10)
+  esquerda em vez de abaixo (Seção 9, `rounded-lg`).
+- Estado **uploading**: `Progress` (componente novo, Seção 11)
   substitui a barra manual — mesma lógica de porcentagem já calculada
   em `AssetUploadField.tsx`, só troca o elemento visual.
 - Estado **done**: mantém o texto de sucesso, mas com ícone
@@ -431,7 +534,7 @@ você resumiu ("Hoje funciona. Agora tem que ficar bonito.").
 - Estado **error**: ícone `AlertCircle` + `text-destructive`, mesma
   cor semântica do resto do sistema.
 
-## 16. Padrões — Preview
+## 17. Padrões — Preview
 
 Sua sugestão — "Pode virar um card" — vira regra: qualquer preview de
 arquivo (ícone, banner, e futuramente miniaturas de banners de
@@ -443,7 +546,7 @@ como é hoje em `AssetUploadField.tsx`.
 
 ---
 
-## 17. Padrões — Navegação (Sidebar / Header)
+## 18. Padrões — Navegação (Sidebar / Header)
 
 **Sidebar:**
 - Item ativo (rota atual) precisa de um estado visual que hoje não
@@ -471,12 +574,12 @@ como é hoje em `AssetUploadField.tsx`.
   `--ring`).
 - Badge "Online" (`variant="secondary"`) migra para usar o token
   `--success` com um indicador de pulso sutil (ponto verde animado,
-  Seção 19) — reforça "sistema ao vivo" de forma mais explícita que
+  Seção 20) — reforça "sistema ao vivo" de forma mais explícita que
   hoje.
 
 ---
 
-## 18. Responsividade
+## 19. Responsividade
 
 Hoje o painel não tem nenhum tratamento mobile real — `Sidebar`
 (`w-72` fixo) e o grid principal (`flex`) não colapsam em telas
@@ -487,7 +590,7 @@ Breakpoints (padrão Tailwind, já usados parcialmente em
 
 | Faixa | Comportamento |
 |---|---|
-| `< md` | Sidebar vira drawer (oculta por padrão, abre por cima do conteúdo via o botão hambúrguer do Header — Seção 17). Tabelas com scroll horizontal em vez de quebrar layout. Grid de `StatCard` em 1 coluna. |
+| `< md` | Sidebar vira drawer (oculta por padrão, abre por cima do conteúdo via o botão hambúrguer do Header — Seção 18). Tabelas com scroll horizontal em vez de quebrar layout. Grid de `StatCard` em 1 coluna. |
 | `md` – `xl` | Sidebar fixa, mas `StatCard` em 2 colunas (já é o comportamento atual). Formulário do `AppForm` pode cair pra 1 coluna de campos (mantendo 2 colunas nome/slug etc. só a partir de `lg`). |
 | `≥ xl` | Layout atual completo — sidebar fixa + `StatCard` em até 5 colunas + formulário 2 colunas de campos + 2 colunas gerais (dados/arquivos). |
 
@@ -498,24 +601,24 @@ esperado.
 
 ---
 
-## 19. Estados visuais
+## 20. Estados visuais
 
 Padrão único a aplicar em todo componente interativo do painel — hoje
 cada tela resolve isso de um jeito (ou não resolve):
 
 | Estado | Padrão |
 |---|---|
-| **Hover** | Cards clicáveis: `shadow-sm` (sobe um nível, Seção 7) + `border-border` mais escura. Linhas de tabela: `bg-muted/50`. Botões: já resolvido pelo `Button` (`hover:bg-primary/80` etc.), mantém. |
+| **Hover** | Cards clicáveis: `shadow-sm` (sobe um nível, Seção 8) + `border-border` mais escura. Linhas de tabela: `bg-muted/50`. Botões: já resolvido pelo `Button` (`hover:bg-primary/80` etc.), mantém. |
 | **Focus** | Anel de foco visível em **todo** elemento interativo (`focus-visible:ring-3 focus-visible:ring-ring/50` — já é o padrão do `Button`/`Input`; aplicar também no `Select`/`Textarea` novos). Nunca remover outline sem substituto. |
-| **Loading** | Botão: texto muda + `disabled` (já é o padrão em `SubmitButton`, mantém). Conteúdo de página/tabela: `Skeleton` (componente novo, Seção 10) no formato do conteúdo final — não um spinner genérico central, que "pisca" a tela inteira. |
+| **Loading** | Botão: texto muda + `disabled` (já é o padrão em `SubmitButton`, mantém). Conteúdo de página/tabela: `Skeleton` (componente novo, Seção 11) no formato do conteúdo final — não um spinner genérico central, que "pisca" a tela inteira. |
 | **Sucesso** | Cor `--success` + ícone `CheckCircle2`. Para ações rápidas (salvar, upload concluído), considerar um toast leve no canto da tela nas fases seguintes — fora do escopo deste documento definir a biblioteca, só o padrão visual (fundo `bg-success/10`, borda `border-success/20`, texto `text-success`). |
-| **Erro** | Cor `--destructive` + ícone `AlertCircle`/`XCircle`. Mesma regra de fundo suave (Seção 13). |
-| **Vazio** | Ver padrão de empty state definido na Seção 14 — ícone + título + apoio + ação, nunca só uma frase solta. |
+| **Erro** | Cor `--destructive` + ícone `AlertCircle`/`XCircle`. Mesma regra de fundo suave (Seção 14). |
+| **Vazio** | Ver padrão de empty state definido na Seção 15 — ícone + título + apoio + ação, nunca só uma frase solta. |
 | **Desabilitado** | `opacity-50 pointer-events-none` — já é o padrão do `Button` (`disabled:opacity-50`), replicar em `Select`/`Textarea`/`Input` novos. |
 
 ---
 
-## 20. Animações leves
+## 21. Animações leves
 
 Regra: **animação serve para dar feedback, não para chamar atenção.**
 Nada de transições longas ou efeitos decorativos.
@@ -530,35 +633,35 @@ Nada de transições longas ou efeitos decorativos.
 - Barra de progresso de upload: transição suave de largura
   (`transition-all`, já presente em `AssetUploadField.tsx` — mantém
   ao trocar pelo componente `Progress`).
-- Indicador de pulso no badge "Online" (Seção 17): único elemento
+- Indicador de pulso no badge "Online" (Seção 18): único elemento
   deste documento com animação contínua (`animate-pulse`, utilitário
   nativo do Tailwind) — usar com moderação, só aqui.
 
 ---
 
-## 21. Ordem de implementação
+## 22. Ordem de implementação
 
 Replica exatamente a ordem que você definiu, com o escopo de cada fase
 já mapeado nas seções acima:
 
 - [ ] **Fase 1 — Design System.** Aplicar este documento na base:
-  tokens de cor (Seção 4), espaçamento/radius/sombra (Seções 6-8),
-  instalar componentes faltantes (Seção 10: `Select`, `Textarea`,
+  tokens de cor (Seção 5), espaçamento/radius/sombra (Seções 7-9),
+  instalar componentes faltantes (Seção 11: `Select`, `Textarea`,
   `Label`, `Progress`, `Skeleton`). Nenhuma tela muda de layout ainda
   — só a fundação.
 - [ ] **Fase 2 — Dashboard.** Primeira tela a herdar o novo sistema:
-  `StatCard` com ícone (Seção 12), grid com espaçamento novo (Seção
+  `StatCard` com ícone (Seção 13), grid com espaçamento novo (Seção
   6), cor de marca visível pela primeira vez.
 - [ ] **Fase 3 — Sidebar.** Estado ativo por rota, comportamento
-  responsivo/colapsável (Seções 17-18) — é a fase com mais trabalho de
+  responsivo/colapsável (Seções 18-19) — é a fase com mais trabalho de
   interação, não só estilo.
 - [ ] **Fase 4 — Header.** Hambúrguer funcional (conectado à Sidebar da
   Fase 3), tokens de cor no lugar dos hardcoded, badge "Online" com
-  pulso (Seção 17).
+  pulso (Seção 18).
 - [ ] **Fase 5 — CRUD Aplicativos.** Formulário com `Select`/`Textarea`/
-  `Label` novos (Seção 13), tabela com hover/linha ativa/empty state
-  (Seção 14), upload como dropzone real (Seção 15), preview como card
-  (Seção 16). Função congelada (`DEFINITION_OF_DONE.md`) — só UX.
+  `Label` novos (Seção 14), tabela com hover/linha ativa/empty state
+  (Seção 15), upload como dropzone real (Seção 16), preview como card
+  (Seção 17). Função congelada (`DEFINITION_OF_DONE.md`) — só UX.
 
 Cada fase, ao terminar, passa pelo mesmo rigor da auditoria de banco:
 `tsc`/`lint`/`build` limpos + validação ao vivo no navegador antes de
@@ -566,10 +669,26 @@ seguir para a próxima.
 
 ---
 
-## 22. Aprovação
+## 23. Aprovação
 
-Este documento precisa da sua aprovação antes de qualquer
-implementação começar — nenhuma linha de código foi alterada para
-produzi-lo. Ponto de maior atenção recomendada: a cor de marca proposta
-na Seção 4 (é a decisão com maior impacto visual e a mais fácil de
-ajustar agora, antes de ela se espalhar por todos os componentes).
+**Aprovado em 2026-08-07.** Nenhuma linha de código foi alterada para
+produzir este documento nem durante sua revisão — todo o processo
+(diagnóstico, os três conceitos de identidade, o refinamento do teal)
+ficou restrito a este arquivo e ao estudo visual em
+`design-studies/identidade-visual-inovatv.html`.
+
+Resumo da decisão:
+- Conceito C (InovaTV) aprovado como identidade oficial — o painel é
+  uma plataforma que administra produtos, não um produto (Princípio
+  3.1/3.5).
+- `#0F6D76` aprovado como cor primária oficial (Seção 5.2), depois de
+  uma rodada dedicada a isolar se o problema do teal original era
+  claridade ou matiz — era matiz.
+- Capítulo "Princípios de Interface" (Seção 3) incorporado como
+  registro permanente do raciocínio por trás das decisões visuais —
+  deve envelhecer melhor que qualquer paleta específica.
+
+A partir daqui, a identidade visual está encerrada. Próximo passo:
+Fase 1 de implementação (Seção 22) — aplicar os tokens, instalar os
+componentes faltantes, e só depois seguir para Dashboard, Sidebar,
+Header e CRUD Aplicativos, nessa ordem.
