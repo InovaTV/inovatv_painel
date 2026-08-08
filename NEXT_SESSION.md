@@ -54,9 +54,11 @@ acima):
     instalado (sem uso ainda).
   - 🔄 **Sprint 5 — Páginas**, dividido em 3 fases (plano completo
     aprovado, ver seção abaixo):
-    - ✅ **Fase A (Sidebar + Header)** — commitada (`93d1fb2`), com
-      uma pendência de validação (ver "Pendência desta sessão").
-    - ⬜ **Fase B (Dashboard)** — próximo passo.
+    - ✅ **Fase A (Sidebar + Header)** — commitada (`93d1fb2`) e
+      **aprovada pelo usuário**, com a ressalva de validação visual
+      registrada abaixo (não bloqueia o Sprint).
+    - ⬜ **Fase B (Dashboard)** — próximo passo, plano já aprovado,
+      ainda não iniciada.
     - ⬜ **Fase C (Aplicativos/CRUD)** — depois da B.
 - **Módulo Aplicativos: funcionalmente concluído** (`DEFINITION_OF_DONE.md`).
 
@@ -86,7 +88,7 @@ Sprint 5 planejado e Fase A implementada e commitada:
   - `layout.tsx` — envolvido com `SidebarProvider`.
 - `tsc`/lint/build limpos.
 
-## ⚠️ Pendência desta sessão — validar responsividade em viewport real
+## Ressalva registrada e aceita — validação de responsividade da Fase A
 
 A lógica do drawer (abrir/fechar/overlay/fechar-ao-navegar) foi
 **validada via JavaScript** (disparando `.click()` programático nos
@@ -94,9 +96,10 @@ elementos e conferindo as classes Tailwind resultantes no DOM), porque
 a ferramenta de redimensionar a janela do Chrome **não funcionou neste
 computador** — a janela estava maximizada e `resize_window` não
 conseguiu reduzi-la (`window.innerWidth` continuou em 2133px mesmo
-após "sucesso" reportado pela ferramenta).
+após "sucesso" reportado pela ferramenta). **Não foi possível obter
+screenshot real em viewport mobile** por essa limitação de ambiente.
 
-Confirmado nesta sessão:
+Confirmado nesta sessão (via estado/DOM, não via screenshot):
 - Classes responsivas corretas no DOM (`md:static md:translate-x-0`
   na `aside`, `md:hidden` no botão hambúrguer e no overlay).
 - Hambúrguer oculto no desktop (`display: none`, confirmado via
@@ -104,12 +107,12 @@ Confirmado nesta sessão:
 - Toggle abre (`isOpen: true`, overlay aparece), overlay fecha,
   clique em item de navegação fecha o drawer **e** navega.
 
-**Não confirmado:** o layout visual real em largura de tela < 768px
-(nenhum screenshot real em viewport mobile foi possível nesta
-sessão). **Primeiro passo ao retomar:** tentar redimensionar a janela
-do Chrome (ou usar DevTools/modo responsivo) no outro computador — se
-funcionar lá, é só uma limitação de ambiente desta máquina, não do
-código. Testar visualmente antes de seguir para a Fase B.
+**Usuário revisou essa ressalva e aprovou a Fase A mesmo assim** — o
+commit `93d1fb2` está aprovado. Isso **não é mais um bloqueio**: não é
+necessário validar visualmente antes de seguir para a Fase B. Se
+surgir oportunidade num navegador com viewport mobile real (ex.
+DevTools funcionando normalmente na outra máquina), vale conferir por
+tranquilidade, mas não é pré-requisito para continuar.
 
 ## Decisões fechadas no levantamento/plano do Sprint 5 (não reabrir)
 
@@ -130,7 +133,10 @@ código. Testar visualmente antes de seguir para a Fase B.
 
 ## Próxima etapa — Sprint 5, Fase B: Dashboard
 
-Depois de validar a Fase A num viewport mobile real:
+Plano já aprovado pelo usuário, pode começar direto (mesmo
+procedimento de sempre: implementar só o escopo abaixo, `tsc`/lint/
+build, validar no navegador, apresentar o resultado e **aguardar
+aprovação antes de commitar**):
 
 - `StatCard`/`DashboardCards.tsx`: adicionar ícone por categoria —
   Apps→`Smartphone`, Banners→`Image`, Novidades→`Newspaper`,
@@ -171,7 +177,6 @@ Ordem já fechada com o usuário:
 
 ## Primeiro passo
 
-Confirmar com o usuário como os 3 commits locais chegam à outra
-máquina (push? outro método?). Depois, tentar reproduzir um viewport
-mobile real (janela estreita ou DevTools) pra validar visualmente o
-drawer da Fase A antes de abrir a Fase B.
+Confirmar com o usuário como os commits locais chegam à outra máquina
+(push? outro método?). Depois, abrir a Fase B (Dashboard) direto —
+não há mais pendência bloqueando, plano já aprovado.
