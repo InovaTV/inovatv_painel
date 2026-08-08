@@ -7,7 +7,7 @@ type Props = {
 
 export default function StatCard({ title, value }: Props) {
   return (
-    <Card className="shadow-sm">
+    <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm text-muted-foreground">
           {title}
@@ -15,7 +15,7 @@ export default function StatCard({ title, value }: Props) {
       </CardHeader>
 
       <CardContent>
-        <div className="text-4xl font-bold">
+        <div className="text-4xl font-bold tabular-nums">
           {value}
         </div>
       </CardContent>

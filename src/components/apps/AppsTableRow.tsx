@@ -34,7 +34,7 @@ export default function AppsTableRow({
         />
       </TableCell>
 
-      <TableCell className="font-medium">
+      <TableCell className="font-medium tabular-nums">
         v{app.version}
       </TableCell>
 

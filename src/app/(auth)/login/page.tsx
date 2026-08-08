@@ -12,7 +12,7 @@ export default async function LoginPage({ searchParams }: Props) {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-canvas px-4">
-      <div className="w-full max-w-sm rounded-xl border bg-card p-8 shadow-sm">
+      <div className="w-full max-w-sm rounded-xl border border-border/60 bg-card p-6 shadow-xs">
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold">InovaTV Painel</h1>
 
@@ -21,7 +21,7 @@ export default async function LoginPage({ searchParams }: Props) {
           </p>
         </div>
 
-        <form action={signInAction} className="space-y-5">
+        <form action={signInAction} className="space-y-6">
           <div>
             <label
               htmlFor="email"

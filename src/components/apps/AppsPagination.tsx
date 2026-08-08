@@ -48,7 +48,7 @@ export default function AppsPagination({
         <ChevronLeft className="h-4 w-4" />
       </Button>
 
-      <span className="text-sm text-muted-foreground">
+      <span className="text-sm text-muted-foreground tabular-nums">
         Página {page} de {totalPages}
       </span>
 

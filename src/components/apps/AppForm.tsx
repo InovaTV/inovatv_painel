@@ -100,7 +100,7 @@ export default function AppForm({
       action={formAction}
       className="grid grid-cols-1 gap-8 lg:grid-cols-2"
     >
-      <div className="rounded-xl border bg-card p-8">
+      <div className="rounded-xl border border-border/60 bg-card p-6 shadow-xs">
         {state.error && (
           <p className="mb-6 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
             {state.error}
@@ -154,7 +154,7 @@ export default function AppForm({
               name="product_id"
               value={productId}
               onChange={(e) => setProductId(e.target.value)}
-              className="w-full rounded-md border px-3 py-2"
+              className="w-full rounded-lg border px-3 py-2"
             >
               {products.map((product) => (
                 <option key={product.id} value={product.id}>
@@ -200,7 +200,7 @@ export default function AppForm({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-6 mt-6">
+        <div className="grid grid-cols-2 gap-6 mt-8">
           <div>
             <label className="mb-2 block text-sm font-medium">
               Plataforma
@@ -209,7 +209,7 @@ export default function AppForm({
             <select
               name="platform"
               defaultValue={app?.platform ?? "mobile"}
-              className="w-full rounded-md border px-3 py-2"
+              className="w-full rounded-lg border px-3 py-2"
             >
               <option value="mobile">
                 📱 Mobile
@@ -231,7 +231,7 @@ export default function AppForm({
             <select
               name="is_active"
               defaultValue={app ? String(app.is_active) : "true"}
-              className="w-full rounded-md border px-3 py-2"
+              className="w-full rounded-lg border px-3 py-2"
             >
               <option value="true">
                 🟢 Ativo
@@ -244,7 +244,7 @@ export default function AppForm({
           </div>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-8">
           <label className="mb-2 block text-sm font-medium">
             Descrição
           </label>
@@ -253,7 +253,7 @@ export default function AppForm({
             name="description"
             rows={5}
             defaultValue={app?.description}
-            className="w-full rounded-md border p-3"
+            className="w-full rounded-lg border p-3"
             placeholder="Descrição..."
           />
         </div>

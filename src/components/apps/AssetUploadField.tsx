@@ -173,14 +173,14 @@ export default function AssetUploadField({
   const busy = state === "uploading";
 
   return (
-    <div className="rounded-lg border p-4">
+    <div className="rounded-xl border p-4">
       <div className="flex items-center justify-between gap-2">
         <span className="text-sm font-medium">
           {label}
         </span>
 
         {current && !busy && (
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-muted-foreground tabular-nums">
             {formatBytes(current.size)} · {formatDate(new Date(current.modifiedAt))}
           </span>
         )}
@@ -191,7 +191,7 @@ export default function AssetUploadField({
         <img
           src={`${previewUrl}?v=${encodeURIComponent(current.modifiedAt)}`}
           alt={`Preview de ${label}`}
-          className="mt-2 h-16 w-16 rounded-md border object-cover"
+          className="mt-2 h-16 w-16 rounded-lg border object-cover"
         />
       )}
 
@@ -213,7 +213,7 @@ export default function AssetUploadField({
             />
           </div>
 
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground tabular-nums">
             {stage} — {formatBytes(sentBytes)} / {formatBytes(totalBytes)} ({progress}%)
           </p>
         </div>
