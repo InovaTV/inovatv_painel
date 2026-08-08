@@ -5,35 +5,22 @@
 > `DEFINITION_OF_DONE.md`, `STORAGE.md`, `DESIGN_SYSTEM.md`,
 > ADR-013 a ADR-020.
 
-## ⚠️ Troca de máquina — ler antes de continuar
+## ⚠️ Commit local não pushado
 
-Esta sessão foi encerrada de propósito para continuar **em outro
-computador**. Antes de qualquer coisa:
-
-1. **Os 3 commits abaixo estão só localmente, não foram pushados**
-   (o usuário pediu explicitamente para não dar push em nenhuma das
-   sessões). Se o outro computador for um clone/pull do
-   `origin/main`, **esses 3 commits não vão estar lá** até alguém
-   rodar `git push` desta máquina, ou até o usuário decidir sincronizar
-   de outra forma. **Perguntar ao usuário como ele quer levar esse
-   trabalho para a outra máquina antes de assumir que o histórico está
-   disponível lá.**
-2. `.env.local` local conferido **byte a byte** (`diff`, não só
-   tamanho/data) contra a cópia canônica no Google Drive
-   (`G:\Meu Drive\INOVATV PAINEL - ENV\.env.local`) — idênticos, nada
-   para sincronizar.
-3. Nenhum servidor de dev rodando ao encerrar (porta 3900 livre).
+O commit abaixo está só localmente (usuário pediu explicitamente para
+não dar push ainda). Se outra máquina for sincronizar via
+clone/pull do `origin/main`, **este commit não vai estar lá** até
+alguém rodar `git push` desta máquina — a sincronização anterior
+(Sprint 4/Fase A) já foi concluída e está em `origin/main` via
+`d2cf1f5`.
 
 ## Último commit (local, não pushado)
 
-`93d1fb2` — `feat(design-system): Fase 1 Sprint 5 Fase A - Sidebar/Header
-(estado ativo, drawer, hambúrguer)`. `git status`: working tree limpo.
+`2c12116` — `feat(design-system): Fase 1 Sprint 5 Fase B - Dashboard
+(icones nos StatCard)`. `git status`: working tree limpo.
 
-Histórico local à frente de `origin/main` (3 commits, ver ponto 1
-acima):
-- `801ca67` Sprint 4 — componentes (Select, Textarea, Label, Progress)
-- `c914dc9` docs — handoff Sprint 4 concluído
-- `93d1fb2` Sprint 5 Fase A — Sidebar/Header
+Histórico local à frente de `origin/main` (1 commit):
+- `2c12116` Sprint 5 Fase B — Dashboard (ícones nos StatCard)
 
 ## Checkpoint do projeto
 
@@ -57,9 +44,12 @@ acima):
     - ✅ **Fase A (Sidebar + Header)** — commitada (`93d1fb2`) e
       **aprovada pelo usuário**, com a ressalva de validação visual
       registrada abaixo (não bloqueia o Sprint).
-    - ⬜ **Fase B (Dashboard)** — próximo passo, plano já aprovado,
-      ainda não iniciada.
-    - ⬜ **Fase C (Aplicativos/CRUD)** — depois da B.
+    - ✅ **Fase B (Dashboard)** — commitada (`2c12116`), aguardando
+      push. Ícones nos `StatCard` via `CardAction`. `tsc`/lint/build
+      limpos, validado no navegador (dashboard com sessão autenticada,
+      5 StatCards conferidos, layout/espaçamento/valores inalterados).
+    - ⬜ **Fase C (Aplicativos/CRUD)** — **próximo passo**, plano já
+      aprovado (ver seção abaixo).
 - **Módulo Aplicativos: funcionalmente concluído** (`DEFINITION_OF_DONE.md`).
 
 ## O que aconteceu nesta sessão (2026-08-08)
@@ -131,21 +121,17 @@ tranquilidade, mas não é pré-requisito para continuar.
   nova, sem redesenhar a arquitetura de upload existente — decisão já
   fechada, só falta implementar na Fase C.
 
-## Próxima etapa — Sprint 5, Fase B: Dashboard
+## Fase B concluída — Sprint 5, Dashboard (commit `2c12116`)
 
-Plano já aprovado pelo usuário, pode começar direto (mesmo
-procedimento de sempre: implementar só o escopo abaixo, `tsc`/lint/
-build, validar no navegador, apresentar o resultado e **aguardar
-aprovação antes de commitar**):
+`StatCard` ganhou prop `icon` (Lucide, `size-5`, `text-muted-foreground`,
+via `CardAction`); `DashboardCards.tsx` passa o ícone por categoria —
+Apps→`Smartphone`, Banners→`Image`, Novidades→`Newspaper`,
+Tutoriais→`BookOpen`, FAQ→`CircleHelp` (mesmos ícones já usados no
+menu da Sidebar). `Skeleton` não entrou (decisão já fechada). `tsc`/
+lint/build limpos, validado visualmente no navegador. Aprovado pelo
+usuário antes do commit.
 
-- `StatCard`/`DashboardCards.tsx`: adicionar ícone por categoria —
-  Apps→`Smartphone`, Banners→`Image`, Novidades→`Newspaper`,
-  Tutoriais→`BookOpen`, FAQ→`CircleHelp` (mesmos ícones já usados no
-  menu da Sidebar).
-- `Skeleton`: não entra (decisão já fechada acima).
-- Checkpoint: `tsc`/lint/build + navegador, commit próprio (Fase B).
-
-## Depois — Sprint 5, Fase C: Aplicativos (plano já aprovado)
+## Próxima etapa — Sprint 5, Fase C: Aplicativos (plano já aprovado)
 
 Ordem já fechada com o usuário:
 1. Empty state da tabela — diferenciar tabela vazia (ícone + "Nenhum
@@ -177,6 +163,6 @@ Ordem já fechada com o usuário:
 
 ## Primeiro passo
 
-Confirmar com o usuário como os commits locais chegam à outra máquina
-(push? outro método?). Depois, abrir a Fase B (Dashboard) direto —
-não há mais pendência bloqueando, plano já aprovado.
+Abrir a Fase C (Aplicativos) direto — não há pendência bloqueando,
+plano já aprovado (ver seção acima). Commit `2c12116` (Fase B) ainda
+não foi pushado — confirmar com o usuário antes de dar push.
