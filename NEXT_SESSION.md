@@ -7,104 +7,82 @@
 
 ## Último commit
 
-`34f9809` — `docs: archive design identity study, close out
-NEXT_SESSION`. **Pushado para `origin/main`** — `git status` e `git
-fetch` confirmaram working tree clean e 0 commits de diferença com
-`origin/main` ao encerrar a sessão. `.env.local` local conferido
-idêntico à cópia canônica no Google Drive (`G:\Meu Drive\INOVATV
-PAINEL - ENV\`) — nada para sincronizar antes de trocar de máquina.
-Nenhum servidor de dev rodando (porta 3900 livre).
+`6bce4d9` — `docs: correct NEXT_SESSION.md commit pointer for
+end-of-day handoff`. As mudanças desta sessão (tokens do Design System
++ este handoff) **ainda não foram commitadas nem pushadas** — usuário
+não pediu commit ainda. Rodar `git status` ao retomar para confirmar
+o que está pendente antes de qualquer ação.
 
 ## Checkpoint do projeto
-
-Os quatro pilares abaixo estão consolidados. A partir daqui o trabalho
-deixa de ser "descoberta" e passa a ser "execução":
 
 - ✅ **Arquitetura** — `ARCHITECTURE_DECISIONS.md` (ADR-001 a ADR-020).
 - ✅ **Infraestrutura** — Hostinger como storage oficial (ADR-011),
   `STORAGE.md`.
 - ✅ **Banco de dados** — auditoria de 4 fases concluída e verificada em
   produção (ADR-017 a ADR-020, `CHANGELOG_AI.md` entradas 27-30).
-- ✅ **Design System** — `DESIGN_SYSTEM.md` finalizado e commitado
-  nesta sessão (commit `d809c54`). Ver detalhe abaixo.
+- ✅ **Design System** — `DESIGN_SYSTEM.md` finalizado (commit
+  `d809c54`). Tratado como especificação, não guia — nenhuma decisão
+  visual nova durante a implementação.
+- 🔄 **Fase 1 — Implementação do Design System** — em andamento
+  (`DESIGN_SYSTEM.md` §22, sprints detalhados abaixo).
 - **Módulo Aplicativos: funcionalmente concluído** (`DEFINITION_OF_DONE.md`).
 
-## O que aconteceu nesta sessão (2026-08-07) — Design System
+## O que aconteceu nesta sessão (2026-08-08)
 
-Documento Mestre da Fase UI/UX criado, revisado e fechado em conjunto
-com o usuário, em várias rodadas:
+**Sprint 1 — Tokens: concluído.** Detalhe completo em
+`CHANGELOG_AI.md` entrada 31. Resumo:
 
-1. **Diagnóstico** do estado visual atual, direto do código (paleta
-   100% neutra, Tailwind cru misturado com tokens, cards sem sombra,
-   formulário com `<select>`/`<textarea>` nativos e emoji, upload sem
-   tratamento visual).
-2. **Três estudos de identidade visual** (Tech/azul, Streaming/violeta,
-   InovaTV/teal), grounded nas referências reais do produto UniTV
-   (ícone com gradiente âmbar-vermelho-violeta + wordmark azul; banner
-   de marketing roxo-magenta) — nenhuma copiada diretamente. Artefato
-   completo arquivado (histórico, não normativo) em
-   `docs/archive/design-studies/identidade-visual-inovatv.html`.
-3. **Conceito C (InovaTV) escolhido**: o painel administra produtos
-   (UniTV hoje, outros depois), não é ele mesmo um produto — não deve
-   herdar nem competir com a identidade de nenhum específico. Ver
-   `DESIGN_SYSTEM.md` §3.1/3.5 e §5.1.
-4. **Refinamento de cor**: a proposta inicial de teal (`#12897D`,
-   ~174°) lia como software médico/clínico. Uma rodada isolando a
-   variável matiz (mantendo luminosidade/saturação, variando só o
-   deslocamento em direção ao azul) confirmou que o problema era matiz,
-   não brilho. Fechado em **`#0F6D76`** (~185°).
-5. **Capítulo novo — "Princípios de Interface"** (`DESIGN_SYSTEM.md`
-   §3): registra o raciocínio permanente por trás das decisões visuais
-   (painel-como-plataforma, informação > decoração, cor comunica
-   estado antes de marca, consistência > novidade, produtos têm
-   identidade própria, elegância silenciosa) — pensado para envelhecer
-   melhor que a paleta específica.
-6. Documento renumerado (Seções 0-23) com todas as ~30 referências
-   cruzadas ("Seção N") reindexadas via script (descending renumber),
-   conferidas uma a uma.
-
-**Regra operacional fixada pelo usuário para a implementação:**
-nenhuma decisão visual nova durante a Fase 1+ — se surgir algo não
-coberto pelo `DESIGN_SYSTEM.md`, o documento é atualizado primeiro,
-só depois o código. Nenhum componente/página é considerado concluído
-sem estar 100% aderente ao documento. (Salvo em memória —
-`feedback_visual_implementation_discipline`.)
+1. Validado `#0F6D76` → `oklch(0.4896 0.08 205.28)` com conversor real
+   (script Node, matriz sRGB→OKLab), confirmando a aproximação manual
+   do `DESIGN_SYSTEM.md` §5.2.
+2. Aplicado em `src/app/globals.css`: `--primary`,
+   `--primary-foreground`, `--ring`, `--sidebar-primary` (light+dark)
+   trocados do neutro/índigo para o teal oficial; 6 tokens novos
+   (`--success`/`--warning`/`--info` + foreground) adicionados,
+   mapeados em `@theme inline`.
+3. Validado: `tsc`, `lint`, `build` limpos; `dev` na porta 3900,
+   conferência visual real em `/apps` — botão primário e switches já
+   herdam o teal via `bg-primary`, zero mudança de layout. Badges de
+   status continuam com cor crua (esperado — Sprint 2).
+4. Dev server parado ao final, porta 3900 livre.
 
 ## Próxima etapa combinada com o usuário
 
-**Fase 1 — Implementação do Design System**, nesta ordem (§22 do
-`DESIGN_SYSTEM.md`, detalhada em sprints pelo usuário):
+**Sprint 2 — Remover hardcodes**, na ordem do `DESIGN_SYSTEM.md` §22:
 
-1. **Sprint 1 — Tokens**: `--primary` (`#0F6D76`), `--success`,
-   `--warning`, `--info` no `globals.css`. Sem mudar layout ainda.
-2. **Sprint 2 — Remover hardcodes**: eliminar cores Tailwind cruas
-   (`slate-*`, `blue-500`, `emerald-600`, `red-*` espalhados em
-   `Sidebar.tsx`, `Header.tsx`, `StatusBadge.tsx`, `AppForm.tsx` etc.)
-   — tudo passa a usar os tokens.
-3. **Sprint 3 — Base visual**: tipografia (§6), espaçamento (§7),
-   radius (§9), sombra (§8). Sem redesenhar páginas ainda.
-4. **Sprint 4 — Componentes**: instalar/atualizar `Select`, `Textarea`,
-   `Label`, `Progress`, `Skeleton` (§11) e alinhar `Button`, `Card`,
-   `Input`, `Badge`, `Table` existentes aos padrões (§12-17).
-5. **Sprint 5 — Páginas**, só então, nesta ordem: Dashboard → Sidebar →
-   Header → CRUD Aplicativos (§22, Fases 2-5 do plano original).
+- Eliminar cores Tailwind cruas (`slate-*`, `blue-500`, `emerald-600`,
+  `red-*`) espalhadas em `Sidebar.tsx`, `Header.tsx`,
+  `StatusBadge.tsx`, `AppForm.tsx` e demais componentes — trocar tudo
+  por token (`--success`/`--warning`/`--info`/`--primary` etc., já
+  disponíveis desde o Sprint 1).
+- `StatusBadge` é o caso concreto mais visível: hoje usa
+  `emerald-600`/`red-600` direto; deve passar a usar
+  `bg-success/10 text-success` / equivalente para os outros estados,
+  conforme `DESIGN_SYSTEM.md` §5.2 (bloco de código dos tokens de
+  status).
+- Sem mudar layout/tipografia/espaçamento ainda — isso é Sprint 3.
+- Mesmo rigor: mudança apresentada antes de aplicada, `tsc`/`lint`/
+  `build` limpos, validação ao vivo no navegador.
 
-Usuário foi explícito: não pretende voltar a discutir identidade
-visual — a próxima sessão é execução pura do que já está documentado.
+Depois: Sprint 3 (tipografia/espaçamento/radius/sombra, §6-9), Sprint 4
+(componentes shadcn — `Select`/`Textarea`/`Label`/`Progress`/
+`Skeleton`, §11), Sprint 5 (páginas, só então).
 
 ## Pendências fora de escopo (não iniciar sem pedido explícito)
 
 - Arquivo `MAwv\357\200\252` (raiz do repo, 0 bytes, não versionado):
-  investigado, tudo indica artefato de terminal/shell. Ignorar; só
-  reinvestigar se reaparecer.
+  investigado em sessão anterior, tudo indica artefato de
+  terminal/shell. Ignorar; só reinvestigar se reaparecer.
 - Bucket `apps` do Supabase Storage: criado mas sem uso (ADR-007,
   supersedida pela ADR-011). Sem ação planejada.
+- `#D69A4A` (âmbar de apoio, §5.2): validado como
+  `oklch(0.7290 0.1201 71.69)` nesta sessão mas **não** virou token —
+  é usado com moderação em componentes específicos, não como cor de
+  tema global. Registrar se/quando um componente precisar dele.
 
 ## Primeiro passo
 
-Abrir a Fase 1 (Sprint 1 — Tokens) diretamente: propor a edição exata
-de `src/app/globals.css` com os valores de `DESIGN_SYSTEM.md` §5.2,
-confirmar os valores OKLCH convertidos (o documento pede
-reconferência com um conversor de cor real antes de aplicar), e seguir
-o mesmo rigor das fases anteriores (mudança apresentada antes de
-aplicada, `tsc`/`lint`/`build` limpos, validação ao vivo no navegador).
+Abrir o Sprint 2 lendo `Sidebar.tsx`, `Header.tsx`, `StatusBadge.tsx` e
+`AppForm.tsx` para levantar todas as cores Tailwind cruas em uso,
+apresentar a lista completa (arquivo → cor atual → token de destino)
+para confirmação antes de editar qualquer um.

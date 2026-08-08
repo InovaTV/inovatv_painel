@@ -7,6 +7,45 @@
 
 ---
 
+## 2026-08-08 (31) — Fase 1, Sprint 1: tokens de cor do Design System aplicados
+
+**Contexto:** primeira etapa de execução da Fase 1 (Implementação do
+Design System) combinada no fechamento da sessão anterior. Sprint 1 é
+só tokens em `globals.css` — sem tocar em componentes/páginas
+(Sprint 2 em diante).
+
+**Validação da cor antes de aplicar** (`DESIGN_SYSTEM.md` §5.2 pede
+reconferência com conversor real antes de entrar no CSS): script Node
+com a matriz sRGB→linear→OKLab padrão confirmou `#0F6D76` →
+`oklch(0.4896 0.0800 205.28)`, batendo com a aproximação manual do
+documento (`oklch(0.49 0.08 205)`).
+
+**Alterado em `src/app/globals.css`:**
+- `--primary`, `--primary-foreground`, `--ring`, `--sidebar-primary`
+  (light e dark) — troca do neutro/índigo residual pelo teal oficial,
+  exatamente como a tabela do §5.2 especifica.
+- 6 tokens novos — `--success`/`--warning`/`--info` +
+  `-foreground` de cada, iguais em light e dark (o documento não
+  distingue por tema para esses três) — seguindo o padrão que
+  `--destructive` já usa.
+- Mapeamento dos 6 tokens novos em `@theme inline`
+  (`--color-success`, etc.), mesmo padrão de `--color-destructive`,
+  para que `bg-success`/`text-warning`/etc. existam como classes
+  Tailwind quando o Sprint 2 remover os hardcodes.
+
+**Validado:** `tsc --noEmit`, `npm run lint` e `npm run build` limpos;
+`npm run dev` na porta 3900 e conferência visual real — botão "Novo
+Aplicativo" e switches "Ativo" em `/apps` já herdam o teal via
+`bg-primary` (shadcn `Button`/`Switch`), sem nenhuma mudança de
+layout. Badges de status continuam verde/vermelho cru — esperado,
+escopo do Sprint 2.
+
+Próximo: Sprint 2 — remover cores Tailwind cruas (`slate-*`,
+`blue-500`, `emerald-600`, `red-*`) de `Sidebar.tsx`, `Header.tsx`,
+`StatusBadge.tsx`, `AppForm.tsx` etc., trocando por token.
+
+---
+
 ## 2026-08-07 (30) — Auditoria de banco: backup + migração da Fase 4 (limpeza) preparados, aguardando aplicação
 
 **Contexto:** encerramento combinado da auditoria de banco (entradas
