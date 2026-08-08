@@ -4,8 +4,19 @@ import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useFormStatus } from "react-dom";
 
+import { CheckCircle2, MonitorSmartphone, Tv, XCircle } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 import { createAppAction } from "@/app/(dashboard)/apps/novo/actions";
 import { updateAppAction } from "@/app/(dashboard)/apps/actions";
@@ -109,9 +120,9 @@ export default function AppForm({
 
         <div className="grid grid-cols-2 gap-6">
           <div>
-            <label className="mb-2 block text-sm font-medium">
+            <Label className="mb-2">
               Nome
-            </label>
+            </Label>
 
             <Input
               name="name"
@@ -126,9 +137,9 @@ export default function AppForm({
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium">
+            <Label className="mb-2">
               Slug
-            </label>
+            </Label>
 
             <Input
               name="slug"
@@ -146,26 +157,31 @@ export default function AppForm({
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium">
+            <Label className="mb-2">
               Produto
-            </label>
+            </Label>
 
-            <select
+            <Select
               name="product_id"
               value={productId}
-              onChange={(e) => setProductId(e.target.value)}
-              className="w-full rounded-lg border px-3 py-2"
+              onValueChange={setProductId}
             >
-              {products.map((product) => (
-                <option key={product.id} value={product.id}>
-                  {product.name}
-                </option>
-              ))}
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
 
-              <option value={NEW_PRODUCT_VALUE}>
-                + Novo Produto
-              </option>
-            </select>
+              <SelectContent>
+                {products.map((product) => (
+                  <SelectItem key={product.id} value={product.id}>
+                    {product.name}
+                  </SelectItem>
+                ))}
+
+                <SelectItem value={NEW_PRODUCT_VALUE}>
+                  + Novo Produto
+                </SelectItem>
+              </SelectContent>
+            </Select>
 
             {productId === NEW_PRODUCT_VALUE && (
               <>
@@ -184,9 +200,9 @@ export default function AppForm({
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium">
+            <Label className="mb-2">
               Versão
-            </label>
+            </Label>
 
             <Input
               name="version"
@@ -202,58 +218,71 @@ export default function AppForm({
 
         <div className="grid grid-cols-2 gap-6 mt-8">
           <div>
-            <label className="mb-2 block text-sm font-medium">
+            <Label className="mb-2">
               Plataforma
-            </label>
+            </Label>
 
-            <select
+            <Select
               name="platform"
               defaultValue={app?.platform ?? "mobile"}
-              className="w-full rounded-lg border px-3 py-2"
             >
-              <option value="mobile">
-                📱 Mobile
-              </option>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
 
-              <option value="tv">
-                📺 TV Box
-              </option>
-            </select>
+              <SelectContent>
+                <SelectItem value="mobile">
+                  <MonitorSmartphone className="size-4" />
+                  Mobile
+                </SelectItem>
+
+                <SelectItem value="tv">
+                  <Tv className="size-4" />
+                  TV Box
+                </SelectItem>
+              </SelectContent>
+            </Select>
 
             <FieldError message={fieldErrors.platform} />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium">
+            <Label className="mb-2">
               Status
-            </label>
+            </Label>
 
-            <select
+            <Select
               name="is_active"
               defaultValue={app ? String(app.is_active) : "true"}
-              className="w-full rounded-lg border px-3 py-2"
             >
-              <option value="true">
-                🟢 Ativo
-              </option>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
 
-              <option value="false">
-                ⚪ Inativo
-              </option>
-            </select>
+              <SelectContent>
+                <SelectItem value="true">
+                  <CheckCircle2 className="size-4" />
+                  Ativo
+                </SelectItem>
+
+                <SelectItem value="false">
+                  <XCircle className="size-4" />
+                  Inativo
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
         <div className="mt-8">
-          <label className="mb-2 block text-sm font-medium">
+          <Label className="mb-2">
             Descrição
-          </label>
+          </Label>
 
-          <textarea
+          <Textarea
             name="description"
             rows={5}
             defaultValue={app?.description}
-            className="w-full rounded-lg border p-3"
             placeholder="Descrição..."
           />
         </div>

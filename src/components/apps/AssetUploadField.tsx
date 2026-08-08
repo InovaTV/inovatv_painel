@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { Progress } from "@/components/ui/progress";
 import { formatBytes, formatDate } from "@/lib/utils";
 
 type AssetType = "apk" | "icon" | "banner";
@@ -206,12 +207,7 @@ export default function AssetUploadField({
 
       {busy && (
         <div className="mt-3 space-y-1">
-          <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-2 rounded-full bg-primary transition-all"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
+          <Progress value={progress} />
 
           <p className="text-xs text-muted-foreground tabular-nums">
             {stage} — {formatBytes(sentBytes)} / {formatBytes(totalBytes)} ({progress}%)
