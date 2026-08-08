@@ -5,36 +5,13 @@
 > `DEFINITION_OF_DONE.md`, `STORAGE.md`, `DESIGN_SYSTEM.md`,
 > ADR-013 a ADR-020.
 
-## ⚠️ Troca de máquina — ler antes de continuar
-
-Esta sessão foi encerrada de propósito para continuar **em outro
-computador**. Antes de qualquer coisa:
-
-1. **Os 4 commits abaixo estão só localmente, não foram pushados**
-   (o usuário pediu explicitamente para não dar push em nenhuma das
-   sessões). Se o outro computador for um clone/pull do
-   `origin/main`, **esses 4 commits não vão estar lá** até alguém
-   rodar `git push` desta máquina, ou até o usuário decidir sincronizar
-   de outra forma. **Perguntar ao usuário como ele quer levar esse
-   trabalho para a outra máquina antes de assumir que o histórico está
-   disponível lá.**
-2. `.env.local` local conferido **byte a byte** (`diff`, não só
-   tamanho/data) contra a cópia canônica no Google Drive
-   (`G:\Meu Drive\INOVATV PAINEL - ENV\.env.local`) — idênticos, nada
-   para sincronizar.
-3. Nenhum servidor de dev rodando ao encerrar (porta 3900 livre).
-
 ## Último commit (local, não pushado)
 
-`5769e2e` — `feat(design-system): Fase 1 Sprint 3 - tipografia,
-espacamento, sombra e radius`. `git status`: working tree limpo.
-
-Histórico local à frente de `origin/main` (4 commits, ver ponto 1
-acima):
-- `948eab6` Sprint 1 — tokens de cor
-- `b0113fe` Sprint 2 — remover cores hardcoded
-- `1b802d1` token `--canvas`
-- `5769e2e` Sprint 3 — tipografia/espaçamento/sombra/radius
+Sprint 4 do Design System — instalação de `Select`/`Textarea`/`Label`/
+`Progress` via `shadcn` CLI e migração de `AppForm.tsx`/
+`AssetUploadField.tsx`. `git status`: working tree limpo. Push não
+solicitado ainda — pedir confirmação ao usuário antes de dar push,
+como nas sessões anteriores.
 
 ## Checkpoint do projeto
 
@@ -50,48 +27,60 @@ acima):
   - ✅ Sprint 2 (Remover hardcodes) — commitado, incluindo o token
     `--canvas`.
   - ✅ Sprint 3 (Tipografia/Espaçamento/Sombra/Radius) — commitado.
-  - ⬜ **Sprint 4 (Componentes) — próximo passo.**
-  - ⬜ Sprint 5 (Páginas: Dashboard → Sidebar → Header → CRUD Apps).
+  - ✅ Sprint 4 (Componentes) — commitado. `Select`/`Textarea`/
+    `Label`/`Progress` instalados e aplicados em `AppForm.tsx`/
+    `AssetUploadField.tsx`, emojis removidos. `Skeleton` **não**
+    instalado (decisão explícita do usuário — só entra quando houver
+    uso real no Dashboard/Tabela, Fase 2/5).
+  - ⬜ **Sprint 5 — Páginas (Dashboard → Sidebar → Header → CRUD
+    Apps) — próximo passo.**
 - **Módulo Aplicativos: funcionalmente concluído** (`DEFINITION_OF_DONE.md`).
 
 ## O que aconteceu nesta sessão (2026-08-08)
 
-Sprint 2 fechado (token `--canvas`, commit `1b802d1`) e Sprint 3
-completo (commit `5769e2e`): tokens de tipografia (`tabular-nums`),
-espaçamento (`--card-spacing`, gaps, `TableCell`), sombra (`Card`
-troca `ring` por `border-border/60 + shadow-xs`, `Dialog` ganha
-`shadow-lg`, `DropdownMenu` recalibrado pra `shadow-sm`) e radius
-(`select`/`textarea`/thumbnail/dropzone). Levantamento apresentado e
-aprovado antes de qualquer edição, incluindo 5 itens "por analogia"
-(sem virar nova decisão de Design System). `tsc`/lint/build limpos,
-conferência visual real no navegador (Dashboard, Lista de Aplicativos,
-Novo Aplicativo) — nenhuma quebra de layout.
+Sprint 4 fechado: levantamento apresentado e aprovado (com ajuste do
+usuário — Skeleton fora do escopo por não ter uso imediato) antes de
+qualquer instalação. Componentes `Select`/`Textarea`/`Label`/
+`Progress` instalados via `shadcn` CLI. `AppForm.tsx` migrado (6
+`Label`, 3 `Select` — Produto/Plataforma/Status, 1 `Textarea` —
+Descrição); emojis (`📱`/`📺`/`🟢`/`⚪`) substituídos pelos ícones
+Lucide já usados no projeto (`MonitorSmartphone`/`Tv`/`CheckCircle2`/
+`XCircle`, mesmos de `PlatformBadge`/`StatusBadge`). Barra de
+progresso manual de `AssetUploadField.tsx` trocada pelo componente
+`Progress`. `tsc`/lint/build limpos.
 
-## Próxima etapa — Sprint 4: Componentes
+Validação ao vivo no navegador (dropdowns, formulário populado,
+upload real ponta a ponta) confirmou tudo funcionando. Um teste de
+upload real acabou sobrescrevendo por engano o ícone verdadeiro do
+app "UniTV Mobile" no Hostinger — identificado, avisado ao usuário
+imediatamente, e revertido no mesmo dia (script one-off descartável,
+não versionado, removeu o arquivo de teste do storage e limpou
+`icon_path` de volta a `null` — estado idêntico ao anterior ao teste).
+**Lição para a próxima validação de upload:** usar um app de teste da
+lista (`teste100`, `sei lá`) em vez de um app real.
 
-Escopo já mapeado em `DESIGN_SYSTEM.md` §11 (inventário de
-componentes), nenhuma decisão nova precisa ser tomada, só executar:
+## Próxima etapa — Sprint 5: Páginas
 
-**Faltam instalar (via `shadcn` CLI):**
-| Componente | Substitui hoje | Usado em |
-|---|---|---|
-| `Select` | `<select>` cru (já com token/radius corrigidos no Sprint 3) | `AppForm.tsx` (Produto, Plataforma, Status) |
-| `Textarea` | `<textarea>` cru (idem) | `AppForm.tsx` (Descrição) |
-| `Label` | `<label className="mb-2 block text-sm font-medium">` repetido | Todo formulário |
-| `Progress` | barra feita à mão em `AssetUploadField.tsx` | Upload |
-| `Skeleton` | não existe — telas carregam "em branco" | Listagem de apps, dashboard |
-| Empty state (padrão de composição) | texto solto em `<TableCell>` | Tabela vazia |
+Conforme `DESIGN_SYSTEM.md` §22 (Fases 2-5), a partir daqui é
+aplicação do Design System já fundamentado nas telas, uma de cada vez,
+mesmo rigor de sempre (levantar escopo exato, apresentar, só então
+mexer):
 
-**Também no escopo do Sprint 4** (`DESIGN_SYSTEM.md` §10, Iconografia
-— não coberto no Sprint 3, que foi só §6-9): remover emoji
-(`📱`/`📺`/`🟢`/`⚪`) das `<option>` do `AppForm.tsx`, substituir por
-ícone Lucide de verdade; padronizar tamanho de ícone por contexto
-(`size-4` em botões/badges, `size-5` em navegação) em vez de
-`size={18}` solto.
+1. **Dashboard** — `StatCard` ganha ícone (§13), grid com espaçamento
+   novo (§7). Primeira tela a herdar cor de marca visível.
+2. **Sidebar** — estado ativo por rota (`pathname` vs `item.href`,
+   hoje não existe), comportamento responsivo/colapsável (§18-19).
+   Maior componente de interação, não só estilo.
+3. **Header** — hambúrguer funcional conectado à Sidebar, tokens de
+   cor no lugar de hardcoded, badge "Online" com pulso (§18).
+4. **CRUD Aplicativos** — tabela com hover/linha ativa/empty state
+   (§15), upload como dropzone real (§16), preview como `Card`
+   (§17). Função continua congelada (`DEFINITION_OF_DONE.md`) — só
+   UX.
 
-Mesmo rigor das sprints anteriores: levantar o inventário exato antes
-de instalar/editar qualquer coisa, apresentar para aprovação, só então
-mexer no código.
+`Skeleton` entra durante Dashboard e/ou CRUD Aplicativos (Sprint 4
+deixou o componente de fora por não ter uso ainda — instalar quando a
+tela que o consome for trabalhada, não antes).
 
 ## Pendências fora de escopo (não iniciar sem pedido explícito)
 
@@ -105,10 +94,6 @@ mexer no código.
 
 ## Primeiro passo
 
-Confirmar com o usuário como os 4 commits locais chegam à outra
-máquina (push? outro método?) antes de qualquer coisa. Depois, abrir
-o Sprint 4 lendo `AppForm.tsx` e `AssetUploadField.tsx` de novo (o
-Sprint 3 já mudou alguns detalhes desses arquivos) e levantando o
-plano exato de instalação/substituição dos componentes da tabela
-acima, para aprovação antes de instalar qualquer coisa via `shadcn`
-CLI.
+Abrir o Sprint 5 escolhendo por qual tela começar (Dashboard é a
+ordem sugerida pelo documento) e levantar o escopo exato de mudanças
+antes de tocar em qualquer arquivo, para aprovação do usuário.
