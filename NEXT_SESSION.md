@@ -7,10 +7,13 @@
 
 ## Último commit
 
-`d809c54` — `docs: finalize InovaTV design system and visual
-identity`. **Pushado para `origin/main`** — `git status` confirmou
-working tree clean e `main` local sincronizado com `origin/main` logo
-após o push.
+`34f9809` — `docs: archive design identity study, close out
+NEXT_SESSION`. **Pushado para `origin/main`** — `git status` e `git
+fetch` confirmaram working tree clean e 0 commits de diferença com
+`origin/main` ao encerrar a sessão. `.env.local` local conferido
+idêntico à cópia canônica no Google Drive (`G:\Meu Drive\INOVATV
+PAINEL - ENV\`) — nada para sincronizar antes de trocar de máquina.
+Nenhum servidor de dev rodando (porta 3900 livre).
 
 ## Checkpoint do projeto
 
