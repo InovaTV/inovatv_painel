@@ -39,8 +39,8 @@ com o usuário, em várias rodadas:
    InovaTV/teal), grounded nas referências reais do produto UniTV
    (ícone com gradiente âmbar-vermelho-violeta + wordmark azul; banner
    de marketing roxo-magenta) — nenhuma copiada diretamente. Artefato
-   completo (não commitado, é material de trabalho) em
-   `design-studies/identidade-visual-inovatv.html`.
+   completo arquivado (histórico, não normativo) em
+   `docs/archive/design-studies/identidade-visual-inovatv.html`.
 3. **Conceito C (InovaTV) escolhido**: o painel administra produtos
    (UniTV hoje, outros depois), não é ele mesmo um produto — não deve
    herdar nem competir com a identidade de nenhum específico. Ver
@@ -96,10 +96,6 @@ visual — a próxima sessão é execução pura do que já está documentado.
   reinvestigar se reaparecer.
 - Bucket `apps` do Supabase Storage: criado mas sem uso (ADR-007,
   supersedida pela ADR-011). Sem ação planejada.
-- `design-studies/identidade-visual-inovatv.html`: não commitado de
-  propósito (material de deliberação, não documentação oficial).
-  Perguntar ao usuário se quer arquivá-lo no repo ou descartá-lo agora
-  que a decisão está fechada.
 
 ## Primeiro passo
 
