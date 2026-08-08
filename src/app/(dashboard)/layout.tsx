@@ -1,5 +1,6 @@
 import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
+import { SidebarProvider } from "@/components/layout/SidebarProvider";
 
 import { createClient } from "@/lib/supabase/server";
 
@@ -15,16 +16,18 @@ export default async function DashboardLayout({
   } = await supabase.auth.getUser();
 
   return (
-    <div className="min-h-screen bg-canvas">
-      <Header email={user?.email ?? ""} />
+    <SidebarProvider>
+      <div className="min-h-screen bg-canvas">
+        <Header email={user?.email ?? ""} />
 
-      <div className="flex">
-        <Sidebar />
+        <div className="flex">
+          <Sidebar />
 
-        <main className="flex-1 p-8">
-          {children}
-        </main>
+          <main className="flex-1 p-8">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }

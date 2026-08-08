@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Bell,
   LogOut,
@@ -6,22 +8,33 @@ import {
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 import { signOutAction } from "@/lib/actions/auth";
+import { useSidebar } from "./SidebarProvider";
 
 interface Props {
   email: string;
 }
 
 export default function Header({ email }: Props) {
+  const { toggle } = useSidebar();
+
   return (
     <header className="h-16 bg-card border-b px-6 flex items-center justify-between">
 
       <div className="flex items-center gap-4">
 
-        <button className="h-10 w-10 rounded-lg border flex items-center justify-center hover:bg-accent transition">
-          <Menu size={20} />
-        </button>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className="h-10 w-10 md:hidden"
+          onClick={toggle}
+        >
+          <Menu />
+        </Button>
 
         <div>
 
@@ -42,30 +55,39 @@ export default function Header({ email }: Props) {
         <div className="relative">
 
           <Search
-            className="absolute left-3 top-3 text-muted-foreground"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
             size={16}
           />
 
-          <input
-            className="pl-9 pr-4 h-10 w-72 rounded-lg border outline-none focus:ring-2 focus:ring-ring"
+          <Input
+            className="pl-9 w-72"
             placeholder="Pesquisar..."
           />
 
         </div>
 
-        <button className="relative h-10 w-10 rounded-lg border flex items-center justify-center hover:bg-accent">
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className="relative h-10 w-10"
+        >
 
-          <Bell size={18} />
+          <Bell />
 
           <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-destructive"></span>
 
-        </button>
+        </Button>
 
         <Badge
           variant="secondary"
-          className="h-7"
+          className="h-7 bg-success/10 text-success"
         >
+
+          <span className="size-1.5 rounded-full bg-success animate-pulse" />
+
           Online
+
         </Badge>
 
         <div className="text-right">
@@ -81,13 +103,15 @@ export default function Header({ email }: Props) {
         </div>
 
         <form action={signOutAction}>
-          <button
+          <Button
             type="submit"
+            variant="outline"
+            size="icon"
             title="Sair"
-            className="h-10 w-10 rounded-lg border flex items-center justify-center hover:bg-accent transition"
+            className="h-10 w-10"
           >
-            <LogOut size={18} />
-          </button>
+            <LogOut />
+          </Button>
         </form>
 
       </div>
