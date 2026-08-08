@@ -11,7 +11,7 @@ export default async function LoginPage({ searchParams }: Props) {
   const { error } = await searchParams;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-canvas px-4">
       <div className="w-full max-w-sm rounded-xl border bg-card p-8 shadow-sm">
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold">InovaTV Painel</h1>

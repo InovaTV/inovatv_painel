@@ -328,6 +328,38 @@ ambos os temas) — não precisa de token novo.
 **Status:** decisão fechada em 2026-08-08, junto com a execução do
 Sprint 2. Mesma regra do §5.2: reabrir exige decisão explícita.
 
+### 5.4 Canvas — superfície de fundo estrutural
+
+Pendência aberta ao fim do Sprint 2: `login/page.tsx` e o layout do
+dashboard usam `bg-slate-100` para o fundo por trás dos cards/
+formulários, e não existia token para esse papel. `--background` foi
+descartado porque hoje tem o mesmo valor de `--card`
+(`oklch(1 0 0)`, branco puro) — reaproveitá-lo apagaria a distinção
+visual que já existe entre o canvas da página e as superfícies
+brancas que flutuam sobre ele. `--muted` também foi descartado: é um
+token com função semântica própria (fundos sutis de elementos
+inativos/secundários dentro de uma superfície), não o papel
+estrutural de "chão" da aplicação.
+
+```text
+--canvas: oklch(0.9683 0.0069 247.90)   /* #f1f5f9 — slate-100 */
+```
+
+Convertido com o mesmo processo dos §5.2/5.3 (script Node,
+sRGB→OKLab) a partir do valor real já em uso — preserva a aparência
+atual, não é uma nova escolha de cor. Papel do token: superfície de
+fundo estrutural da aplicação, atrás de cards, formulários, tabelas e
+demais superfícies — todo elemento que hoje "flutua" sobre
+`bg-slate-100` continua flutuando sobre `bg-canvas`.
+
+| Token | Papel | Valor |
+|---|---|---|
+| `--canvas` | fundo estrutural da página (light) | `oklch(0.9683 0.0069 247.90)` — `#f1f5f9` |
+| `--canvas` (dark) | fundo estrutural da página (dark) | `oklch(0.145 0 0)` — mesmo valor de `--background` no tema escuro, que já é distinto de `--card` lá (`oklch(0.205 0 0)`); dark mode não está funcionalmente ativo no app hoje (sem `ThemeProvider`), então não há aparência real para preservar — valor por inferência, reabrir se/quando dark mode for implementado |
+
+**Status:** decisão fechada em 2026-08-08. Mesma regra do §5.2/5.3:
+reabrir exige decisão explícita.
+
 ---
 
 ## 6. Tipografia
