@@ -9,7 +9,7 @@ export default function StatCard({ title, value }: Props) {
   return (
     <Card className="shadow-sm">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm text-slate-500">
+        <CardTitle className="text-sm text-muted-foreground">
           {title}
         </CardTitle>
       </CardHeader>

@@ -220,13 +220,13 @@ export default function AssetUploadField({
       )}
 
       {state === "done" && (
-        <p className="mt-2 text-xs text-emerald-600">
+        <p className="mt-2 text-xs text-success">
           Enviado com sucesso.
         </p>
       )}
 
       {state === "error" && (
-        <p className="mt-2 text-xs text-red-600">
+        <p className="mt-2 text-xs text-destructive">
           {error}
         </p>
       )}

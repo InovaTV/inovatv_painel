@@ -7,6 +7,54 @@
 
 ---
 
+## 2026-08-08 (32) — Fase 1, Sprint 2: cores hardcoded removidas em favor dos tokens
+
+**Contexto:** levantamento completo (33 ocorrências, 10 arquivos) de
+cores Tailwind cruas apresentado para revisão antes de qualquer
+edição. Usuário decidiu os 2 gaps encontrados e autorizou a execução.
+
+**Decisão 1 — Sidebar (gap novo, fechado em `DESIGN_SYSTEM.md` §5.3):**
+a sidebar sempre foi escura por decisão de identidade, não acidente,
+mas os 4 tokens shadcn dedicados a isso (`--sidebar`,
+`--sidebar-foreground`, `--sidebar-accent`, `--sidebar-border`) nunca
+tinham sido customizados — ficaram no neutro-claro padrão. Convertidos
+com o mesmo processo do §5.2 (script Node, sRGB→OKLab) a partir das
+cores reais em produção (`slate-950`/`slate-300`/`slate-800`),
+preservando a aparência exata. Tons secundários da sidebar (`slate-400
+/500/600`) viraram opacidade sobre `--sidebar-foreground` (`/75 /55
+/40`) em vez de tokens novos — mesmo padrão que `ring-foreground/10`
+já usa no resto do projeto.
+
+**Decisão 2 — Fundo de página (`bg-slate-100`):** verificado que
+`--background` (`oklch(1 0 0)`, branco puro) é idêntico a `--card` —
+usá-lo eliminaria a separação visual entre o canvas da página e os
+cards brancos. **Não alterado nesta sessão** — as 2 ocorrências
+(`login/page.tsx:14`, `(dashboard)/layout.tsx:18`) continuam
+`bg-slate-100`, aguardando decisão do usuário sobre criar um token
+dedicado ou redefinir `--background`.
+
+**Decisão 3 — Ponto de notificação (`bg-red-500`):** `bg-destructive`,
+sem criar `warning` alternativo.
+
+**Substituições aplicadas** (ver diff completo, não resumido aqui por
+volume — 33 ocorrências menos as 2 do gap 2 = 31 trocas em 10
+arquivos): `Sidebar.tsx`, `Header.tsx`, `login/page.tsx`,
+`StatusBadge.tsx` (`bg-emerald-600` sólido → `bg-success/10
+text-success`, mesmo padrão soft que `Badge variant="destructive"` já
+usava — corrige uma inconsistência visual entre os badges Ativo/
+Inativo que existia antes), `AssetUploadField.tsx`, `AppForm.tsx`,
+`ActionsMenu.tsx`, `StatCard.tsx`, `ui/dialog.tsx` (`bg-black/10` →
+`bg-foreground/10`, consistência com `ring-foreground/10` já usado no
+mesmo componente).
+
+**Validado:** `tsc`, `lint`, `build` limpos; conferência visual real
+em `/apps` e `/apps/novo` — sidebar, badges de status e botão primário
+sem nenhuma mudança de layout ou intenção visual perceptível.
+
+**Não commitado ainda** — aguardando revisão do usuário.
+
+---
+
 ## 2026-08-08 (31) — Fase 1, Sprint 1: tokens de cor do Design System aplicados
 
 **Contexto:** primeira etapa de execução da Fase 1 (Implementação do

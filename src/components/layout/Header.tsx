@@ -15,11 +15,11 @@ interface Props {
 
 export default function Header({ email }: Props) {
   return (
-    <header className="h-16 bg-white border-b px-6 flex items-center justify-between">
+    <header className="h-16 bg-card border-b px-6 flex items-center justify-between">
 
       <div className="flex items-center gap-4">
 
-        <button className="h-10 w-10 rounded-lg border flex items-center justify-center hover:bg-slate-100 transition">
+        <button className="h-10 w-10 rounded-lg border flex items-center justify-center hover:bg-accent transition">
           <Menu size={20} />
         </button>
 
@@ -29,7 +29,7 @@ export default function Header({ email }: Props) {
             InovaTV Painel
           </h1>
 
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted-foreground">
             Administração Central
           </p>
 
@@ -42,22 +42,22 @@ export default function Header({ email }: Props) {
         <div className="relative">
 
           <Search
-            className="absolute left-3 top-3 text-slate-400"
+            className="absolute left-3 top-3 text-muted-foreground"
             size={16}
           />
 
           <input
-            className="pl-9 pr-4 h-10 w-72 rounded-lg border outline-none focus:ring-2 focus:ring-blue-500"
+            className="pl-9 pr-4 h-10 w-72 rounded-lg border outline-none focus:ring-2 focus:ring-ring"
             placeholder="Pesquisar..."
           />
 
         </div>
 
-        <button className="relative h-10 w-10 rounded-lg border flex items-center justify-center hover:bg-slate-100">
+        <button className="relative h-10 w-10 rounded-lg border flex items-center justify-center hover:bg-accent">
 
           <Bell size={18} />
 
-          <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500"></span>
+          <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-destructive"></span>
 
         </button>
 
@@ -74,7 +74,7 @@ export default function Header({ email }: Props) {
             {email}
           </div>
 
-          <div className="text-xs text-slate-500">
+          <div className="text-xs text-muted-foreground">
             Administrador
           </div>
 
@@ -84,7 +84,7 @@ export default function Header({ email }: Props) {
           <button
             type="submit"
             title="Sair"
-            className="h-10 w-10 rounded-lg border flex items-center justify-center hover:bg-slate-100 transition"
+            className="h-10 w-10 rounded-lg border flex items-center justify-center hover:bg-accent transition"
           >
             <LogOut size={18} />
           </button>

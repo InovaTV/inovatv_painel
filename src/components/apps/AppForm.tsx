@@ -39,7 +39,7 @@ function FieldError({ message }: { message?: string }) {
   if (!message) return null;
 
   return (
-    <p className="mt-1 text-xs text-red-600">
+    <p className="mt-1 text-xs text-destructive">
       {message}
     </p>
   );
@@ -100,9 +100,9 @@ export default function AppForm({
       action={formAction}
       className="grid grid-cols-1 gap-8 lg:grid-cols-2"
     >
-      <div className="rounded-xl border bg-white p-8">
+      <div className="rounded-xl border bg-card p-8">
         {state.error && (
-          <p className="mb-6 rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
+          <p className="mb-6 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
             {state.error}
           </p>
         )}
@@ -119,7 +119,7 @@ export default function AppForm({
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
               placeholder="UniTV Mobile"
-              className={fieldErrors.name ? "border-red-500" : undefined}
+              className={fieldErrors.name ? "border-destructive" : undefined}
             />
 
             <FieldError message={fieldErrors.name} />
@@ -139,7 +139,7 @@ export default function AppForm({
                 setSlugTouched(true);
               }}
               placeholder="unitv-mobile"
-              className={fieldErrors.slug ? "border-red-500" : undefined}
+              className={fieldErrors.slug ? "border-destructive" : undefined}
             />
 
             <FieldError message={fieldErrors.slug} />
@@ -175,7 +175,7 @@ export default function AppForm({
                   value={newProductName}
                   onChange={(e) => setNewProductName(e.target.value)}
                   placeholder="Nome do novo produto"
-                  className={`mt-2 ${fieldErrors.new_product_name ? "border-red-500" : ""}`}
+                  className={`mt-2 ${fieldErrors.new_product_name ? "border-destructive" : ""}`}
                 />
 
                 <FieldError message={fieldErrors.new_product_name} />
@@ -193,7 +193,7 @@ export default function AppForm({
               required
               defaultValue={app?.version}
               placeholder="3.24.2"
-              className={fieldErrors.version ? "border-red-500" : undefined}
+              className={fieldErrors.version ? "border-destructive" : undefined}
             />
 
             <FieldError message={fieldErrors.version} />

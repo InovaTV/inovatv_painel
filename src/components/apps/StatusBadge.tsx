@@ -13,7 +13,7 @@ export default function StatusBadge({
 }: Props) {
   if (active) {
     return (
-      <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white flex w-fit items-center gap-1">
+      <Badge className="bg-success/10 text-success flex w-fit items-center gap-1">
 
         <CheckCircle2 className="h-3.5 w-3.5" />
 

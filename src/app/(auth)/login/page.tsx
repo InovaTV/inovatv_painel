@@ -12,11 +12,11 @@ export default async function LoginPage({ searchParams }: Props) {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
-      <div className="w-full max-w-sm rounded-xl border bg-white p-8 shadow-sm">
+      <div className="w-full max-w-sm rounded-xl border bg-card p-8 shadow-sm">
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold">InovaTV Painel</h1>
 
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-muted-foreground">
             Acesso administrativo
           </p>
         </div>
@@ -59,7 +59,7 @@ export default async function LoginPage({ searchParams }: Props) {
           </div>
 
           {error && (
-            <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
+            <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
               {error}
             </p>
           )}

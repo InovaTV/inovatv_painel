@@ -95,7 +95,7 @@ export default function ActionsMenu({
         )}
 
         <DropdownMenuItem
-          className="text-red-600"
+          className="text-destructive"
           onClick={handleDelete}
         >
 

@@ -288,6 +288,46 @@ marca evoluir no futuro.
 decisão explícita — não é para ser ajustada por gosto pessoal numa
 implementação futura.
 
+### 5.3 Sidebar — superfície oficial
+
+O `Sidebar.tsx` sempre foi visualmente escuro (fundo quase-preto),
+independente do tema claro/escuro do resto do painel — é decisão de
+identidade, não resquício acidental. O shadcn já expõe uma família de
+tokens dedicada exatamente a isso (`--sidebar`, `--sidebar-foreground`,
+`--sidebar-accent`, `--sidebar-border`), mas até a Fase 1/Sprint 2 eles
+nunca haviam sido customizados — ficaram no neutro-claro padrão do
+tema `neutral` do shadcn, enquanto o componente real usava Tailwind cru
+(`bg-slate-950`, `text-slate-300`, `border-slate-800`,
+`hover:bg-slate-800`) por cima. Fechado em 2026-08-08: os 4 tokens
+passam a ser a fonte oficial, com os valores convertidos (mesmo
+processo do §5.2 — script Node, matriz sRGB→OKLab, não à mão) a partir
+das cores que já estavam em produção, **preservando exatamente a
+aparência visual atual** — isto não é uma nova escolha de cor, é dar
+nome de token ao que já existia.
+
+| Token | Valor (light e dark — sidebar não segue o tema do resto do painel) | Origem |
+|---|---|---|
+| `--sidebar` | `oklch(0.1288 0.0406 264.70)` — `#020617` | `slate-950`, fundo do menu |
+| `--sidebar-foreground` | `oklch(0.8690 0.0198 252.89)` — `#cbd5e1` | `slate-300`, texto padrão dos itens |
+| `--sidebar-accent` | `oklch(0.2795 0.0368 260.03)` — `#1e293b` | `slate-800`, hover dos itens de menu |
+| `--sidebar-border` | `oklch(0.2795 0.0368 260.03)` — `#1e293b` | `slate-800`, mesmo valor de `--sidebar-accent` no código atual (bordas do cabeçalho/rodapé do menu) |
+
+Tons secundários dentro da sidebar (subtítulo, rótulo "NAVEGAÇÃO",
+rodapé) hoje usam `text-slate-400/500/600` — variações mais escuras de
+`text-slate-300` sobre o mesmo fundo quase-preto. Em vez de criar 3
+tokens novos só para isso, usar opacidade sobre `--sidebar-foreground`
+já é o padrão que o resto do projeto adota para variação de peso
+visual sem token dedicado (`ring-foreground/10`, `bg-destructive/10`):
+`text-sidebar-foreground/75` ≈ `slate-400`, `/55` ≈ `slate-500`, `/40`
+≈ `slate-600` sobre o fundo `#020617` (checado por composição de cor,
+não é exato pixel-a-pixel, mas a diferença é imperceptível). O texto
+branco do logo "InovaTV" (`text-white`) reaproveita
+`--sidebar-primary-foreground`, já oficial desde o §5.2 (branco em
+ambos os temas) — não precisa de token novo.
+
+**Status:** decisão fechada em 2026-08-08, junto com a execução do
+Sprint 2. Mesma regra do §5.2: reabrir exige decisão explícita.
+
 ---
 
 ## 6. Tipografia
