@@ -5,23 +5,22 @@
 > `DEFINITION_OF_DONE.md`, `STORAGE.md`, `DESIGN_SYSTEM.md`,
 > ADR-013 a ADR-020.
 
-## ⚠️ Commits locais não pushados
+## ✅ Sincronizado com origin/main
 
-Os 3 commits abaixo estão só localmente (usuário pediu explicitamente
-para não dar push ainda). Se outra máquina for sincronizar via
-clone/pull do `origin/main`, **eles não vão estar lá** até alguém
-rodar `git push` desta máquina — a sincronização anterior (Sprint
-4/Fase A) já foi concluída e está em `origin/main` via `d2cf1f5`.
+`main` e `origin/main` no mesmo commit — `git push origin main`
+concluído sem erros. Fase 1 (Sprints 1-5, incluindo as 3 fases do
+Sprint 5) está integralmente publicada em `origin/main`.
 
-## Último commit (local, não pushado)
+## Último commit (pushado)
 
-`0e7fae8` — `feat(design-system): Fase 1 Sprint 5 Fase C - Aplicativos
-(empty state, Card, upload)`. `git status`: working tree limpo.
+`fdcebcf` — `docs: NEXT_SESSION.md - Sprint 5 Fase C concluida, Fase 1
+(Design System) concluida`. `git status`: working tree limpo.
 
-Histórico local à frente de `origin/main` (3 commits):
+Commits publicados nesta sincronização:
 - `2c12116` Sprint 5 Fase B — Dashboard (ícones nos StatCard)
 - `6227451` docs — Fase B concluída, próximo passo Fase C
 - `0e7fae8` Sprint 5 Fase C — Aplicativos (empty state, Card, upload)
+- `fdcebcf` docs — Fase C concluída, Fase 1 concluída
 
 ## Checkpoint do projeto
 
@@ -43,9 +42,9 @@ Histórico local à frente de `origin/main` (3 commits):
     - ✅ Fase A (Sidebar + Header) — `93d1fb2`.
     - ✅ Fase B (Dashboard) — `2c12116`.
     - ✅ Fase C (Aplicativos/CRUD) — `0e7fae8`.
-  - **Aguardando revisão final do usuário sobre o estado consolidado
-    da Fase 1 antes de qualquer módulo novo ser aberto** (ver
-    "Primeiro passo" no fim deste documento).
+  - **Auditoria final (somente leitura) feita e aprovada — sem
+    pendências importantes.** Publicada em `origin/main`. Próximo
+    módulo a decidir com o usuário (ver "Primeiro passo").
 - **Módulo Aplicativos: funcionalmente concluído** (`DEFINITION_OF_DONE.md`).
 
 ## Fase A concluída — Sprint 5, Sidebar/Header (commit `93d1fb2`)
@@ -173,13 +172,11 @@ banner reais. Aprovado pelo usuário antes do commit.
 
 ## Primeiro passo
 
-**Fase 1 — Implementação do Design System está concluída** (Sprints
-1-5, incluindo as 3 fases do Sprint 5). O usuário pediu explicitamente
-para **não iniciar nenhum módulo novo nem fazer alterações adicionais
-até a revisão final dele sobre o estado consolidado da Fase 1**. Não
-presumir qual é o próximo módulo (ROADMAP.md aponta Fase 3 — Banners,
-mas isso não foi confirmado pelo usuário para este momento) — esperar
-instrução explícita.
-
-Commits `2c12116`/`6227451`/`0e7fae8` ainda não foram pushados —
-confirmar com o usuário antes de dar push.
+**Fase 1 — Implementação do Design System está concluída, revisada por
+auditoria final (somente leitura, sem pendências importantes) e
+publicada em `origin/main`** (Sprints 1-5, incluindo as 3 fases do
+Sprint 5; push concluído, `main`/`origin/main` sincronizados). O
+usuário decide a próxima etapa numa conversa futura — não presumir
+qual é o próximo módulo (ROADMAP.md aponta Fase 3 — Banners, mas isso
+não foi confirmado pelo usuário) nem iniciar nada sem instrução
+explícita.
