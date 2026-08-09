@@ -8,6 +8,8 @@ import ActionsMenu from "@/components/common/ActionsMenu";
 import StatusToggle from "./StatusToggle";
 import OrderControls from "./OrderControls";
 
+import { deleteAppAction, swapAppOrderAction, toggleAppStatusAction } from "@/app/(dashboard)/apps/actions";
+
 import type { App, OrderedApp } from "@/services/app.service";
 
 interface Props {
@@ -40,8 +42,9 @@ export default function AppsTableRow({
 
       <TableCell>
         <StatusToggle
-          id={app.id}
           active={app.is_active}
+          onToggle={toggleAppStatusAction.bind(null, app.id)}
+          errorMessage="Não foi possível atualizar o status. Tente novamente."
         />
       </TableCell>
 
@@ -50,13 +53,18 @@ export default function AppsTableRow({
           current={{ id: app.id, display_order: app.display_order }}
           prev={prev}
           next={next}
+          onSwap={swapAppOrderAction}
+          errorMessage="Não foi possível reordenar. Tente novamente."
         />
       </TableCell>
 
       <TableCell className="text-right">
 
         <ActionsMenu
-          id={app.id}
+          editHref={`/apps/${app.id}/editar`}
+          onDelete={deleteAppAction.bind(null, app.id)}
+          deleteConfirmMessage="Excluir este aplicativo? Esta ação não pode ser desfeita."
+          deleteErrorMessage="Não foi possível excluir o aplicativo. Tente novamente."
           downloadHref={app.storage_path ? `/api/apps/${app.id}/download` : undefined}
         />
 

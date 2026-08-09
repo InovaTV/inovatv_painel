@@ -6,16 +6,16 @@ import { useRouter } from "next/navigation";
 import { Switch } from "@/components/ui/switch";
 import StatusBadge from "./StatusBadge";
 
-import { toggleAppStatusAction } from "@/app/(dashboard)/apps/actions";
-
 interface Props {
-  id: string;
   active: boolean;
+  onToggle: (value: boolean) => Promise<void>;
+  errorMessage: string;
 }
 
 export default function StatusToggle({
-  id,
   active,
+  onToggle,
+  errorMessage,
 }: Props) {
   const router = useRouter();
   const [checked, setChecked] = useState(active);
@@ -26,11 +26,11 @@ export default function StatusToggle({
 
     startTransition(async () => {
       try {
-        await toggleAppStatusAction(id, value);
+        await onToggle(value);
         router.refresh();
       } catch {
         setChecked(!value);
-        window.alert("Não foi possível atualizar o status. Tente novamente.");
+        window.alert(errorMessage);
       }
     });
   }

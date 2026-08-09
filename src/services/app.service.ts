@@ -242,6 +242,25 @@ export async function getApps(options: GetAppsOptions = {}): Promise<PagedApps> 
   };
 }
 
+// Sem paginação, de propósito — uso é popular um <Select> (ex.: escolher o
+// app-alvo de um banner), não uma listagem. getApps() fica reservado para a
+// tabela paginada de Aplicativos.
+export async function getAllApps(): Promise<App[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("apps")
+    .select("*")
+    .order("name", { ascending: true });
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+
+  return (data ?? []) as App[];
+}
+
 export async function getApp(id: string): Promise<App> {
   const supabase = await createClient();
 

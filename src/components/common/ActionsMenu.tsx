@@ -19,33 +19,35 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { deleteAppAction } from "@/app/(dashboard)/apps/actions";
-
 interface Props {
-  id: string;
+  editHref: string;
+  onDelete: () => Promise<void>;
+  deleteConfirmMessage: string;
+  deleteErrorMessage: string;
   downloadHref?: string;
 }
 
 export default function ActionsMenu({
-  id,
+  editHref,
+  onDelete,
+  deleteConfirmMessage,
+  deleteErrorMessage,
   downloadHref,
 }: Props) {
   const router = useRouter();
 
   async function handleDelete() {
-    const confirmed = window.confirm(
-      "Excluir este aplicativo? Esta ação não pode ser desfeita."
-    );
+    const confirmed = window.confirm(deleteConfirmMessage);
 
     if (!confirmed) {
       return;
     }
 
     try {
-      await deleteAppAction(id);
+      await onDelete();
       router.refresh();
     } catch {
-      window.alert("Não foi possível excluir o aplicativo. Tente novamente.");
+      window.alert(deleteErrorMessage);
     }
   }
 
@@ -68,7 +70,7 @@ export default function ActionsMenu({
 
         <DropdownMenuItem asChild>
 
-          <Link href={`/apps/${id}/editar`}>
+          <Link href={editHref}>
 
             <Pencil className="mr-2 h-4 w-4" />
 

@@ -7,33 +7,38 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
-import { swapAppOrderAction } from "@/app/(dashboard)/apps/actions";
-
-import type { OrderedApp } from "@/services/app.service";
+export interface OrderedItem {
+  id: string;
+  display_order: number;
+}
 
 interface Props {
-  current: OrderedApp;
-  prev: OrderedApp | null;
-  next: OrderedApp | null;
+  current: OrderedItem;
+  prev: OrderedItem | null;
+  next: OrderedItem | null;
+  onSwap: (a: OrderedItem, b: OrderedItem) => Promise<void>;
+  errorMessage: string;
 }
 
 export default function OrderControls({
   current,
   prev,
   next,
+  onSwap,
+  errorMessage,
 }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  function handleMove(neighbor: OrderedApp | null) {
+  function handleMove(neighbor: OrderedItem | null) {
     if (!neighbor) return;
 
     startTransition(async () => {
       try {
-        await swapAppOrderAction(current, neighbor);
+        await onSwap(current, neighbor);
         router.refresh();
       } catch {
-        window.alert("Não foi possível reordenar. Tente novamente.");
+        window.alert(errorMessage);
       }
     });
   }
