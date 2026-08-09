@@ -103,9 +103,15 @@ Friday, Banner Destaque, etc.), não um arquivo anexado a um app.
 
 - [ ] CRUD Banners (Marketing)
 
-## Fase 4 — Clientes
+## Fase 4 — Clientes (redefinida em 2026-08-09 — ver ADR-021)
 
-- [ ] CRUD Clientes
+Não haverá CRUD local de clientes neste projeto. Clientes, testes,
+planos e vencimentos são geridos no Rocket Gestor (sistema externo) —
+o Painel não duplica esse cadastro em Supabase. A integração entre o
+app do usuário final (`inovatv_central`) e o Rocket acontece por uma
+API intermediária separada (projeto próprio, ainda não criado), fora
+do escopo deste roadmap. Ver ADR-021 em `ARCHITECTURE_DECISIONS.md`
+para a decisão completa.
 
 ## Fase 5 — FAQ
 

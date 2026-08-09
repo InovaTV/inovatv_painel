@@ -58,7 +58,9 @@ Supabase (Database + Storage). Público: administradores internos da
 InovaTV, autenticados via Supabase Auth.
 
 Módulos previstos: Dashboard, Aplicativos, Banners, Tutoriais, FAQ,
-Clientes, Configurações.
+Configurações. **Não há módulo "Clientes"** — gestão de clientes,
+testes e planos acontece no Rocket Gestor (sistema externo), fora
+deste projeto; ver ADR-021 em `ARCHITECTURE_DECISIONS.md`.
 
 ## 1.1 Ambiente Local
 

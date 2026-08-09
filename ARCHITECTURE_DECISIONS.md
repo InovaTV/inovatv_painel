@@ -703,3 +703,84 @@ preciso consultar depois.
 ADR-017, ADR-018, ADR-019). Depois desta fase, o schema do módulo
 Aplicativos é considerado maduro — próximo passo combinado com o
 usuário é uma fase de UI/UX, não um novo módulo.
+
+---
+
+## ADR-021 — Rocket Gestor como fonte única de clientes/testes; papel do Painel na integração
+
+**Decisão:**
+
+- **Rocket Gestor é a fonte única de verdade** para clientes, testes,
+  planos, vencimentos e acessos da InovaTV. Nenhuma tabela Supabase
+  deste projeto duplica esse cadastro, hoje ou no futuro previsto.
+- **O Painel não terá CRUD de clientes.** A Fase 4 do `ROADMAP.md`
+  ("Clientes"), originalmente pensada como um módulo local nos moldes
+  de Aplicativos/Banners, é redefinida: não existirá esse módulo aqui.
+  Gestão de clientes acontece inteiramente no Rocket Gestor, fora do
+  escopo deste projeto.
+- A integração entre o app do usuário final (`inovatv_central`,
+  projeto irmão em `D:\projetos\inovatv_central`) e o Rocket Gestor
+  passa por um componente novo e **separado — a "API intermediária"**
+  — que ainda não existe como projeto/repositório. Essa API guarda a
+  `X-API-Key` do Rocket exclusivamente no seu próprio servidor; **nem
+  a Central nem o Painel recebem ou expõem essa chave em nenhum
+  momento**. A Central consome só essa API intermediária, nunca fala
+  com o Rocket diretamente.
+- Na Central, a identificação inicial do usuário é feita por
+  **telefone** (o único campo em comum entre os schemas de cliente e
+  teste do Rocket) — mecanismo e fluxo completo são detalhe de
+  implementação da Central, não deste projeto (ver "Como aplicar"
+  abaixo).
+- **Conteúdo administrável genérico continua vindo do Painel/Supabase**
+  exatamente como hoje (Apps, Banners, e os módulos futuros
+  Tutoriais/FAQ/Configurações) — isso não muda. **"Meu Plano" é dado
+  pessoal do cliente, vindo ao vivo do Rocket via API intermediária —
+  não é conteúdo CMS e não será modelado nem servido por este
+  projeto.**
+
+**Motivo:** decisão de negócio do usuário, depois de uma investigação
+extensa e somente-leitura (nenhum código alterado) que confirmou: (a)
+o Rocket Gestor já expõe uma API REST completa para cliente/teste
+(`/cliente/*`, `/clientes/`, `/teste/*`, `/testes/`), autenticada por
+uma única `X-API-Key` por revendedor, sem login de cliente final, com
+rate limit de 60 req/min e sem webhook — ou seja, sem nenhum
+mecanismo de identidade de usuário final pronto, algo que precisa ser
+resolvido fora do Rocket; (b) duplicar esse cadastro no Supabase
+criaria uma segunda fonte de verdade sujeita a divergência — o mesmo
+tipo de risco que a ADR-008 já registrou como motivo para não construir
+pensando em compatibilidade com sistemas que vão ser substituídos, e
+que a ADR-020 mostrou ser caro de desfazer depois (colunas legadas
+removidas); (c) o middleware deste projeto (`src/proxy.ts` +
+`src/lib/supabase/middleware.ts`, ADR-002) protege hoje **todo**
+`/api/*` com sessão de staff — expor aqui uma rota pública de consulta
+de cliente exigiria abrir uma exceção de segurança numa infraestrutura
+já em produção; um projeto novo e isolado resolve o mesmo problema sem
+esse acoplamento nem esse risco. O volume real do negócio (~80 clientes
+ativos, uso baixo/esporádico) não justifica nada mais complexo que uma
+API intermediária simples e isolada.
+
+**Como aplicar:**
+
+- Nenhuma tabela nova relacionada a cliente/teste/plano do Rocket deve
+  ser criada em Supabase por este projeto.
+- Nenhuma rota `/api/*` deste projeto deve expor dado de cliente do
+  Rocket nem a `X-API-Key`.
+- Quando a API intermediária existir como projeto próprio, a
+  arquitetura/implementação dela vive no repositório dela — este ADR
+  só registra o papel do Painel na divisão, não a implementação da API
+  em si.
+- **A arquitetura específica do lado `inovatv_central`** (fluxo de
+  identificação por telefone, consumo da API intermediária, tratamento
+  de teste/cliente, comportamento de "Meu Plano") **é registrada no
+  próprio repositório `inovatv_central`** (`D:\projetos\inovatv_central`),
+  não aqui — para não fragmentar a mesma decisão em dois lugares que
+  podem divergir com o tempo. Este ADR é a referência para quem
+  precisar entender o papel do Painel nessa integração; para o lado
+  Central, consultar a documentação equivalente naquele projeto.
+
+**Status:** decisão de arquitetura aprovada em 2026-08-09, ainda sem
+nenhuma implementação — nem da API intermediária (projeto ainda não
+criado), nem de qualquer código neste projeto. Ver `ROADMAP.md` (Fase
+4 redefinida) para o reflexo no checklist. Próximo passo, quando
+autorizado pelo usuário, é a criação do projeto/repositório da API
+intermediária — fora do escopo deste projeto.
