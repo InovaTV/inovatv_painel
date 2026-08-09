@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { createBannerAction } from "@/app/(dashboard)/banners/novo/actions";
 import { updateBannerAction } from "@/app/(dashboard)/banners/actions";
+import AssetUploadField from "@/components/apps/AssetUploadField";
 
 import {
   BANNER_CATEGORIES,
@@ -32,6 +33,7 @@ import {
 
 import type { Banner, BannerActionState } from "@/services/banner.service";
 import type { App } from "@/services/app.service";
+import type { AssetStat } from "@/lib/storage/types";
 
 const INITIAL_STATE: BannerActionState = {};
 
@@ -59,14 +61,22 @@ function FieldError({ message }: { message?: string }) {
   );
 }
 
+function toCurrentAsset(stat?: AssetStat | null) {
+  return stat ? { size: stat.size, modifiedAt: stat.modifiedAt.toISOString() } : null;
+}
+
 interface Props {
   banner?: Banner;
   apps: App[];
+  imageStat?: AssetStat | null;
+  imageUrl?: string | null;
 }
 
 export default function BannerForm({
   banner,
   apps,
+  imageStat,
+  imageUrl,
 }: Props) {
   const router = useRouter();
 
@@ -265,11 +275,24 @@ export default function BannerForm({
           Imagem
         </h2>
 
-        <Card className="border-dashed" size="sm">
-          <CardContent className="text-sm text-muted-foreground">
-            Salve o banner para habilitar o envio da imagem.
-          </CardContent>
-        </Card>
+        {banner ? (
+          <AssetUploadField
+            uploadUrl={`/api/banners/${banner.id}/upload`}
+            formFieldType="image"
+            label="Imagem"
+            accept="image/*"
+            acceptCaption="PNG, JPG, WEBP"
+            previewAspect="video"
+            current={toCurrentAsset(imageStat)}
+            previewUrl={imageUrl}
+          />
+        ) : (
+          <Card className="border-dashed" size="sm">
+            <CardContent className="text-sm text-muted-foreground">
+              Salve o banner para habilitar o envio da imagem.
+            </CardContent>
+          </Card>
+        )}
       </div>
     </form>
   );

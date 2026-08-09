@@ -4,6 +4,7 @@ import BannerForm from "@/components/banners/BannerForm";
 
 import { getBanner } from "@/services/banner.service";
 import { getAllApps } from "@/services/app.service";
+import { storage } from "@/lib/storage/provider";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -18,7 +19,10 @@ export default async function EditarBannerPage({ params }: Props) {
     notFound();
   }
 
-  const apps = await getAllApps();
+  const [apps, imageStat] = await Promise.all([
+    getAllApps(),
+    banner.image_path ? storage.stat(banner.image_path) : Promise.resolve(null),
+  ]);
 
   return (
     <>
@@ -37,6 +41,8 @@ export default async function EditarBannerPage({ params }: Props) {
       <BannerForm
         banner={banner}
         apps={apps}
+        imageStat={imageStat}
+        imageUrl={banner.image_path ? storage.getPublicUrl(banner.image_path) : null}
       />
 
     </>

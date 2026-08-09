@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { storage } from "@/lib/storage/provider";
 
 import {
   BANNER_CATEGORIES,
@@ -86,6 +87,44 @@ export interface Banner extends BannerData {
   /** Legado, propósito ainda não decidido (ver diagnóstico da Fase 3) — não
    * escrito por esta camada, só lido/preservado. */
   app_slug: string | null;
+}
+
+// Mesmo limite hoje usado pro "Upload Banner" de Apps (banner promocional
+// do app) — decisão do usuário, por analogia (STORAGE.md).
+const IMAGE_MAX_BYTES = 10 * 1024 * 1024;
+
+// Nome fixo, mesma convenção de app.service.ts (ASSET_CONFIG) — sem
+// conversão real pra WebP, só o nome do arquivo (mesmo comportamento já
+// existente pro banner de Apps).
+export async function uploadBannerAsset(
+  banner: Banner,
+  file: File,
+  onProgress?: (sentBytes: number) => void
+): Promise<string> {
+  if (file.size > IMAGE_MAX_BYTES) {
+    throw new Error(
+      `Arquivo muito grande: ${(file.size / 1024 / 1024).toFixed(1)}MB (máximo ${IMAGE_MAX_BYTES / 1024 / 1024}MB).`
+    );
+  }
+
+  const path = `assets/banners/${banner.id}/image.webp`;
+  const data = Buffer.from(await file.arrayBuffer());
+
+  await storage.replace({ path, data, onProgress });
+
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("banners")
+    .update({ image_path: path })
+    .eq("id", banner.id);
+
+  if (error) {
+    console.error(error);
+    throw error;
+  }
+
+  return path;
 }
 
 export const BANNERS_PAGE_SIZE = 10;

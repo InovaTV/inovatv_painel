@@ -9,7 +9,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn, formatBytes, formatDate } from "@/lib/utils";
 
-type AssetType = "apk" | "icon" | "banner";
 type UploadState = "idle" | "uploading" | "done" | "error";
 
 interface CurrentAsset {
@@ -18,19 +17,27 @@ interface CurrentAsset {
 }
 
 interface Props {
-  appId: string;
-  type: AssetType;
+  /** Endpoint completo da rota de upload (ex.: `/api/apps/{id}/upload`) — cada chamador monta o próprio. */
+  uploadUrl: string;
+  /** Valor enviado no campo "type" do FormData — a rota de destino decide o que aceita. */
+  formFieldType: string;
   label: string;
   accept: string;
+  /** Legenda curta do tipo aceito, mostrada na dropzone (ex.: ".apk", "PNG, JPG"). */
+  acceptCaption: string;
+  /** Proporção do preview quando há imagem — "video" (16:9, object-cover) para banners/composições horizontais, "square" (object-contain) para ícones/logos. */
+  previewAspect: "square" | "video";
   current?: CurrentAsset | null;
   previewUrl?: string | null;
 }
 
 export default function AssetUploadField({
-  appId,
-  type,
+  uploadUrl,
+  formFieldType,
   label,
   accept,
+  acceptCaption,
+  previewAspect,
   current,
   previewUrl,
 }: Props) {
@@ -88,7 +95,7 @@ export default function AssetUploadField({
     setStage("Enviando arquivo...");
 
     const formData = new FormData();
-    formData.append("type", type);
+    formData.append("type", formFieldType);
     formData.append("file", file);
 
     const xhr = new XMLHttpRequest();
@@ -193,7 +200,7 @@ export default function AssetUploadField({
       setError("Erro de conexão durante o upload.");
     });
 
-    xhr.open("POST", `/api/apps/${appId}/upload`);
+    xhr.open("POST", uploadUrl);
     xhr.send(formData);
 
     if (inputRef.current) {
@@ -218,7 +225,7 @@ export default function AssetUploadField({
                 src={`${previewUrl}?v=${encodeURIComponent(current.modifiedAt)}`}
                 alt={`Preview de ${label}`}
                 className={
-                  type === "banner"
+                  previewAspect === "video"
                     ? "aspect-video w-full object-cover"
                     : "aspect-square w-full bg-muted object-contain p-6"
                 }
@@ -278,7 +285,7 @@ export default function AssetUploadField({
           </p>
 
           <p className="text-xs text-muted-foreground/70">
-            {type === "apk" ? ".apk" : "PNG, JPG"}
+            {acceptCaption}
           </p>
         </div>
 

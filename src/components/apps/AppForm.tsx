@@ -311,27 +311,33 @@ export default function AppForm({
         {app ? (
           <>
             <AssetUploadField
-              appId={app.id}
-              type="apk"
+              uploadUrl={`/api/apps/${app.id}/upload`}
+              formFieldType="apk"
               label="APK"
               accept=".apk,application/vnd.android.package-archive"
+              acceptCaption=".apk"
+              previewAspect="square"
               current={toCurrentAsset(apkStat)}
             />
 
             <AssetUploadField
-              appId={app.id}
-              type="icon"
+              uploadUrl={`/api/apps/${app.id}/upload`}
+              formFieldType="icon"
               label="Ícone"
               accept="image/*"
+              acceptCaption="PNG, JPG"
+              previewAspect="square"
               current={toCurrentAsset(iconStat)}
               previewUrl={iconUrl}
             />
 
             <AssetUploadField
-              appId={app.id}
-              type="banner"
+              uploadUrl={`/api/apps/${app.id}/upload`}
+              formFieldType="banner"
               label="Banner"
               accept="image/*"
+              acceptCaption="PNG, JPG"
+              previewAspect="video"
               current={toCurrentAsset(bannerStat)}
               previewUrl={bannerUrl}
             />
