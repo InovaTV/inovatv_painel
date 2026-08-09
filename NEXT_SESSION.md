@@ -5,22 +5,22 @@
 > `DEFINITION_OF_DONE.md`, `STORAGE.md`, `DESIGN_SYSTEM.md`,
 > ADR-013 a ADR-020.
 
-## ✅ Sincronizado com origin/main
+## ⚠️ Commits locais não pushados
 
-`main` e `origin/main` no mesmo commit — `git push origin main`
-concluído sem erros. Fase 1 (Sprints 1-5, incluindo as 3 fases do
-Sprint 5) está integralmente publicada em `origin/main`.
+Os 2 commits abaixo (Fase 3, Sprints 1-2) estão só localmente —
+confirmar com o usuário antes de dar push. A Fase 1 completa
+(até `fdcebcf`) já está publicada em `origin/main`.
 
-## Último commit (pushado)
+## Último commit (local, não pushado)
 
-`fdcebcf` — `docs: NEXT_SESSION.md - Sprint 5 Fase C concluida, Fase 1
-(Design System) concluida`. `git status`: working tree limpo.
+`94427c0` — `feat(banners): Fase 3 Sprint 2 - CRUD basico de Banners`.
+`git status`: working tree limpo.
 
-Commits publicados nesta sincronização:
-- `2c12116` Sprint 5 Fase B — Dashboard (ícones nos StatCard)
-- `6227451` docs — Fase B concluída, próximo passo Fase C
-- `0e7fae8` Sprint 5 Fase C — Aplicativos (empty state, Card, upload)
-- `fdcebcf` docs — Fase C concluída, Fase 1 concluída
+Commits desta sessão, à frente de `origin/main` (2 commits):
+- `1a43d17` Fase 3 Sprint 1 — fundação de banco (banners): RLS,
+  `updated_at`+trigger, coluna `category`, `action_type` controlado.
+- `94427c0` Fase 3 Sprint 2 — CRUD básico de Banners (listar, buscar,
+  paginar, criar, editar, excluir, ativar/desativar, reordenar).
 
 ## Checkpoint do projeto
 
@@ -43,8 +43,16 @@ Commits publicados nesta sincronização:
     - ✅ Fase B (Dashboard) — `2c12116`.
     - ✅ Fase C (Aplicativos/CRUD) — `0e7fae8`.
   - **Auditoria final (somente leitura) feita e aprovada — sem
-    pendências importantes.** Publicada em `origin/main`. Próximo
-    módulo a decidir com o usuário (ver "Primeiro passo").
+    pendências importantes.** Publicada em `origin/main`.
+- 🔄 **Fase 3 — Banners (Marketing)** — em andamento, plano completo
+  aprovado (levantamento → aprovação → implementação → testes →
+  revisão → commit → push, por sprint):
+  - ✅ Sprint 1 (Fundação de banco) — commitado (`1a43d17`), aplicado
+    e validado contra o banco real.
+  - ✅ Sprint 2 (CRUD básico) — commitado (`94427c0`), validado no
+    navegador.
+  - ⬜ **Sprint 3 (Upload/Storage de imagens) — próximo passo, ainda
+    não iniciado.**
 - **Módulo Aplicativos: funcionalmente concluído** (`DEFINITION_OF_DONE.md`).
 
 ## Fase A concluída — Sprint 5, Sidebar/Header (commit `93d1fb2`)
@@ -160,6 +168,69 @@ trouxe o novo asset). Nenhum app real (`UniTV Mobile`/`UniTV TV Box`)
 foi modificado — só visualizado, para conferir o preview de ícone/
 banner reais. Aprovado pelo usuário antes do commit.
 
+## Fase 3, Sprint 1 concluído — fundação de banco (commit `1a43d17`)
+
+Diagnóstico completo apresentado primeiro (código/banco real via
+Management API/storage/Design System/documentação) — 7 decisões
+levantadas e aprovadas pelo usuário antes de qualquer SQL:
+
+1. RLS: `SELECT` público mantido, `INSERT`/`UPDATE`/`DELETE`
+   exclusivos para `authenticated` (mesmo padrão do ADR-017/`apps`).
+2. `AssetUploadField` será generalizado no Sprint 3 (não duplicado).
+3. `action_type` com vocabulário controlado: `none`/`app`/`url`.
+4. `app_slug` **não removido** — análise de uso (zero referências no
+   código, redundante com `action_target` no único registro) não
+   achou motivo técnico pra remover; função no Portal Público ainda
+   indefinida, decisão de manter por ora.
+5. Nova coluna `category` **obrigatória** (`NOT NULL`), vocabulário
+   controlado: `home`/`promocao`/`novidade`/`black_friday`/`destaque`.
+   Registro existente classificado como `novidade` (conteúdo "Nova
+   versão disponível").
+6. Storage de banners: `assets/banners/{id}/image.webp` — **área
+   própria, não reaproveita `apps/{asset_folder}/{platform}/...`**
+   (confirmado explicitamente pelo usuário). Ainda não implementado
+   (Sprint 3).
+7. `updated_at` + trigger reaproveitando `public.set_updated_at()`
+   (mesma função da migração de `apps`).
+
+Aplicado e validado ao vivo contra o banco real (schema, constraints,
+trigger, policies, grants e o registro reconferidos após a migração).
+Achado documentado na validação: `updated_at` ficou com o timestamp da
+migração (não igual a `created_at`) porque o backfill de `category`
+disparou o trigger recém-criado — decisão do usuário: **está correto
+assim**, a linha foi genuinamente alterada por esta migração.
+
+## Fase 3, Sprint 2 concluído — CRUD básico (commit `94427c0`)
+
+Escopo: listar, buscar, paginar, criar, editar, excluir, ativar/
+desativar, reordenar por setas — sem upload, sem drag-and-drop.
+
+- `banner.service.ts` espelha `app.service.ts` (mesmo padrão de
+  paginação/busca/validação/`display_order`).
+- `BannerForm.tsx`: `category` via `Select` obrigatório; `action_type`
+  condicional — `none` esconde e limpa `action_target`, `app` mostra
+  `Select` de aplicativos (valor = `apps.slug`, via `getAllApps()`
+  novo em `app.service.ts` — `getApps()` é paginada, não serve pra
+  popular dropdown), `url` mostra `Input type="url"` com validação
+  nativa + validação de servidor.
+- Seção "Imagem" visível com placeholder ("Salve o banner para
+  habilitar o envio da imagem") — upload real fica pro Sprint 3.
+- `ActionsMenu.tsx`, `OrderControls.tsx` e `StatusToggle.tsx`
+  generalizados (props em vez de Server Action hardcoded) para
+  Apps e Banners reusarem sem duplicar — visual/comportamento de Apps
+  preservado, `AppsTableRow.tsx` atualizado.
+- **Bug real encontrado e corrigido na validação:** Server Components
+  não podem passar closures inline como prop pra Client Components —
+  só a referência direta da Server Action ou `.bind()`. Afetava Apps
+  e Banners igualmente; corrigido com `.bind(null, id)` nos dois.
+
+Validado no navegador (criar/editar/excluir/buscar/paginar/reordenar/
+toggle, nos dois caminhos de `action_type`) e regressão em Apps
+conferida (toggle testado e revertido). Exclusão de banner não pôde
+ser clicada via automação (`window.confirm()` nativo trava a aba —
+limitação conhecida da ferramenta, não falha da aplicação); mesmo
+código já comprovado em `deleteAppAction`.
+
 ## Pendências fora de escopo (não iniciar sem pedido explícito)
 
 - Arquivo `MAwv\357\200\252` (raiz do repo, 0 bytes, não versionado):
@@ -172,11 +243,19 @@ banner reais. Aprovado pelo usuário antes do commit.
 
 ## Primeiro passo
 
-**Fase 1 — Implementação do Design System está concluída, revisada por
-auditoria final (somente leitura, sem pendências importantes) e
-publicada em `origin/main`** (Sprints 1-5, incluindo as 3 fases do
-Sprint 5; push concluído, `main`/`origin/main` sincronizados). O
-usuário decide a próxima etapa numa conversa futura — não presumir
-qual é o próximo módulo (ROADMAP.md aponta Fase 3 — Banners, mas isso
-não foi confirmado pelo usuário) nem iniciar nada sem instrução
-explícita.
+**Fase 3 (Banners), Sprint 3 — Upload/Storage de imagens é o próximo
+passo — ainda não iniciado, não implementar sem passar por
+levantamento/aprovação primeiro** (mesmo procedimento de sempre).
+Escopo já sinalizado no diagnóstico original e nas decisões do
+Sprint 1:
+- Generalizar `AssetUploadField.tsx` (endpoint/configuração via
+  props) em vez de duplicar componente — decisão 2 do Sprint 1.
+- Path de storage: `assets/banners/{id}/image.webp`, área própria,
+  **não reaproveitar `apps/{asset_folder}/{platform}/...`** — decisão
+  6 do Sprint 1, confirmada explicitamente pelo usuário.
+- `image_path` já existe na tabela `banners`, só falta o fluxo de
+  upload (rota `/api/banners/[id]/upload`, Server Action, preview).
+
+Commits `1a43d17`/`94427c0` (Fase 3, Sprints 1-2) ainda não foram
+pushados — confirmar com o usuário antes de dar push. Fase 1 completa
+já está publicada em `origin/main` (até `fdcebcf`).
