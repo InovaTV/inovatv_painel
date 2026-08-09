@@ -7,20 +7,23 @@
 
 ## ⚠️ Commits locais não pushados
 
-Os 2 commits abaixo (Fase 3, Sprints 1-2) estão só localmente —
+Os 3 commits abaixo (Fase 3, Sprints 1-3) estão só localmente —
 confirmar com o usuário antes de dar push. A Fase 1 completa
 (até `fdcebcf`) já está publicada em `origin/main`.
 
 ## Último commit (local, não pushado)
 
-`94427c0` — `feat(banners): Fase 3 Sprint 2 - CRUD basico de Banners`.
-`git status`: working tree limpo.
+`3e3ce31` — `feat(banners): Fase 3 Sprint 3 - upload/storage de
+imagens`. `git status`: working tree limpo.
 
-Commits desta sessão, à frente de `origin/main` (2 commits):
+Commits desta sessão, à frente de `origin/main` (3 commits):
 - `1a43d17` Fase 3 Sprint 1 — fundação de banco (banners): RLS,
   `updated_at`+trigger, coluna `category`, `action_type` controlado.
 - `94427c0` Fase 3 Sprint 2 — CRUD básico de Banners (listar, buscar,
   paginar, criar, editar, excluir, ativar/desativar, reordenar).
+- `3e3ce31` Fase 3 Sprint 3 — Upload/Storage de imagens: generaliza
+  `AssetUploadField`, `uploadBannerAsset()`, rota
+  `/api/banners/[id]/upload`.
 
 ## Checkpoint do projeto
 
@@ -51,8 +54,9 @@ Commits desta sessão, à frente de `origin/main` (2 commits):
     e validado contra o banco real.
   - ✅ Sprint 2 (CRUD básico) — commitado (`94427c0`), validado no
     navegador.
-  - ⬜ **Sprint 3 (Upload/Storage de imagens) — próximo passo, ainda
-    não iniciado.**
+  - ✅ Sprint 3 (Upload/Storage de imagens) — commitado (`3e3ce31`),
+    validado no navegador. Próximo passo do módulo Banners ainda não
+    definido — aguardar instrução do usuário.
 - **Módulo Aplicativos: funcionalmente concluído** (`DEFINITION_OF_DONE.md`).
 
 ## Fase A concluída — Sprint 5, Sidebar/Header (commit `93d1fb2`)
@@ -231,6 +235,47 @@ ser clicada via automação (`window.confirm()` nativo trava a aba —
 limitação conhecida da ferramenta, não falha da aplicação); mesmo
 código já comprovado em `deleteAppAction`.
 
+## Fase 3, Sprint 3 concluído — upload/storage de imagens (commit `3e3ce31`)
+
+Levantamento completo apresentado primeiro (arquitetura de upload de
+Apps, o que Banners já tinha, storage, reaproveitamento, regras,
+preview, segurança) — decisões fechadas pelo usuário antes de
+codificar:
+
+- Limite 10MB (mesmo de "Upload Banner" de Apps, por analogia).
+- Sem validação de dimensões/proporção neste sprint.
+- Sem exclusão do arquivo na Hostinger ao excluir o banner — mesmo
+  comportamento (lacuna) já existente em `deleteApp`; limpeza de
+  assets órfãos fica para tarefa futura específica e abrangente.
+- Sem conversão real pra WebP, sem instalar `sharp`/lib de imagem —
+  nome fixo `.webp` é só convenção de path, mesmo comportamento já
+  existente no "Upload Banner" de Apps.
+- `formFieldType="image"`, path `assets/banners/{id}/image.webp`.
+
+Implementado em duas etapas, com aprovação entre elas:
+1. **`AssetUploadField.tsx` generalizado** — trocou `appId`/`type`
+   fixos por `uploadUrl`/`formFieldType`/`acceptCaption`/
+   `previewAspect` (props explícitas). `AppForm.tsx` atualizado nos 3
+   call sites (apk/ícone/banner) com os mesmos valores de antes, agora
+   explícitos. Testado no app de teste `sei lá`: os 3 uploads (inclusive
+   substituição de APK) funcionando exatamente como antes.
+2. **Upload de Banners** — `uploadBannerAsset()` em `banner.service.ts`
+   (espelha `uploadAppAsset`), rota `/api/banners/[id]/upload`
+   (espelha `/api/apps/[id]/upload`, mesmo streaming ndjson),
+   `BannerForm.tsx` troca o placeholder estático pelo
+   `AssetUploadField` real quando o banner já existe,
+   `banners/[id]/editar/page.tsx` carrega `storage.stat`/
+   `getPublicUrl` para preview persistente.
+
+Validado com banner de teste "Teste Sprint 3 Upload" (nunca o real):
+upload, progresso (ndjson capturado em andamento), preview
+`aspect-video`/`object-cover`, persistência após reabrir a página, e
+substituição (novo upload sobrescreveu o mesmo path via
+`storage.replace()`). Banner de teste removido do banco via SQL após
+validação (evitando o `window.confirm()` que trava a aba automatizada
+— mesma limitação já registrada no Sprint 2); o arquivo de teste
+ficou órfão na Hostinger, comportamento aceito para este sprint.
+
 ## Pendências fora de escopo (não iniciar sem pedido explícito)
 
 - Arquivo `MAwv\357\200\252` (raiz do repo, 0 bytes, não versionado):
@@ -243,19 +288,16 @@ código já comprovado em `deleteAppAction`.
 
 ## Primeiro passo
 
-**Fase 3 (Banners), Sprint 3 — Upload/Storage de imagens é o próximo
-passo — ainda não iniciado, não implementar sem passar por
-levantamento/aprovação primeiro** (mesmo procedimento de sempre).
-Escopo já sinalizado no diagnóstico original e nas decisões do
-Sprint 1:
-- Generalizar `AssetUploadField.tsx` (endpoint/configuração via
-  props) em vez de duplicar componente — decisão 2 do Sprint 1.
-- Path de storage: `assets/banners/{id}/image.webp`, área própria,
-  **não reaproveitar `apps/{asset_folder}/{platform}/...`** — decisão
-  6 do Sprint 1, confirmada explicitamente pelo usuário.
-- `image_path` já existe na tabela `banners`, só falta o fluxo de
-  upload (rota `/api/banners/[id]/upload`, Server Action, preview).
+**Fase 3 (Banners), Sprints 1-3 concluídos e commitados** (fundação de
+banco, CRUD básico, upload/storage de imagens). **Nenhum Sprint 4 ou
+módulo novo foi iniciado nem definido** — o usuário pediu
+explicitamente para não presumir o próximo passo do módulo Banners
+(possíveis pendências conhecidas, não confirmadas como próximo passo:
+exclusão de arquivo órfão ao excluir banner, listada como "tarefa
+futura específica e abrangente"; validação de dimensão/proporção;
+Portal Público consumindo `app_slug`). Esperar instrução explícita do
+usuário antes de propor qualquer coisa.
 
-Commits `1a43d17`/`94427c0` (Fase 3, Sprints 1-2) ainda não foram
-pushados — confirmar com o usuário antes de dar push. Fase 1 completa
-já está publicada em `origin/main` (até `fdcebcf`).
+Commits `1a43d17`/`94427c0`/`3e3ce31` (Fase 3, Sprints 1-3) ainda não
+foram pushados — confirmar com o usuário antes de dar push. Fase 1
+completa já está publicada em `origin/main` (até `fdcebcf`).
