@@ -5,22 +5,23 @@
 > `DEFINITION_OF_DONE.md`, `STORAGE.md`, `DESIGN_SYSTEM.md`,
 > ADR-013 a ADR-020.
 
-## ⚠️ Commit local não pushado
+## ⚠️ Commits locais não pushados
 
-O commit abaixo está só localmente (usuário pediu explicitamente para
-não dar push ainda). Se outra máquina for sincronizar via
-clone/pull do `origin/main`, **este commit não vai estar lá** até
-alguém rodar `git push` desta máquina — a sincronização anterior
-(Sprint 4/Fase A) já foi concluída e está em `origin/main` via
-`d2cf1f5`.
+Os 3 commits abaixo estão só localmente (usuário pediu explicitamente
+para não dar push ainda). Se outra máquina for sincronizar via
+clone/pull do `origin/main`, **eles não vão estar lá** até alguém
+rodar `git push` desta máquina — a sincronização anterior (Sprint
+4/Fase A) já foi concluída e está em `origin/main` via `d2cf1f5`.
 
 ## Último commit (local, não pushado)
 
-`2c12116` — `feat(design-system): Fase 1 Sprint 5 Fase B - Dashboard
-(icones nos StatCard)`. `git status`: working tree limpo.
+`0e7fae8` — `feat(design-system): Fase 1 Sprint 5 Fase C - Aplicativos
+(empty state, Card, upload)`. `git status`: working tree limpo.
 
-Histórico local à frente de `origin/main` (1 commit):
+Histórico local à frente de `origin/main` (3 commits):
 - `2c12116` Sprint 5 Fase B — Dashboard (ícones nos StatCard)
+- `6227451` docs — Fase B concluída, próximo passo Fase C
+- `0e7fae8` Sprint 5 Fase C — Aplicativos (empty state, Card, upload)
 
 ## Checkpoint do projeto
 
@@ -31,28 +32,23 @@ Histórico local à frente de `origin/main` (1 commit):
   produção (ADR-017 a ADR-020, `CHANGELOG_AI.md` entradas 27-30).
 - ✅ **Design System** — `DESIGN_SYSTEM.md` finalizado + §5.3 (Sidebar)
   e §5.4 (Canvas) adicionados durante a implementação.
-- 🔄 **Fase 1 — Implementação do Design System**:
-  - ✅ Sprint 1 (Tokens) — commitado.
-  - ✅ Sprint 2 (Remover hardcodes) — commitado, incluindo o token
-    `--canvas`.
-  - ✅ Sprint 3 (Tipografia/Espaçamento/Sombra/Radius) — commitado.
-  - ✅ Sprint 4 (Componentes) — commitado. `Select`/`Textarea`/
-    `Label`/`Progress` instalados e aplicados. `Skeleton` **não**
-    instalado (sem uso ainda).
-  - 🔄 **Sprint 5 — Páginas**, dividido em 3 fases (plano completo
-    aprovado, ver seção abaixo):
-    - ✅ **Fase A (Sidebar + Header)** — commitada (`93d1fb2`) e
-      **aprovada pelo usuário**, com a ressalva de validação visual
-      registrada abaixo (não bloqueia o Sprint).
-    - ✅ **Fase B (Dashboard)** — commitada (`2c12116`), aguardando
-      push. Ícones nos `StatCard` via `CardAction`. `tsc`/lint/build
-      limpos, validado no navegador (dashboard com sessão autenticada,
-      5 StatCards conferidos, layout/espaçamento/valores inalterados).
-    - ⬜ **Fase C (Aplicativos/CRUD)** — **próximo passo**, plano já
-      aprovado (ver seção abaixo).
+- ✅ **Fase 1 — Implementação do Design System — CONCLUÍDA
+  (2026-08-08)**. Todos os 5 sprints commitados:
+  - ✅ Sprint 1 (Tokens de cor).
+  - ✅ Sprint 2 (Remover hardcodes), incluindo o token `--canvas`.
+  - ✅ Sprint 3 (Tipografia/Espaçamento/Sombra/Radius).
+  - ✅ Sprint 4 (Componentes) — `Select`/`Textarea`/`Label`/`Progress`
+    instalados e aplicados. `Skeleton` **não** instalado (sem uso).
+  - ✅ Sprint 5 — Páginas, em 3 fases, todas commitadas e aprovadas:
+    - ✅ Fase A (Sidebar + Header) — `93d1fb2`.
+    - ✅ Fase B (Dashboard) — `2c12116`.
+    - ✅ Fase C (Aplicativos/CRUD) — `0e7fae8`.
+  - **Aguardando revisão final do usuário sobre o estado consolidado
+    da Fase 1 antes de qualquer módulo novo ser aberto** (ver
+    "Primeiro passo" no fim deste documento).
 - **Módulo Aplicativos: funcionalmente concluído** (`DEFINITION_OF_DONE.md`).
 
-## O que aconteceu nesta sessão (2026-08-08)
+## Fase A concluída — Sprint 5, Sidebar/Header (commit `93d1fb2`)
 
 Sprint 5 planejado e Fase A implementada e commitada:
 
@@ -131,25 +127,39 @@ menu da Sidebar). `Skeleton` não entrou (decisão já fechada). `tsc`/
 lint/build limpos, validado visualmente no navegador. Aprovado pelo
 usuário antes do commit.
 
-## Próxima etapa — Sprint 5, Fase C: Aplicativos (plano já aprovado)
+## Fase C concluída — Sprint 5, Aplicativos (commit `0e7fae8`)
 
-Ordem já fechada com o usuário:
-1. Empty state da tabela — diferenciar tabela vazia (ícone + "Nenhum
-   aplicativo ainda" + apoio + botão "Novo Aplicativo") de busca sem
-   resultado (mensagem de "nenhum resultado para a busca", sem botão
-   de ação principal).
-2. `AppForm.tsx` — bloco de dados vira `Card` oficial.
-3. `AssetUploadField.tsx` — reconstrução completa numa passada só:
-   wrapper vira `Card`; preview de ícone/banner vira `Card
-   overflow-hidden` com imagem no topo (§17); estado idle vira
-   dropzone com drag-and-drop real (§16, decisão acima); estado com
-   arquivo atual vira "card de arquivo" com thumbnail à esquerda;
-   estado done ganha ícone `CheckCircle2`; estado error ganha ícone
-   `AlertCircle` (cores já estão certas nos dois, só falta o ícone).
-   **Lição já registrada:** testar upload usando um app de teste da
-   lista (`teste100`/`sei lá`), nunca um app real — sessão anterior
-   sobrescreveu por engano o ícone do UniTV Mobile e precisou de
-   limpeza manual no Hostinger.
+Executada em 4 etapas (visual → comportamento novo, nessa ordem),
+cada uma validada com `tsc`/lint/build antes de seguir:
+
+1. **Empty state** (`AppsTable.tsx` + `page.tsx`) — `q` passado como
+   prop; tabela distingue busca sem resultado (`SearchX`, "Nenhum
+   resultado para a busca", sem botão) de tabela genuinamente vazia
+   (`Smartphone`, "Nenhum aplicativo ainda", botão "Novo Aplicativo").
+2. **`AppForm.tsx`** — os dois blocos manuais (`rounded-xl border...`)
+   viraram `Card`/`CardContent` oficiais. Nenhum campo/lógica mudou.
+3. **`AssetUploadField.tsx`, visual** — wrapper vira `Card`; preview
+   de ícone/banner vira `Card overflow-hidden` com imagem no topo
+   (§17) — **ajuste feito na validação**: `aspect-square
+   object-contain bg-muted` para ícone (evita cortar a logo),
+   `aspect-video object-cover` para banner (preserva a composição
+   horizontal); estado com arquivo atual (sem preview de imagem, ex.
+   APK) vira "card de arquivo" com thumbnail (`FileArchive`) à
+   esquerda (§16); estados `done`/`error` ganham ícones `CheckCircle2`/
+   `AlertCircle`.
+4. **`AssetUploadField.tsx`, drag-and-drop real** — dropzone visual
+   (ícone `Upload`, "Clique ou arraste o arquivo aqui", legenda do
+   tipo aceito); `onDragOver`/`onDragLeave`/`onDrop` conectados à
+   mesma função `upload(file)` já existente — mecanismo XHR/streaming
+   ndjson **inalterado**.
+
+Validado no navegador com o app de teste `sei lá` (upload real por
+clique **e** por um evento de `drop` nativo simulado via JavaScript —
+o arquivo veio do `dataTransfer`, passou pela mesma `upload()`, subiu
+ao servidor via streaming, `Progress` funcionou, `router.refresh()`
+trouxe o novo asset). Nenhum app real (`UniTV Mobile`/`UniTV TV Box`)
+foi modificado — só visualizado, para conferir o preview de ícone/
+banner reais. Aprovado pelo usuário antes do commit.
 
 ## Pendências fora de escopo (não iniciar sem pedido explícito)
 
@@ -163,6 +173,13 @@ Ordem já fechada com o usuário:
 
 ## Primeiro passo
 
-Abrir a Fase C (Aplicativos) direto — não há pendência bloqueando,
-plano já aprovado (ver seção acima). Commit `2c12116` (Fase B) ainda
-não foi pushado — confirmar com o usuário antes de dar push.
+**Fase 1 — Implementação do Design System está concluída** (Sprints
+1-5, incluindo as 3 fases do Sprint 5). O usuário pediu explicitamente
+para **não iniciar nenhum módulo novo nem fazer alterações adicionais
+até a revisão final dele sobre o estado consolidado da Fase 1**. Não
+presumir qual é o próximo módulo (ROADMAP.md aponta Fase 3 — Banners,
+mas isso não foi confirmado pelo usuário para este momento) — esperar
+instrução explícita.
+
+Commits `2c12116`/`6227451`/`0e7fae8` ainda não foram pushados —
+confirmar com o usuário antes de dar push.
