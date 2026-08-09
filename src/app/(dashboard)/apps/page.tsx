@@ -57,7 +57,7 @@ export default async function AppsPage({ searchParams }: Props) {
         </CardHeader>
 
         <CardContent>
-          <AppsTable apps={apps} />
+          <AppsTable apps={apps} q={q} />
 
           <AppsPagination
             page={currentPage}

@@ -7,6 +7,7 @@ import { useFormStatus } from "react-dom";
 import { CheckCircle2, MonitorSmartphone, Tv, XCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -111,194 +112,196 @@ export default function AppForm({
       action={formAction}
       className="grid grid-cols-1 gap-8 lg:grid-cols-2"
     >
-      <div className="rounded-xl border border-border/60 bg-card p-6 shadow-xs">
-        {state.error && (
-          <p className="mb-6 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            {state.error}
-          </p>
-        )}
+      <Card>
+        <CardContent>
+          {state.error && (
+            <p className="mb-6 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {state.error}
+            </p>
+          )}
 
-        <div className="grid grid-cols-2 gap-6">
-          <div>
-            <Label className="mb-2">
-              Nome
-            </Label>
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <Label className="mb-2">
+                Nome
+              </Label>
 
-            <Input
-              name="name"
-              required
-              value={name}
-              onChange={(e) => handleNameChange(e.target.value)}
-              placeholder="UniTV Mobile"
-              className={fieldErrors.name ? "border-destructive" : undefined}
-            />
+              <Input
+                name="name"
+                required
+                value={name}
+                onChange={(e) => handleNameChange(e.target.value)}
+                placeholder="UniTV Mobile"
+                className={fieldErrors.name ? "border-destructive" : undefined}
+              />
 
-            <FieldError message={fieldErrors.name} />
-          </div>
+              <FieldError message={fieldErrors.name} />
+            </div>
 
-          <div>
-            <Label className="mb-2">
-              Slug
-            </Label>
+            <div>
+              <Label className="mb-2">
+                Slug
+              </Label>
 
-            <Input
-              name="slug"
-              required
-              value={slug}
-              onChange={(e) => {
-                setSlug(e.target.value);
-                setSlugTouched(true);
-              }}
-              placeholder="unitv-mobile"
-              className={fieldErrors.slug ? "border-destructive" : undefined}
-            />
+              <Input
+                name="slug"
+                required
+                value={slug}
+                onChange={(e) => {
+                  setSlug(e.target.value);
+                  setSlugTouched(true);
+                }}
+                placeholder="unitv-mobile"
+                className={fieldErrors.slug ? "border-destructive" : undefined}
+              />
 
-            <FieldError message={fieldErrors.slug} />
-          </div>
+              <FieldError message={fieldErrors.slug} />
+            </div>
 
-          <div>
-            <Label className="mb-2">
-              Produto
-            </Label>
+            <div>
+              <Label className="mb-2">
+                Produto
+              </Label>
 
-            <Select
-              name="product_id"
-              value={productId}
-              onValueChange={setProductId}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
+              <Select
+                name="product_id"
+                value={productId}
+                onValueChange={setProductId}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
 
-              <SelectContent>
-                {products.map((product) => (
-                  <SelectItem key={product.id} value={product.id}>
-                    {product.name}
+                <SelectContent>
+                  {products.map((product) => (
+                    <SelectItem key={product.id} value={product.id}>
+                      {product.name}
+                    </SelectItem>
+                  ))}
+
+                  <SelectItem value={NEW_PRODUCT_VALUE}>
+                    + Novo Produto
                   </SelectItem>
-                ))}
+                </SelectContent>
+              </Select>
 
-                <SelectItem value={NEW_PRODUCT_VALUE}>
-                  + Novo Produto
-                </SelectItem>
-              </SelectContent>
-            </Select>
+              {productId === NEW_PRODUCT_VALUE && (
+                <>
+                  <Input
+                    name="new_product_name"
+                    required
+                    value={newProductName}
+                    onChange={(e) => setNewProductName(e.target.value)}
+                    placeholder="Nome do novo produto"
+                    className={`mt-2 ${fieldErrors.new_product_name ? "border-destructive" : ""}`}
+                  />
 
-            {productId === NEW_PRODUCT_VALUE && (
-              <>
-                <Input
-                  name="new_product_name"
-                  required
-                  value={newProductName}
-                  onChange={(e) => setNewProductName(e.target.value)}
-                  placeholder="Nome do novo produto"
-                  className={`mt-2 ${fieldErrors.new_product_name ? "border-destructive" : ""}`}
-                />
+                  <FieldError message={fieldErrors.new_product_name} />
+                </>
+              )}
+            </div>
 
-                <FieldError message={fieldErrors.new_product_name} />
-              </>
-            )}
+            <div>
+              <Label className="mb-2">
+                Versão
+              </Label>
+
+              <Input
+                name="version"
+                required
+                defaultValue={app?.version}
+                placeholder="3.24.2"
+                className={fieldErrors.version ? "border-destructive" : undefined}
+              />
+
+              <FieldError message={fieldErrors.version} />
+            </div>
           </div>
 
-          <div>
+          <div className="grid grid-cols-2 gap-6 mt-8">
+            <div>
+              <Label className="mb-2">
+                Plataforma
+              </Label>
+
+              <Select
+                name="platform"
+                defaultValue={app?.platform ?? "mobile"}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value="mobile">
+                    <MonitorSmartphone className="size-4" />
+                    Mobile
+                  </SelectItem>
+
+                  <SelectItem value="tv">
+                    <Tv className="size-4" />
+                    TV Box
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+
+              <FieldError message={fieldErrors.platform} />
+            </div>
+
+            <div>
+              <Label className="mb-2">
+                Status
+              </Label>
+
+              <Select
+                name="is_active"
+                defaultValue={app ? String(app.is_active) : "true"}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value="true">
+                    <CheckCircle2 className="size-4" />
+                    Ativo
+                  </SelectItem>
+
+                  <SelectItem value="false">
+                    <XCircle className="size-4" />
+                    Inativo
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="mt-8">
             <Label className="mb-2">
-              Versão
+              Descrição
             </Label>
 
-            <Input
-              name="version"
-              required
-              defaultValue={app?.version}
-              placeholder="3.24.2"
-              className={fieldErrors.version ? "border-destructive" : undefined}
+            <Textarea
+              name="description"
+              rows={5}
+              defaultValue={app?.description}
+              placeholder="Descrição..."
             />
-
-            <FieldError message={fieldErrors.version} />
           </div>
-        </div>
 
-        <div className="grid grid-cols-2 gap-6 mt-8">
-          <div>
-            <Label className="mb-2">
-              Plataforma
-            </Label>
-
-            <Select
-              name="platform"
-              defaultValue={app?.platform ?? "mobile"}
+          <div className="flex justify-end gap-3 mt-10">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push("/apps")}
             >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
+              Cancelar
+            </Button>
 
-              <SelectContent>
-                <SelectItem value="mobile">
-                  <MonitorSmartphone className="size-4" />
-                  Mobile
-                </SelectItem>
-
-                <SelectItem value="tv">
-                  <Tv className="size-4" />
-                  TV Box
-                </SelectItem>
-              </SelectContent>
-            </Select>
-
-            <FieldError message={fieldErrors.platform} />
+            <SubmitButton editing={editing} />
           </div>
-
-          <div>
-            <Label className="mb-2">
-              Status
-            </Label>
-
-            <Select
-              name="is_active"
-              defaultValue={app ? String(app.is_active) : "true"}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-
-              <SelectContent>
-                <SelectItem value="true">
-                  <CheckCircle2 className="size-4" />
-                  Ativo
-                </SelectItem>
-
-                <SelectItem value="false">
-                  <XCircle className="size-4" />
-                  Inativo
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <div className="mt-8">
-          <Label className="mb-2">
-            Descrição
-          </Label>
-
-          <Textarea
-            name="description"
-            rows={5}
-            defaultValue={app?.description}
-            placeholder="Descrição..."
-          />
-        </div>
-
-        <div className="flex justify-end gap-3 mt-10">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.push("/apps")}
-          >
-            Cancelar
-          </Button>
-
-          <SubmitButton editing={editing} />
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       <div className="space-y-4">
         <h2 className="text-lg font-semibold">
@@ -334,9 +337,11 @@ export default function AppForm({
             />
           </>
         ) : (
-          <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
-            Salve o aplicativo para habilitar o envio de arquivos.
-          </div>
+          <Card className="border-dashed" size="sm">
+            <CardContent className="text-sm text-muted-foreground">
+              Salve o aplicativo para habilitar o envio de arquivos.
+            </CardContent>
+          </Card>
         )}
       </div>
     </form>

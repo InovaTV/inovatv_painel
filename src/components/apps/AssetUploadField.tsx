@@ -3,8 +3,11 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { AlertCircle, CheckCircle2, FileArchive, Upload } from "lucide-react";
+
+import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { formatBytes, formatDate } from "@/lib/utils";
+import { cn, formatBytes, formatDate } from "@/lib/utils";
 
 type AssetType = "apk" | "icon" | "banner";
 type UploadState = "idle" | "uploading" | "done" | "error";
@@ -40,9 +43,36 @@ export default function AssetUploadField({
   const [sentBytes, setSentBytes] = useState(0);
   const [totalBytes, setTotalBytes] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+
+    if (file) {
+      upload(file);
+    }
+  }
+
+  function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+
+    if (!busy) {
+      setIsDraggingOver(true);
+    }
+  }
+
+  function handleDragLeave(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDraggingOver(false);
+  }
+
+  function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDraggingOver(false);
+
+    if (busy) return;
+
+    const file = e.dataTransfer.files?.[0];
 
     if (file) {
       upload(file);
@@ -174,58 +204,108 @@ export default function AssetUploadField({
   const busy = state === "uploading";
 
   return (
-    <div className="rounded-xl border p-4">
-      <div className="flex items-center justify-between gap-2">
+    <Card>
+      <CardContent className="space-y-3">
         <span className="text-sm font-medium">
           {label}
         </span>
 
         {current && !busy && (
-          <span className="text-xs text-muted-foreground tabular-nums">
-            {formatBytes(current.size)} · {formatDate(new Date(current.modifiedAt))}
-          </span>
+          previewUrl ? (
+            <Card className="gap-0 overflow-hidden py-0">
+              {/* eslint-disable-next-line @next/next/no-img-element -- thumbnail vem de fora do domínio do app (Hostinger), sem next/image configurado para esse host */}
+              <img
+                src={`${previewUrl}?v=${encodeURIComponent(current.modifiedAt)}`}
+                alt={`Preview de ${label}`}
+                className={
+                  type === "banner"
+                    ? "aspect-video w-full object-cover"
+                    : "aspect-square w-full bg-muted object-contain p-6"
+                }
+              />
+
+              <CardContent className="border-t py-2">
+                <p className="text-xs text-muted-foreground tabular-nums">
+                  {formatBytes(current.size)} · {formatDate(new Date(current.modifiedAt))}
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="flex items-center gap-3 rounded-lg border p-3">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-muted">
+                <FileArchive className="size-5 text-muted-foreground" />
+              </div>
+
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">
+                  {label}
+                </p>
+
+                <p className="text-xs text-muted-foreground tabular-nums">
+                  {formatBytes(current.size)} · {formatDate(new Date(current.modifiedAt))}
+                </p>
+              </div>
+            </div>
+          )
         )}
-      </div>
 
-      {previewUrl && current && !busy && (
-        // eslint-disable-next-line @next/next/no-img-element -- thumbnail vem de fora do domínio do app (Hostinger), sem next/image configurado para esse host
-        <img
-          src={`${previewUrl}?v=${encodeURIComponent(current.modifiedAt)}`}
-          alt={`Preview de ${label}`}
-          className="mt-2 h-16 w-16 rounded-lg border object-cover"
+        <input
+          ref={inputRef}
+          type="file"
+          accept={accept}
+          disabled={busy}
+          onChange={handleFileChange}
+          className="hidden"
         />
-      )}
 
-      <input
-        ref={inputRef}
-        type="file"
-        accept={accept}
-        disabled={busy}
-        onChange={handleFileChange}
-        className="mt-2 block w-full text-sm disabled:cursor-not-allowed disabled:opacity-50"
-      />
+        <div
+          onClick={() => !busy && inputRef.current?.click()}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className={cn(
+            "flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed p-6 text-center transition-colors",
+            busy
+              ? "cursor-not-allowed opacity-50"
+              : "cursor-pointer hover:border-primary/50",
+            isDraggingOver ? "border-primary bg-primary/5" : "border-border"
+          )}
+        >
+          <Upload className="size-8 text-muted-foreground" />
 
-      {busy && (
-        <div className="mt-3 space-y-1">
-          <Progress value={progress} />
+          <p className="text-sm text-muted-foreground">
+            Clique ou arraste o arquivo aqui
+          </p>
 
-          <p className="text-xs text-muted-foreground tabular-nums">
-            {stage} — {formatBytes(sentBytes)} / {formatBytes(totalBytes)} ({progress}%)
+          <p className="text-xs text-muted-foreground/70">
+            {type === "apk" ? ".apk" : "PNG, JPG"}
           </p>
         </div>
-      )}
 
-      {state === "done" && (
-        <p className="mt-2 text-xs text-success">
-          Enviado com sucesso.
-        </p>
-      )}
+        {busy && (
+          <div className="space-y-1">
+            <Progress value={progress} />
 
-      {state === "error" && (
-        <p className="mt-2 text-xs text-destructive">
-          {error}
-        </p>
-      )}
-    </div>
+            <p className="text-xs text-muted-foreground tabular-nums">
+              {stage} — {formatBytes(sentBytes)} / {formatBytes(totalBytes)} ({progress}%)
+            </p>
+          </div>
+        )}
+
+        {state === "done" && (
+          <p className="flex items-center gap-1.5 text-xs text-success">
+            <CheckCircle2 className="size-3.5" />
+            Enviado com sucesso.
+          </p>
+        )}
+
+        {state === "error" && (
+          <p className="flex items-center gap-1.5 text-xs text-destructive">
+            <AlertCircle className="size-3.5" />
+            {error}
+          </p>
+        )}
+      </CardContent>
+    </Card>
   );
 }

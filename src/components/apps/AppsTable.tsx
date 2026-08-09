@@ -1,3 +1,8 @@
+import Link from "next/link";
+
+import { SearchX, Smartphone } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -13,10 +18,12 @@ import type { App } from "@/services/app.service";
 
 interface AppsTableProps {
   apps: App[];
+  q?: string;
 }
 
 export default function AppsTable({
   apps,
+  q,
 }: AppsTableProps) {
   return (
     <Table>
@@ -56,12 +63,39 @@ export default function AppsTable({
       <TableBody>
 
         {apps.length === 0 ? (
-          <TableRow>
-            <TableCell
-              colSpan={6}
-              className="text-center text-muted-foreground"
-            >
-              Nenhum aplicativo encontrado.
+          <TableRow className="hover:bg-transparent">
+            <TableCell colSpan={6} className="p-0">
+              {q ? (
+                <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
+                  <SearchX className="size-10 text-muted-foreground" />
+
+                  <p className="font-medium">
+                    Nenhum resultado para a busca
+                  </p>
+
+                  <p className="text-sm text-muted-foreground">
+                    Tente buscar por outro nome.
+                  </p>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
+                  <Smartphone className="size-10 text-muted-foreground" />
+
+                  <p className="font-medium">
+                    Nenhum aplicativo ainda
+                  </p>
+
+                  <p className="text-sm text-muted-foreground">
+                    Cadastre o primeiro aplicativo da plataforma.
+                  </p>
+
+                  <Button asChild className="mt-2">
+                    <Link href="/apps/novo">
+                      Novo Aplicativo
+                    </Link>
+                  </Button>
+                </div>
+              )}
             </TableCell>
           </TableRow>
         ) : (
