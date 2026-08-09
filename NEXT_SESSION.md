@@ -5,25 +5,26 @@
 > `DEFINITION_OF_DONE.md`, `STORAGE.md`, `DESIGN_SYSTEM.md`,
 > ADR-013 a ADR-020.
 
-## ⚠️ Commits locais não pushados
+## ✅ Sincronizado com origin/main
 
-Os 3 commits abaixo (Fase 3, Sprints 1-3) estão só localmente —
-confirmar com o usuário antes de dar push. A Fase 1 completa
-(até `fdcebcf`) já está publicada em `origin/main`.
+`main` e `origin/main` no mesmo commit — `git push origin main`
+concluído sem erros. Fase 1 completa e Fase 3 (Banners, Sprints 1-3)
+estão integralmente publicadas em `origin/main`.
 
-## Último commit (local, não pushado)
+## Último commit (pushado)
 
-`3e3ce31` — `feat(banners): Fase 3 Sprint 3 - upload/storage de
-imagens`. `git status`: working tree limpo.
+`c17a72e` — `docs: NEXT_SESSION.md - Fase 3 Sprint 3 concluido,
+proximo passo em aberto`. `git status`: working tree limpo.
 
-Commits desta sessão, à frente de `origin/main` (3 commits):
-- `1a43d17` Fase 3 Sprint 1 — fundação de banco (banners): RLS,
+Commits da Fase 3 publicados:
+- `1a43d17` Sprint 1 — fundação de banco (banners): RLS,
   `updated_at`+trigger, coluna `category`, `action_type` controlado.
-- `94427c0` Fase 3 Sprint 2 — CRUD básico de Banners (listar, buscar,
+- `94427c0` Sprint 2 — CRUD básico de Banners (listar, buscar,
   paginar, criar, editar, excluir, ativar/desativar, reordenar).
-- `3e3ce31` Fase 3 Sprint 3 — Upload/Storage de imagens: generaliza
+- `3e3ce31` Sprint 3 — Upload/Storage de imagens: generaliza
   `AssetUploadField`, `uploadBannerAsset()`, rota
   `/api/banners/[id]/upload`.
+- `c17a72e` docs — Sprint 3 concluído.
 
 ## Checkpoint do projeto
 
@@ -47,16 +48,22 @@ Commits desta sessão, à frente de `origin/main` (3 commits):
     - ✅ Fase C (Aplicativos/CRUD) — `0e7fae8`.
   - **Auditoria final (somente leitura) feita e aprovada — sem
     pendências importantes.** Publicada em `origin/main`.
-- 🔄 **Fase 3 — Banners (Marketing)** — em andamento, plano completo
-  aprovado (levantamento → aprovação → implementação → testes →
-  revisão → commit → push, por sprint):
-  - ✅ Sprint 1 (Fundação de banco) — commitado (`1a43d17`), aplicado
-    e validado contra o banco real.
-  - ✅ Sprint 2 (CRUD básico) — commitado (`94427c0`), validado no
-    navegador.
-  - ✅ Sprint 3 (Upload/Storage de imagens) — commitado (`3e3ce31`),
-    validado no navegador. Próximo passo do módulo Banners ainda não
-    definido — aguardar instrução do usuário.
+- ✅ **Fase 3 — Banners/Marketing — CONCLUÍDA e publicada em
+  `origin/main`** (2026-08-08 a 2026-08-09). Sprints 1-3 concluídos,
+  cada um com levantamento → aprovação → implementação → testes →
+  revisão → commit:
+  - ✅ Sprint 1 (Fundação de banco) — `1a43d17`.
+  - ✅ Sprint 2 (CRUD básico) — `94427c0`.
+  - ✅ Sprint 3 (Upload/Storage de imagens) — `3e3ce31`.
+  - O módulo administrativo possui fundação de banco, CRUD,
+    ordenação, ativação/desativação e upload/storage de imagens.
+  - **O consumo público dos banners e o carrossel ficam fora desta
+    fase** — são trabalho futuro, a tratar quando o Portal Público
+    for iniciado (nenhum código/design desse consumo existe ainda).
+  - Próximo módulo **ainda não definido** — decisão do usuário é
+    revisar `ROADMAP.md` + este documento para escolher com base na
+    arquitetura já construída, não simplesmente seguir a numeração
+    (Fase 4 em diante) por padrão.
 - **Módulo Aplicativos: funcionalmente concluído** (`DEFINITION_OF_DONE.md`).
 
 ## Fase A concluída — Sprint 5, Sidebar/Header (commit `93d1fb2`)
@@ -288,16 +295,22 @@ ficou órfão na Hostinger, comportamento aceito para este sprint.
 
 ## Primeiro passo
 
-**Fase 3 (Banners), Sprints 1-3 concluídos e commitados** (fundação de
-banco, CRUD básico, upload/storage de imagens). **Nenhum Sprint 4 ou
-módulo novo foi iniciado nem definido** — o usuário pediu
-explicitamente para não presumir o próximo passo do módulo Banners
-(possíveis pendências conhecidas, não confirmadas como próximo passo:
-exclusão de arquivo órfão ao excluir banner, listada como "tarefa
-futura específica e abrangente"; validação de dimensão/proporção;
-Portal Público consumindo `app_slug`). Esperar instrução explícita do
-usuário antes de propor qualquer coisa.
+**Fase 3 (Banners/Marketing) está oficialmente encerrada e publicada.**
+Não abrir Sprint 4 nem qualquer código novo de Banners sem pedido
+explícito — inclusive as pendências já conhecidas (limpeza de assets
+órfãos ao excluir banner, validação de dimensão/proporção, consumo via
+`app_slug`) continuam fora de escopo até serem convocadas.
 
-Commits `1a43d17`/`94427c0`/`3e3ce31` (Fase 3, Sprints 1-3) ainda não
-foram pushados — confirmar com o usuário antes de dar push. Fase 1
-completa já está publicada em `origin/main` (até `fdcebcf`).
+**Antes de escolher o próximo módulo**, o usuário quer revisar
+`ROADMAP.md` (módulos Fase 4-7: Clientes, FAQ, Tutoriais,
+Configurações) junto com este documento, para escolher o próximo com
+base na arquitetura já construída (padrões de service/CRUD/upload já
+consolidados em Apps e Banners), em vez de seguir a numeração por
+padrão. Essa revisão ainda não aconteceu nesta sessão — é o próximo
+passo real, antes de qualquer decisão de módulo.
+
+**Portal Público / carrossel de banners:** explicitamente fora de
+escopo de qualquer fase atual — só entra quando essa iniciativa for
+formalmente aberta.
+
+`main`/`origin/main` sincronizados (`c17a72e`), working tree limpa.
