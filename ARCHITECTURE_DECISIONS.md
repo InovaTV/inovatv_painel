@@ -65,7 +65,11 @@ Configurações) ainda não foram construídos.
 
 **Decisão:** uploads (APK, ícone, banner e futuros arquivos) passam
 obrigatoriamente por Server Actions. Nenhum upload é feito
-diretamente do browser para o Supabase Storage.
+diretamente do browser para o armazenamento de arquivos (Hostinger
+desde a ADR-011 — a decisão original, de 2026-08-05, foi escrita
+quando o alvo ainda era o Supabase Storage, superseded pela ADR-011;
+o princípio de nunca fazer upload direto do browser continua vigente,
+só o destino mudou).
 
 **Motivo:** mesma razão da ADR-003 — evitar acesso administrativo
 direto pelo browser e manter controle centralizado sobre validação de
@@ -143,7 +147,10 @@ consistente. Ver `STORAGE.md` para o detalhamento completo.
 armazenamento de arquivos deixou de ser Supabase Storage e passou a
 ser Hostinger. Histórico mantido para contexto (migração aplicada,
 bucket `apps` chegou a ser criado — ver `CHANGELOG_AI.md` — mas ficou
-sem uso; não é removido agora, ver ADR-011). As colunas
+sem uso por um tempo). **Atualização (2026-08-11): o bucket `apps`
+(e também o bucket `apks`, sem relação com esta ADR) foram excluídos
+por completo** — o Supabase Storage não existe mais neste projeto.
+As colunas
 `storage_path`/`icon_path`/`banner_path`/`asset_folder`/`storage_folder`
 continuam sendo usadas, só que agora apontam para caminhos na
 Hostinger em vez de um bucket Supabase — nenhuma migração de dado foi

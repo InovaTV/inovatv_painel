@@ -107,7 +107,7 @@ export async function uploadBannerAsset(
     );
   }
 
-  const path = `assets/banners/${banner.id}/image.webp`;
+  const path = `banners/${banner.id}/image.webp`;
   const data = Buffer.from(await file.arrayBuffer());
 
   await storage.replace({ path, data, onProgress });

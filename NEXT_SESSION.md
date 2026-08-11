@@ -288,8 +288,6 @@ ficou órfão na Hostinger, comportamento aceito para este sprint.
 - Arquivo `MAwv\357\200\252` (raiz do repo, 0 bytes, não versionado):
   investigado em sessão anterior, tudo indica artefato de
   terminal/shell. Ignorar; só reinvestigar se reaparecer.
-- Bucket `apps` do Supabase Storage: criado mas sem uso (ADR-007,
-  supersedida pela ADR-011). Sem ação planejada.
 - `#D69A4A` (âmbar de apoio, §5.2): validado em OKLCH mas não virou
   token — uso pontual, não decidido ainda onde.
 

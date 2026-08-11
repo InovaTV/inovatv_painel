@@ -24,7 +24,6 @@ Todo o conteúdo será administrado através do Supabase.
 ## Integração
 
 - Supabase Database
-- Supabase Storage
 - Projeto Downloads (Vercel)
 - Aplicativo InovaTV Central
 

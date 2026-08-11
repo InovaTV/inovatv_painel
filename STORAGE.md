@@ -4,7 +4,7 @@
 > decisões permanentes por trás deste documento. Este arquivo detalha
 > a implementação; as ADRs registram o porquê.
 
-Última atualização: 2026-08-06
+Última atualização: 2026-08-11
 
 ## Decisão (histórico resumido)
 
@@ -18,7 +18,10 @@
 3. Decisão do usuário: **substituir completamente** o Supabase
    Storage por uma hospedagem própria (**Hostinger**) para todo
    arquivo público da plataforma — não só APK. O bucket Supabase
-   fica parado, sem uso (não removido).
+   ficou parado, sem uso, por um tempo (não removido de imediato).
+   **Atualização (2026-08-11): os buckets `apps` e `apks` foram
+   excluídos por completo** — o Supabase Storage não existe mais
+   neste projeto, em nenhuma forma.
 
 ## Armazenamento oficial: Hostinger
 
@@ -52,12 +55,23 @@ assets/
         apk/app.apk
         icon/icon.png
         banner/banner.webp
+  banners/
+    {id}/
+      image.webp
   tutorials/
     images/
     videos/
   faq/
   downloads/
 ```
+
+`apps/` segue a convenção produto/plataforma (`{asset_folder}/{platform}/`).
+`banners/` (Home, carrossel — tabela `banners`, coluna `image_path`) segue
+uma convenção própria, por `id` do registro, já que não tem produto nem
+plataforma — implementada na Fase 3 (Sprint 3, 2026-08-08), corrigida em
+2026-08-11 (o path chegou a incluir um prefixo `assets/` redundante,
+gerando `assets/assets/banners/...`; corrigido para `banners/{id}/...`,
+mesma regra do ponto abaixo).
 
 **Convenção definitiva de nome — o painel nunca pergunta o nome do
 arquivo, ele já sabe:**
@@ -86,6 +100,13 @@ mudar a cada atualização sem necessidade. Atualizar o APK/ícone/banner
 = mesmo path, conteúdo novo (via `storage.replace()`), banco atualiza
 só a versão.
 
+**Path passado pro `StorageProvider` nunca começa com `assets/`.** A
+raiz `assets/` já vem da própria conta FTP/SFTP (escopo do lado do
+servidor, fora do código — `STORAGE_ROOT_PATH` está vazio hoje, ver
+tabela de variáveis abaixo). Incluir `assets/` no path duplica o
+segmento (bug real encontrado e corrigido em 2026-08-11 no upload de
+Banners — ver seção "Estrutura de diretórios").
+
 ## Colunas no banco (sem migração necessária)
 
 As mesmas colunas já usadas para o plano Supabase continuam válidas —
@@ -98,6 +119,10 @@ só mudou o que elas apontam:
 | `banner_path` | idem | idem |
 | `asset_folder` | nome do produto (`unitv`) | inalterado |
 | `storage_folder` | raiz física produto/plataforma | inalterado |
+
+`banners.image_path` (tabela `banners`, não `apps`) segue a mesma
+lógica — caminho relativo dentro de `assets/` na Hostinger — mas nunca
+existiu no modelo Supabase; nasceu direto para a Hostinger (Fase 3).
 
 `download_url` continua depreciado (ADR-008) — este novo esquema é,
 na prática, a infraestrutura do futuro Portal Público que
@@ -143,7 +168,7 @@ Nenhum componente ou Server Action deve importar `ssh2-sftp-client`,
 | `STORAGE_HOST` | endereço do servidor FTP/SFTP |
 | `STORAGE_USER` | usuário restrito ao diretório de arquivos (não a conta principal) |
 | `STORAGE_PASSWORD` | senha desse usuário |
-| `STORAGE_ROOT_PATH` | caminho no servidor até a raiz de `assets/` |
+| `STORAGE_ROOT_PATH` | caminho no servidor até a raiz de `assets/`, quando precisar ser explícito. **Hoje está vazio** — a raiz já vem do escopo da própria conta FTP/SFTP (configurada no hPanel), então nenhum path passado ao `StorageProvider` deve incluir `assets/` (ver "Estrutura de diretórios") |
 | `STORAGE_PUBLIC_BASE_URL` | domínio/URL que serve esse mesmo diretório publicamente |
 | `STORAGE_SFTP_PORT` / `STORAGE_FTP_PORT` | opcionais, só se as portas padrão (22/21) não forem as certas — **atenção:** hospedagem compartilhada da Hostinger às vezes usa uma porta SSH não-padrão (verificar no hPanel) |
 | `STORAGE_PROTOCOL` | opcional, força `sftp` ou `ftp` em vez da detecção automática |
@@ -156,8 +181,15 @@ Nenhum componente ou Server Action deve importar `ssh2-sftp-client`,
 confirma existência, monta URL pública
 (`https://inovatv.pro/assets/...`), remove e confirma remoção — todos
 os 5 checks passaram. Infraestrutura de Storage validada de ponta a
-ponta. Ainda não usada por nenhuma Server Action de verdade (próximo
-passo: Upload de APK).
+ponta.
+
+**Em uso real, não mais só infraestrutura testada:**
+- **Apps** (`app.service.ts`, `uploadAppAsset`) — APK, ícone e banner
+  promocional do app, via `/api/apps/[id]/upload` (Route Handler,
+  streaming ndjson de progresso, ADR-013/ADR-014).
+- **Banners** (`banner.service.ts`, `uploadBannerAsset`, Fase 3 Sprint
+  3, 2026-08-08) — imagem do banner (Home/carrossel), via
+  `/api/banners/[id]/upload`, mesmo padrão de Route Handler.
 
 **Protocolo real usado: FTP puro, sem TLS.** SFTP não está disponível
 nesse host (handshake SSH falha). FTPS falha por mismatch de
