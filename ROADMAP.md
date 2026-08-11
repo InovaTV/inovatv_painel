@@ -87,13 +87,21 @@ aplicar:
   valores em `supabase/backups/20260807_apps_legacy_columns_backup.csv`.
   Ver ADR-020. Aplicado e verificado em 2026-08-07.
 
-Colunas `package_name`/`min_android_version`/`current_version_code`/
-`requires_login` ficam como reservadas para funcionalidade futura —
-nenhuma ação planejada.
-
 **Auditoria de banco encerrada (4/4 fases).** Schema do módulo
 Aplicativos considerado maduro. Próximo passo combinado: fase de
 UI/UX, não um novo módulo.
+
+**Limpeza adicional (2026-08-11), fora das 4 fases acima** (achado
+durante a auditoria de infraestrutura Hostinger/Storage, não parte do
+pacote aprovado em 2026-08-07): `min_android_version`,
+`current_version_code` e `requires_login` removidas de `apps` — nunca
+modeladas em `AppData`/`App` (`src/services/app.service.ts`), nunca
+lidas/escritas por nenhuma Server Action, nunca usadas em UI, sempre
+NULL/false em toda linha real. Migration
+`20260811100000_apps_drop_unused_metadata_columns.sql`. Coluna
+`package_name` **não** foi removida — permanece no schema, preservada
+por já ser usada pela arquitetura atual/futura de descoberta de
+aplicativos (ver `checkApp()`/Fase 2B-2 em `inovatv_central`).
 
 ## Fase 3 — Banners (Marketing)
 
